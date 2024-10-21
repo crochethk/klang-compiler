@@ -1,0 +1,45 @@
+{
+    "java.configuration.runtimes": [
+        // {
+        //     "name": "JavaSE-17",
+        //     "path": "C:\\Program Files\\Java\\jdk-17.0.1"
+        // },
+        // {
+        //     "name": "JavaSE-1.8",
+        //     "path": "C:\\Program Files\\Java\\jre1.8.0_221"
+        // },
+        // {
+        //     "name": "JavaSE-18",
+        //     "path": "C:\\Program Files\\Java\\jdk-18.0.1"
+        // },
+        // {
+        //     "name": "JavaSE-21",
+        //     "path": "C:\\Program Files\\Java\\jdk-21.0.2"
+        // },
+        {
+            "default": true,
+            "name": "JavaSE-23",
+            "path": "C:\\Program Files\\Java\\jdk-23.0.1"
+        }
+    ],
+    "java.inlayHints.parameterNames.enabled": "none",
+    "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-23.0.1",
+    "java.project.sourcePaths": [
+        // --------- Add additional projects here --------------
+        "L1/src",
+        // antlr generated files
+        "L1/src/gen",
+    ],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        // --------- Add additional extern libraries here --------------
+        // "*/lib/**/*.jar"
+        "lib/**/*.jar"
+    ],
+    "antlr4.generation": {
+        "mode": "external",
+        "listeners": true,
+        "visitors": true,
+        "outputDir": "gen"
+    },
+}
