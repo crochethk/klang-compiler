@@ -1,0 +1,42 @@
+{
+    "folders": [
+        // Add one path per JAVA project
+        {
+            "name": "root",
+            "path": "."
+        },
+        {
+            "path": "L1"
+        },
+        {
+            "path": "L2"
+        },
+    ],
+    "settings": { // These are settings for ALL FOLDERS
+        "java.format.comments.enabled": false,
+        "java.inlayHints.parameterNames.enabled": "none",
+        "java.project.sourcePaths": [
+            "src",
+            "src/gen"
+        ],
+        "java.project.outputPath": "bin",
+        "java.project.referencedLibraries": [
+            "../lib/**/*.jar"
+        ],
+        "antlr4.generation": {
+            "mode": "external",
+            "listeners": true,
+            "visitors": true,
+            "outputDir": "gen"
+        },
+        "antlr4.format": {
+            "reflowComments": false
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "mike-lischke.vscode-antlr4",
+            "vscjava.vscode-java-pack"
+        ]
+    },
+}
