@@ -4,16 +4,19 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import javax.swing.*;
+
 import java.io.StringReader;
 import java.util.Arrays;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     static boolean SHOW_AST_VISUALIZATION = false;
 
     public static void main(String[] args) throws Exception {
-        var lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(17+4)*2*1")));
+        L1Lexer lexer;
+        // some easy to swap sample expressions
+        lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(17+4)*2*1")));
+        lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(17+4**(2*3-4)+7)*2*1")));
+
         var parser = new L1Parser(new CommonTokenStream(lexer));
         var tree = parser.expr();
         ParseTreeWalker.DEFAULT.walk(new Eval(), tree);
@@ -32,6 +35,5 @@ public class Main {
             frame.pack();
             frame.setVisible(true);
         }
-    }
     }
 }

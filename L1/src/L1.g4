@@ -4,6 +4,7 @@ start
 
 expr
 	returns[long result]:
+	| expr POW expr
 	| expr (MULT | DIV) expr
 	| expr (ADD | SUB) expr
 	| LPAR expr RPAR
@@ -15,6 +16,7 @@ zahl
 NUMBER: [0-9]+;
 ADD: '+';
 SUB: '-';
+POW: '**';
 MULT: '*';
 DIV: '/';
 LPAR: '(';

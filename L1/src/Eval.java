@@ -16,6 +16,11 @@ public class Eval extends L1BaseListener {
             ctx.result = ctx.expr().get(0).result + ctx.expr().get(1).result;
         } else if (ctx.SUB() != null) {
             ctx.result = ctx.expr().get(0).result - ctx.expr().get(1).result;
+        } else if (ctx.POW() != null) {
+            var lhs = ctx.expr(0).result;
+            var rhs = ctx.expr(1).result;
+            ctx.result = (long) Math.pow(lhs, rhs);
+            // ctx.result = (long) Math.pow(ctx.expr(0).result, ctx.expr(1).result);
         } else {
             ctx.result = ctx.expr().get(0).result;
         }
