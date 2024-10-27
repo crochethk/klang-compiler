@@ -6,12 +6,16 @@ public class Eval extends L1BaseListener {
 
     @Override
     public void exitExpr(L1Parser.ExprContext ctx) {
-        if (ctx.zahl() != null)
+        if (ctx.zahl() != null) {
             ctx.result = ctx.zahl().result;
-        else if (ctx.MULT() != null) {
+        } else if (ctx.MULT() != null) {
             ctx.result = ctx.expr().get(0).result * ctx.expr().get(1).result;
+        } else if (ctx.DIV() != null) {
+            ctx.result = ctx.expr().get(0).result / ctx.expr().get(1).result;
         } else if (ctx.ADD() != null) {
             ctx.result = ctx.expr().get(0).result + ctx.expr().get(1).result;
+        } else if (ctx.SUB() != null) {
+            ctx.result = ctx.expr().get(0).result - ctx.expr().get(1).result;
         } else {
             ctx.result = ctx.expr().get(0).result;
         }
