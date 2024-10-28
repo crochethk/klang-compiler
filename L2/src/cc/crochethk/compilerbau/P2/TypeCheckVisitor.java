@@ -2,7 +2,7 @@ package cc.crochethk.compilerbau.P2;
 
 import cc.crochethk.compilerbau.P2.BinOpExpr.BinaryOp;
 
-public class TypeCheckVisitor implements Visitor {
+public class TypeCheckVisitor implements Visitor<Void> {
 
     @Override
     public void reportError(Node node, String msg) {
@@ -10,12 +10,13 @@ public class TypeCheckVisitor implements Visitor {
     }
 
     @Override
-    public void visit(IntLit intLit) {
+    public Void visit(IntLit intLit) throws Exception {
         intLit.theType = "long";
+        return null;
     }
 
     @Override
-    public void visit(BinOpExpr binOpExpr) {
+    public Void visit(BinOpExpr binOpExpr) throws Exception {
         // Compute type of the operands
         binOpExpr.lhs.accept(this);
         binOpExpr.rhs.accept(this);
@@ -33,5 +34,6 @@ public class TypeCheckVisitor implements Visitor {
         } else {
             throw new UnsupportedOperationException("Unknown binary operator: " + binOpExpr.op);
         }
+        return null;
     }
 }

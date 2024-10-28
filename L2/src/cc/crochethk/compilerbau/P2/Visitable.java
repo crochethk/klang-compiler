@@ -1,5 +1,5 @@
 package cc.crochethk.compilerbau.P2;
 
 public interface Visitable {
-    void accept(Visitor visitor);
+    <R> R accept(Visitor<R> visitor) throws Exception;
 }

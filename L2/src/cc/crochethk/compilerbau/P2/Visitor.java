@@ -1,6 +1,6 @@
 package cc.crochethk.compilerbau.P2;
 
-public interface Visitor {
+public interface Visitor<R> {
     default void reportError(Node node, String s) {
         System.err.println("(" + node.line + "," + node.column + "): " + s);
     }
@@ -11,7 +11,7 @@ public interface Visitor {
     * A visitor encapsulates all the algorithmic logic for a procedure on the tree.
     */
     // void visit(Visitable element);
-    void visit(IntLit intLit);
+    R visit(IntLit intLit) throws Exception;
 
-    void visit(BinOpExpr binOpExpr);
+    R visit(BinOpExpr binOpExpr) throws Exception;
 }

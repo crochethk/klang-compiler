@@ -10,7 +10,7 @@ public class IntLit extends Node {
     }
 
     @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
+    public <R> R accept(Visitor<R> visitor) throws Exception {
+        return visitor.visit(this);
     }
 }
