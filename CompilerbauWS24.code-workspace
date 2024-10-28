@@ -16,8 +16,8 @@
         "java.format.comments.enabled": false,
         "java.inlayHints.parameterNames.enabled": "none",
         "java.project.sourcePaths": [
+            "src/gen",
             "src",
-            "src/gen"
         ],
         "java.project.outputPath": "bin",
         "java.project.referencedLibraries": [
@@ -31,6 +31,12 @@
         },
         "antlr4.format": {
             "reflowComments": false
+        },
+        "github.copilot.enable": {
+            "*": true,
+            "plaintext": false,
+            "markdown": false,
+            "scminput": false
         }
     },
     "extensions": {
