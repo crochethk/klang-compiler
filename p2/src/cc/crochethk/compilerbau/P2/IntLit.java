@@ -4,8 +4,8 @@ public class IntLit extends Node {
     /// The value of the integer literal
     int n;
 
-    public IntLit(int line, int column, int n) {
-        super(line, column);
+    public IntLit(int line, int col, int n) {
+        super(line, col);
         this.n = n;
     }
 

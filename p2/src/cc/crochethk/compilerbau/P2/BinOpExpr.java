@@ -19,8 +19,8 @@ public class BinOpExpr extends Node {
                 .unmodifiableList(Arrays.asList(add, mult, sub, div, mod));
     }
 
-    BinOpExpr(int l, int c, Node lhs, BinaryOp op, Node rhs) {
-        super(l, c);
+    public BinOpExpr(int line, int col, Node lhs, BinaryOp op, Node rhs) {
+        super(line, col);
         this.lhs = lhs;
         this.op = op;
         this.rhs = rhs;

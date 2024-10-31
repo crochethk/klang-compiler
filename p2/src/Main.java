@@ -15,11 +15,11 @@ public class Main {
         L1Lexer lexer;
         // some easy to swap sample expressions
         lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(17+4)*2*1")));
-        lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(17+4**(2*3-4)+7)*2*1")));
+        // lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(17+4**(2*3-4)+7)*2*1")));
 
         var parser = new L1Parser(new CommonTokenStream(lexer));
         var tree = parser.expr();
-        ParseTreeWalker.DEFAULT.walk(new Eval(), tree);
+        ParseTreeWalker.DEFAULT.walk(new TreeBuilder(), tree);
         System.out.println(tree.result);
 
         if (SHOW_AST_VISUALIZATION) {
