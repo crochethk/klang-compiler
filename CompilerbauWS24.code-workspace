@@ -6,17 +6,17 @@
             "path": "."
         },
         {
-            "path": "L1"
+            "path": "p1"
         },
         {
-            "path": "L2"
+            "path": "p2"
         },
     ],
     "settings": { // These are settings for ALL FOLDERS
         "java.format.comments.enabled": false,
         "java.inlayHints.parameterNames.enabled": "none",
         "java.project.sourcePaths": [
-            "src/gen",
+            "gen",
             "src",
         ],
         "java.project.outputPath": "bin",
@@ -27,7 +27,7 @@
             "mode": "external",
             "listeners": true,
             "visitors": true,
-            "outputDir": "gen"
+            "outputDir": "gen",
         },
         "antlr4.format": {
             "reflowComments": false
