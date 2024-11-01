@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cc.crochethk.compilerbau.p2.InterpretVisitor;
 import cc.crochethk.compilerbau.p2.Node;
 import cc.crochethk.compilerbau.p2.TypeCheckVisitor;
 
@@ -20,8 +21,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
         L1Lexer lexer;
         // some easy to swap sample expressions
-        lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(17+4)*2*1")));
-        // lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(17+4**(2*3-4)+7)*2*1")));
+        lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(true or false) and (1+2)"))); // type error example
+        lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(true or false) and true"))); // good example
+        lexer = new L1Lexer(CharStreams.fromReader(new StringReader("(17+4)*2*1"))); // good example
 
         var parser = new L1Parser(new CommonTokenStream(lexer));
         var antlrTree = parser.start();
@@ -31,13 +33,17 @@ public class Main {
             showAstVisualization(parser, antlrTree);
         }
 
-        // Further work on the custom-build AST
+        // ----- Further work on the custom-build AST
         Node rootNode = antlrTree.result;
-        // System.out.println(rootNode);
 
+        // Type checking
         var typeChecker = new TypeCheckVisitor();
         rootNode.accept(typeChecker);
-        System.out.println("INFO: Type check successful.");
+
+        // Interpret the code
+        var interpreter = new InterpretVisitor();
+        var result = rootNode.accept(interpreter);
+        System.out.println("Result: " + result);
 
     }
 

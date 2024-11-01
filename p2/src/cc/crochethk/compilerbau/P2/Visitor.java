@@ -2,7 +2,7 @@ package cc.crochethk.compilerbau.p2;
 
 public interface Visitor<R> {
     default void reportError(Node node, String s) {
-        System.err.println("(" + node.line + "," + node.column + "): " + s);
+        System.err.println("(L" + node.line + ":" + node.column + ") " + s);
     }
 
     /*
@@ -13,7 +13,7 @@ public interface Visitor<R> {
     // void visit(Visitable element);
     R visit(IntLit intLit) throws Exception;
 
-    R visit(BinOpExpr binOpExpr) throws Exception;
-
     R visit(BooleanLit booleanLit) throws Exception;
+
+    R visit(BinOpExpr binOpExpr) throws Exception;
 }
