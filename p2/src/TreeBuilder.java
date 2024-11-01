@@ -16,11 +16,10 @@ public class TreeBuilder extends L1BaseListener {
 
     @Override
     public void exitExpr(L1Parser.ExprContext ctx) {
+        // integer
         if (ctx.zahl() != null) {
             ctx.result = ctx.zahl().result;
-        }
-        // arithmetic operators
-        else if (ctx.MULT() != null) {
+        } else if (ctx.MULT() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.mult);
         } else if (ctx.DIV() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.div);
@@ -36,8 +35,17 @@ public class TreeBuilder extends L1BaseListener {
         else if (ctx.LPAR() != null && ctx.RPAR() != null) {
             ctx.result = ctx.expr(0).result;
         }
-        else {
-            throw new UnsupportedOperationException("Unknown rule " + ctx.getText());
+
+        // boolean
+        else if (ctx.bool() != null) {
+            ctx.result = ctx.bool().result;
+        } else if (ctx.AND() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.and);
+        } else if (ctx.OR() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.or);
+        } else {
+            var srcPos = getSourcePos(ctx);
+            throw new UnsupportedOperationException("Unknown rule '" + ctx.getText() + "' at " + srcPos);
         }
     }
 
@@ -50,6 +58,10 @@ public class TreeBuilder extends L1BaseListener {
     // Helper methods
     //
     private record SourcePos(int line, int column) {
+        @Override
+        public String toString() {
+            return "L" + line + ":" + column;
+        }
     }
 
     private SourcePos getSourcePos(ParserRuleContext ctx) {

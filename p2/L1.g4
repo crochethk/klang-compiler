@@ -14,12 +14,16 @@ expr
 	// | expr POW expr
 	| expr (MULT | DIV) expr
 	| expr (ADD | SUB) expr
+	| expr AND expr
+	| expr OR expr
 	| LPAR expr RPAR
-	| zahl;
+	| zahl
+	| bool;
 
 zahl
 	returns[Node result]: NUMBER;
 
+// Lexer rules
 NUMBER: [0-9]+;
 ADD: '+';
 SUB: '-';
@@ -28,3 +32,7 @@ MULT: '*';
 DIV: '/';
 LPAR: '(';
 RPAR: ')';
+
+BOOLEAN: 'true' | 'false';
+AND: 'and';
+OR: 'or';
