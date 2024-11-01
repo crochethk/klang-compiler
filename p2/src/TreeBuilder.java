@@ -1,7 +1,9 @@
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cc.crochethk.compilerbau.p2.BinOpExpr;
+import cc.crochethk.compilerbau.p2.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.p2.IntLit;
+import cc.crochethk.compilerbau.p2.Node;
 
 public class TreeBuilder extends L1BaseListener {
     @Override
@@ -14,41 +16,28 @@ public class TreeBuilder extends L1BaseListener {
 
     @Override
     public void exitExpr(L1Parser.ExprContext ctx) {
-        var srcPos = getSourcePos(ctx);
         if (ctx.zahl() != null) {
             ctx.result = ctx.zahl().result;
-        } else if (ctx.MULT() != null) {
-            var lhs = ctx.expr(0).result;
-            var rhs = ctx.expr(1).result;
-            var node = new BinOpExpr(
-                    srcPos.line(), srcPos.column(), lhs, BinOpExpr.BinaryOp.mult, rhs);
-            ctx.result = node;
+        }
+        // arithmetic operators
+        else if (ctx.MULT() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.mult);
         } else if (ctx.DIV() != null) {
-            var lhs = ctx.expr(0).result;
-            var rhs = ctx.expr(1).result;
-            var node = new BinOpExpr(
-                    srcPos.line(), srcPos.column(), lhs, BinOpExpr.BinaryOp.div, rhs);
-            ctx.result = node;
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.div);
         } else if (ctx.ADD() != null) {
-            var lhs = ctx.expr(0).result;
-            var rhs = ctx.expr(1).result;
-            var node = new BinOpExpr(
-                    srcPos.line(), srcPos.column(), lhs, BinOpExpr.BinaryOp.add, rhs);
-            ctx.result = node;
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.add);
         } else if (ctx.SUB() != null) {
-            var lhs = ctx.expr(0).result;
-            var rhs = ctx.expr(1).result;
-            var node = new BinOpExpr(
-                    srcPos.line(), srcPos.column(), lhs, BinOpExpr.BinaryOp.sub, rhs);
-            ctx.result = node;
-            // } else if (ctx.POW() != null) {
-            //     var lhs = ctx.expr(0).result;
-            //     var rhs = ctx.expr(1).result;
-            //     var node = new BinOpExpr(
-            //             srcPos.line(), srcPos.column(), lhs, BinOpExpr.BinaryOp.pow, rhs);
-            //     ctx.result = node;
-        } else {
-            ctx.result = ctx.expr().get(0).result;
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.sub);
+        }
+        // } else if (ctx.POW() != null) {
+        //     ctx.result = parseBinOpExpr(ctx, BinaryOp.pow);
+
+        // parentheses
+        else if (ctx.LPAR() != null && ctx.RPAR() != null) {
+            ctx.result = ctx.expr(0).result;
+        }
+        else {
+            throw new UnsupportedOperationException("Unknown rule " + ctx.getText());
         }
     }
 
@@ -66,5 +55,14 @@ public class TreeBuilder extends L1BaseListener {
     private SourcePos getSourcePos(ParserRuleContext ctx) {
         return new SourcePos(
                 ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+    }
+
+    private Node parseBinOpExpr(L1Parser.ExprContext ctx, BinaryOp op) {
+        var srcPos = getSourcePos(ctx);
+        var lhs = ctx.expr(0).result;
+        var rhs = ctx.expr(1).result;
+        var node = new BinOpExpr(
+                srcPos.line(), srcPos.column(), lhs, op, rhs);
+        return node;
     }
 }
