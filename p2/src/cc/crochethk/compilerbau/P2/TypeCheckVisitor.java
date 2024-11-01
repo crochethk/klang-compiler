@@ -11,7 +11,7 @@ public class TypeCheckVisitor implements Visitor<Void> {
 
     @Override
     public Void visit(IntLit intLit) throws Exception {
-        intLit.theType = "long";
+        intLit.theType = "int";
         return null;
     }
 
@@ -27,8 +27,8 @@ public class TypeCheckVisitor implements Visitor<Void> {
                 reportError(binOpExpr, binOpExpr.lhs.theType + " " + binOpExpr.op + " " + binOpExpr.rhs.theType);
             }
         } else if (BinaryOp.arithOps.contains(binOpExpr.op)) {
-            binOpExpr.theType = "long";
-            if (!binOpExpr.lhs.theType.equals("long") || !binOpExpr.rhs.theType.equals("long")) {
+            binOpExpr.theType = "int";
+            if (!binOpExpr.lhs.theType.equals("int") || !binOpExpr.rhs.theType.equals("int")) {
                 reportError(binOpExpr, binOpExpr.lhs.theType + " " + binOpExpr.op + " " + binOpExpr.rhs.theType);
             }
         } else {
