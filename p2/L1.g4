@@ -23,6 +23,9 @@ expr
 zahl
 	returns[Node result]: NUMBER;
 
+bool
+	returns[Node result]: BOOLEAN;
+
 // Lexer rules
 NUMBER: [0-9]+;
 ADD: '+';

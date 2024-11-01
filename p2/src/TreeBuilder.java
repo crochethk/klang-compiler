@@ -15,6 +15,12 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitBool(L1Parser.BoolContext ctx) {
+        // TODO Auto-generated method stub
+        super.exitBool(ctx);
+    }
+
+    @Override
     public void exitExpr(L1Parser.ExprContext ctx) {
         // integer
         if (ctx.zahl() != null) {

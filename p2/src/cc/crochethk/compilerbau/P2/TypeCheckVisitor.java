@@ -16,6 +16,12 @@ public class TypeCheckVisitor implements Visitor<Void> {
     }
 
     @Override
+    public Void visit(BooleanLit booleanLit) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Void visit(BinOpExpr binOpExpr) throws Exception {
         // Compute type of the operands
         binOpExpr.lhs.accept(this);

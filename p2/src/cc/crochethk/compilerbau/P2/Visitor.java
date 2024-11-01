@@ -14,4 +14,6 @@ public interface Visitor<R> {
     R visit(IntLit intLit) throws Exception;
 
     R visit(BinOpExpr binOpExpr) throws Exception;
+
+    R visit(BooleanLit booleanLit) throws Exception;
 }
