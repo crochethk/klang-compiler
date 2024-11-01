@@ -17,8 +17,8 @@ public class TypeCheckVisitor implements Visitor<Void> {
 
     @Override
     public Void visit(BooleanLit booleanLit) throws Exception {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        booleanLit.theType = "boolean";
+        return null;
     }
 
     @Override
