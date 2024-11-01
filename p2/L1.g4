@@ -3,7 +3,7 @@ grammar L1;
 // Creates import of `Node` type in the generated java source,
 // so that we can use it in the parser rules without further problems.
 @parser::header {
-    import cc.crochethk.compilerbau.P2.Node;
+    import cc.crochethk.compilerbau.p2.Node;
 }
 
 start

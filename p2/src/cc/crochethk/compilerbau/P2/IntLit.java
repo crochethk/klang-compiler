@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.P2;
+package cc.crochethk.compilerbau.p2;
 
 public class IntLit extends Node {
     /// The value of the integer literal

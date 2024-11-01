@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.P2;
+package cc.crochethk.compilerbau.p2;
 
 public interface Visitor<R> {
     default void reportError(Node node, String s) {

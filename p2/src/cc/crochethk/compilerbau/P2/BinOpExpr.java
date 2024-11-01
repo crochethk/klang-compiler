@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.P2;
+package cc.crochethk.compilerbau.p2;
 
 import java.util.Arrays;
 import java.util.Collections;

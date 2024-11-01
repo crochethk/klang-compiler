@@ -1,6 +1,6 @@
-package cc.crochethk.compilerbau.P2;
+package cc.crochethk.compilerbau.p2;
 
-import cc.crochethk.compilerbau.P2.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.p2.BinOpExpr.BinaryOp;
 
 public class TypeCheckVisitor implements Visitor<Void> {
 

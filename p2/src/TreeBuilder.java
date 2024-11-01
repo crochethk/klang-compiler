@@ -1,7 +1,7 @@
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cc.crochethk.compilerbau.P2.BinOpExpr;
-import cc.crochethk.compilerbau.P2.IntLit;
+import cc.crochethk.compilerbau.p2.BinOpExpr;
+import cc.crochethk.compilerbau.p2.IntLit;
 
 public class TreeBuilder extends L1BaseListener {
     @Override

@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.P2;
+package cc.crochethk.compilerbau.p2;
 
 public abstract class Node implements Visitable {
     /// The line where the node's token begins in the source file.
