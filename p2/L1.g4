@@ -39,3 +39,6 @@ RPAR: ')';
 BOOLEAN: 'true' | 'false';
 AND: 'and';
 OR: 'or';
+
+WHITESPACE: [ ]+ -> skip;
+//WHITESPACE: [ \t\n\r\f]+ -> skip ;
