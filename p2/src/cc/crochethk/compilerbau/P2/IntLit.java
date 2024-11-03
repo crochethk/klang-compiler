@@ -9,6 +9,10 @@ public class IntLit extends Node {
         this.n = n;
     }
 
+    public int getValue() {
+        return n;
+    }
+
     @Override
     public <R> R accept(Visitor<R> visitor) throws Exception {
         return visitor.visit(this);
