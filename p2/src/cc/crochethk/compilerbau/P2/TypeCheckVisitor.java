@@ -1,7 +1,5 @@
 package cc.crochethk.compilerbau.p2;
 
-import cc.crochethk.compilerbau.p2.BinOpExpr.BinaryOp;
-
 public class TypeCheckVisitor implements Visitor<Void> {
 
     @Override
@@ -27,12 +25,12 @@ public class TypeCheckVisitor implements Visitor<Void> {
         binOpExpr.lhs.accept(this);
         binOpExpr.rhs.accept(this);
 
-        if (BinaryOp.boolOps.contains(binOpExpr.op)) {
+        if (binOpExpr.op.isBoolean()) {
             binOpExpr.theType = "boolean";
             if (!binOpExpr.lhs.theType.equals("boolean") || !binOpExpr.rhs.theType.equals("boolean")) {
                 reportError(binOpExpr, binOpExpr.lhs.theType + " " + binOpExpr.op + " " + binOpExpr.rhs.theType);
             }
-        } else if (BinaryOp.arithOps.contains(binOpExpr.op)) {
+        } else if (binOpExpr.op.isArithmetic()) {
             binOpExpr.theType = "int";
             if (!binOpExpr.lhs.theType.equals("int") || !binOpExpr.rhs.theType.equals("int")) {
                 reportError(binOpExpr, binOpExpr.lhs.theType + " " + binOpExpr.op + " " + binOpExpr.rhs.theType);

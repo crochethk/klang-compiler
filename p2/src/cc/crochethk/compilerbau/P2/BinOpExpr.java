@@ -1,22 +1,36 @@
 package cc.crochethk.compilerbau.p2;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public class BinOpExpr extends Node {
     BinaryOp op;
     Node lhs, rhs;
 
     public enum BinaryOp {
-        add, sub, mult, div, mod, // Arithmetic
-        eq, neq, gt, gteq, lt, lteq, and, or; // Boolean
+        // Arithmetic
+        add("+"), sub("-"), mult("*"), div("/"), mod("%"),
+        // Boolean
+        eq("=="), neq("!="), gt(">"), gteq(">="), lt("<"), lteq("<="),
+        and("and"), or("or");
 
-        static final List<BinaryOp> boolOps = Collections
-                .unmodifiableList(Arrays.asList(eq, neq, gt, gteq, lt, lteq, and, or));
+        String lexeme;
 
-        static final List<BinaryOp> arithOps = Collections
-                .unmodifiableList(Arrays.asList(add, mult, sub, div, mod));
+        BinaryOp(String lexeme) {
+            this.lexeme = lexeme;
+        }
+
+        public String toLexeme() {
+            return lexeme;
+        }
+
+        public boolean isBoolean() {
+            return !isArithmetic();
+        }
+
+        public boolean isArithmetic() {
+            return switch (this) {
+                case add, div, mod, mult, sub -> true;
+                case eq, neq, gt, gteq, lt, lteq, and, or -> false;
+            };
+        }
     }
 
     public BinOpExpr(int line, int col, Node lhs, BinaryOp op, Node rhs) {
