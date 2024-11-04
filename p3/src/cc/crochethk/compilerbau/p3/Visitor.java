@@ -7,6 +7,7 @@ import cc.crochethk.compilerbau.p3.ast.FunDef;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Node;
 import cc.crochethk.compilerbau.p3.ast.Prog;
+import cc.crochethk.compilerbau.p3.ast.ReturnStat;
 import cc.crochethk.compilerbau.p3.ast.Var;
 
 public interface Visitor<R> {
@@ -33,4 +34,6 @@ public interface Visitor<R> {
     R visit(Var var);
 
     R visit(FunCall funCall);
+
+    R visit(ReturnStat returnStat);
 }

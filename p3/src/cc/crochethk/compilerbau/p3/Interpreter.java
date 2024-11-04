@@ -6,6 +6,7 @@ import cc.crochethk.compilerbau.p3.ast.FunCall;
 import cc.crochethk.compilerbau.p3.ast.FunDef;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Prog;
+import cc.crochethk.compilerbau.p3.ast.ReturnStat;
 import cc.crochethk.compilerbau.p3.ast.Var;
 
 public class Interpreter implements Visitor<Long> {
@@ -66,6 +67,12 @@ public class Interpreter implements Visitor<Long> {
 
     @Override
     public Long visit(FunCall funCall) {
+        // TODO Auto-generated method stub
+        return 0L;
+    }
+
+    @Override
+    public Long visit(ReturnStat returnStat) {
         // TODO Auto-generated method stub
         return 0L;
     }

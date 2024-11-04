@@ -10,6 +10,7 @@ import cc.crochethk.compilerbau.p3.ast.FunCall;
 import cc.crochethk.compilerbau.p3.ast.FunDef;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Prog;
+import cc.crochethk.compilerbau.p3.ast.ReturnStat;
 import cc.crochethk.compilerbau.p3.ast.Var;
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
 
@@ -71,7 +72,8 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(FunCall funCall) {
-        // TODO Auto-generated method stub
+    @Override
+    public Writer visit(ReturnStat returnStat) {
         return writer;
     }
 
