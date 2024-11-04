@@ -18,13 +18,13 @@ public class PrettyPrinter implements Visitor<StringBuilder> {
 
     @Override
     public StringBuilder visit(IntLit intLit) throws Exception {
-        strbuf.append(intLit.getValue());
+        strbuf.append(intLit.value);
         return strbuf;
     }
 
     @Override
     public StringBuilder visit(BooleanLit booleanLit) throws Exception {
-        var lex = booleanLit.getValue() ? "true" : "false";
+        var lex = booleanLit.value ? "true" : "false";
         strbuf.append(lex);
         return strbuf;
     }

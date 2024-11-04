@@ -11,10 +11,6 @@ public class BooleanLit extends Node {
         this.value = value;
     }
 
-    public boolean getValue() {
-        return value;
-    }
-
     // Boilerplate code for the Visitor pattern
     @Override
     public <R> R accept(Visitor<R> visitor) throws Exception {

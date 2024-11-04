@@ -8,7 +8,7 @@ public class Interpreter implements Visitor<Long> {
 
     @Override
     public Long visit(IntLit intLit) throws Exception {
-        return intLit.n;
+        return intLit.value;
     }
 
     @Override
