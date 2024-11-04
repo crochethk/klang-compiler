@@ -1,10 +1,10 @@
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cc.crochethk.compilerbau.p3.BinOpExpr;
-import cc.crochethk.compilerbau.p3.BooleanLit;
-import cc.crochethk.compilerbau.p3.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.p3.IntLit;
-import cc.crochethk.compilerbau.p3.Node;
+import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
+import cc.crochethk.compilerbau.p3.ast.BooleanLit;
+import cc.crochethk.compilerbau.p3.ast.IntLit;
+import cc.crochethk.compilerbau.p3.ast.Node;
+import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
 
 public class TreeBuilder extends L1BaseListener {
     @Override

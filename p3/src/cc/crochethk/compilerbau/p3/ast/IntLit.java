@@ -1,8 +1,10 @@
-package cc.crochethk.compilerbau.p3;
+package cc.crochethk.compilerbau.p3.ast;
+
+import cc.crochethk.compilerbau.p3.Visitor;
 
 public class IntLit extends Node {
     /// The value of the integer literal
-    int n;
+    public int n;
 
     public IntLit(int line, int col, int n) {
         super(line, col);

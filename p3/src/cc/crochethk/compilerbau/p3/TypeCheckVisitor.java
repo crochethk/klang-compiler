@@ -1,5 +1,10 @@
 package cc.crochethk.compilerbau.p3;
 
+import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
+import cc.crochethk.compilerbau.p3.ast.BooleanLit;
+import cc.crochethk.compilerbau.p3.ast.IntLit;
+import cc.crochethk.compilerbau.p3.ast.Node;
+
 public class TypeCheckVisitor implements Visitor<Void> {
 
     @Override

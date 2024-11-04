@@ -1,5 +1,10 @@
 package cc.crochethk.compilerbau.p3;
 
+import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
+import cc.crochethk.compilerbau.p3.ast.BooleanLit;
+import cc.crochethk.compilerbau.p3.ast.IntLit;
+import cc.crochethk.compilerbau.p3.ast.Node;
+
 public interface Visitor<R> {
     default void reportError(Node node, String s) {
         System.err.println("(L" + node.line + ":" + node.column + ") " + s);

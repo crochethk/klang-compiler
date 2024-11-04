@@ -1,6 +1,9 @@
 package cc.crochethk.compilerbau.p3;
 
-import cc.crochethk.compilerbau.p3.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
+import cc.crochethk.compilerbau.p3.ast.BooleanLit;
+import cc.crochethk.compilerbau.p3.ast.IntLit;
+import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
 
 public class PrettyPrintVisitor implements Visitor<StringBuilder> {
     StringBuilder strbuf;

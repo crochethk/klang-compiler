@@ -1,13 +1,15 @@
-package cc.crochethk.compilerbau.p3;
+package cc.crochethk.compilerbau.p3.ast;
+
+import cc.crochethk.compilerbau.p3.Visitable;
 
 public abstract class Node implements Visitable {
     /// The line where the node's token begins in the source file.
-    int line;
+    public int line;
     /// The column where the node's token begins in the source file.
-    int column;
+    public int column;
 
     /// The result type of the node.
-    String theType = null;
+    public String theType = null;
 
     Node(int line, int column) {
         this.line = line;

@@ -1,8 +1,10 @@
-package cc.crochethk.compilerbau.p3;
+package cc.crochethk.compilerbau.p3.ast;
+
+import cc.crochethk.compilerbau.p3.Visitor;
 
 public class BooleanLit extends Node {
     /// The value of the boolean literal
-    boolean value;
+    public boolean value;
 
     public BooleanLit(int line, int col, boolean value) {
         super(line, col);

@@ -1,8 +1,11 @@
-package cc.crochethk.compilerbau.p3;
+package cc.crochethk.compilerbau.p3.ast;
+
+import cc.crochethk.compilerbau.p3.Visitor;
 
 public class BinOpExpr extends Node {
-    BinaryOp op;
-    Node lhs, rhs;
+    public BinaryOp op;
+    public Node lhs;
+    public Node rhs;
 
     public enum BinaryOp {
         // Arithmetic

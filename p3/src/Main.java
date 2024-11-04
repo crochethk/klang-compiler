@@ -13,9 +13,9 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cc.crochethk.compilerbau.p3.InterpretVisitor;
-import cc.crochethk.compilerbau.p3.Node;
 import cc.crochethk.compilerbau.p3.PrettyPrintVisitor;
 import cc.crochethk.compilerbau.p3.TypeCheckVisitor;
+import cc.crochethk.compilerbau.p3.ast.Node;
 
 public class Main {
     static boolean SHOW_AST_VISUALIZATION = false;

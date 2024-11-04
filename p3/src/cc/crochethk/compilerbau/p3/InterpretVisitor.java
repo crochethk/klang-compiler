@@ -1,5 +1,9 @@
 package cc.crochethk.compilerbau.p3;
 
+import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
+import cc.crochethk.compilerbau.p3.ast.BooleanLit;
+import cc.crochethk.compilerbau.p3.ast.IntLit;
+
 public class InterpretVisitor implements Visitor<Integer> {
 
     @Override
