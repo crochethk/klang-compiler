@@ -1,10 +1,14 @@
+import java.util.List;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
+import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.p3.ast.BooleanLit;
+import cc.crochethk.compilerbau.p3.ast.FunDef;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Node;
-import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.p3.ast.Prog;
 
 public class TreeBuilder extends L1BaseListener {
     @Override
@@ -71,7 +75,9 @@ public class TreeBuilder extends L1BaseListener {
 
     @Override
     public void exitStart(L1Parser.StartContext ctx) {
-        ctx.result = ctx.expr().result;
+        var srcPos = getSourcePos(ctx);
+        List<FunDef> defs = ctx.definition().stream().map(d -> d.result).toList();
+        ctx.result = new Prog(srcPos.line(), srcPos.column(), defs);
     }
 
     //
