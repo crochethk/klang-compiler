@@ -12,7 +12,7 @@ public class BinOpExpr extends Node {
         add("+"), sub("-"), mult("*"), div("/"), mod("%"), pow("**"),
         // Boolean
         eq("=="), neq("!="), gt(">"), gteq(">="), lt("<"), lteq("<="),
-        and("and"), or("or");
+        and("&&"), or("||");
 
         String lexeme;
 

@@ -25,8 +25,8 @@ public class Main {
         String input_code;
 
         // some easy to swap sample expressions
-        input_code = "(true or false) and (1+2)"; // type error example
-        input_code = "(true or false) and true"; // good example
+        input_code = "(true || false) && (1+2)"; // type error example
+        input_code = "(true || false) && true"; // good example
         input_code = "(17+4)*2*1"; // good example
         input_code = "17+4*2*1"; // good example
         input_code = "(17+4**(2*3-4)+7)*2*1"; // pow example

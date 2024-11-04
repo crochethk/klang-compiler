@@ -37,8 +37,7 @@ LPAR: '(';
 RPAR: ')';
 
 BOOLEAN: 'true' | 'false';
-AND: 'and';
-OR: 'or';
+AND: '&&';
+OR: '||';
 
-WHITESPACE: [ ]+ -> skip;
-//WHITESPACE: [ \t\n\r\f]+ -> skip ;
+WHITESPACE: [ \t\n\r]+ -> skip;
