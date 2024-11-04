@@ -4,14 +4,14 @@ import cc.crochethk.compilerbau.p3.Visitor;
 
 public class IntLit extends Node {
     /// The value of the integer literal
-    public int n;
+    public long n;
 
     public IntLit(int line, int col, int n) {
         super(line, col);
         this.n = n;
     }
 
-    public int getValue() {
+    public long getValue() {
         return n;
     }
 

@@ -4,29 +4,29 @@ import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
 import cc.crochethk.compilerbau.p3.ast.BooleanLit;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 
-public class InterpretVisitor implements Visitor<Integer> {
+public class InterpretVisitor implements Visitor<Long> {
 
     @Override
-    public Integer visit(IntLit intLit) throws Exception {
+    public Long visit(IntLit intLit) throws Exception {
         return intLit.n;
     }
 
     @Override
-    public Integer visit(BooleanLit booleanLit) throws Exception {
-        return booleanLit.value ? 1 : 0;
+    public Long visit(BooleanLit booleanLit) throws Exception {
+        return booleanLit.value ? 1L : 0L;
     }
 
     @Override
-    public Integer visit(BinOpExpr binOpExpr) throws Exception {
-        int lhs = binOpExpr.lhs.accept(this);
-        int rhs = binOpExpr.rhs.accept(this);
+    public Long visit(BinOpExpr binOpExpr) throws Exception {
+        var lhs = binOpExpr.lhs.accept(this);
+        var rhs = binOpExpr.rhs.accept(this);
 
         return switch (binOpExpr.op) {
             case add -> lhs + rhs;
             case sub -> lhs - rhs;
             case mult -> lhs * rhs;
             case div -> lhs / rhs;
-            case pow -> (int) Math.pow(lhs, rhs);
+            case pow -> (long) Math.pow(lhs, rhs);
             case and -> lhs & rhs;
             case or -> lhs | rhs;
 
