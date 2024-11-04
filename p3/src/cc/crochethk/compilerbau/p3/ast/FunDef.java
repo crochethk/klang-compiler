@@ -1,0 +1,29 @@
+package cc.crochethk.compilerbau.p3.ast;
+
+import java.util.List;
+
+import cc.crochethk.compilerbau.p3.Visitor;
+
+public class FunDef extends Node {
+    public record Parameter(String name, String type) {
+    }
+
+    public String name;
+    public String resultType;
+    public List<Parameter> params;
+    public Node statement;
+
+    public FunDef(int line, int column, String name, List<Parameter> params,
+            String resultType, Node statement) {
+        super(line, column);
+        this.name = name;
+        this.params = params;
+        this.resultType = resultType;
+        this.statement = statement;
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) throws Exception {
+        return visitor.visit(this);
+    }
+}
