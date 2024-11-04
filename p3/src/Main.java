@@ -25,12 +25,21 @@ public class Main {
         String input_code;
 
         // some easy to swap sample expressions
-        input_code = "(true || false) && (1+2)"; // type error example
-        input_code = "(true || false) && true"; // good example
-        input_code = "(17+4)*2*1"; // good example
-        input_code = "17+4*2*1"; // good example
-        input_code = "(17+4**(2*3-4)+7)*2*1"; // pow example
-        input_code = "//hello\n// world\r\n(17+4**(2*3-4)+7)*2*1"; // linecomments
+        // input_code = "(true || false) && (1+2)"; // type error example
+        // input_code = "(true || false) && true"; // good example
+        // input_code = "(17+4)*2*1"; // good example
+        // input_code = "17+4*2*1"; // good example
+        // input_code = "(17+4**(2*3-4)+7)*2*1"; // pow example
+        // input_code = "//hello\n// world\r\n(17+4**(2*3-4)+7)*2*1"; // linecomments
+        input_code = """
+                //Erster Test
+                fn f(x:long):long{
+                  return (17   +4)*2*1+x
+                }
+
+                fun g(y:long):long {return y+f(y+1)}
+
+                """;
 
         // ----- Further work on the custom-build AST
         Node rootNode = buildNodeTree(input_code, SHOW_AST_VISUALIZATION);

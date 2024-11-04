@@ -38,43 +38,75 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(BinOpExpr binOpExpr) {
-        writer.append("(");
+        write("(");
         var _ = binOpExpr.lhs.accept(this);
 
         if (binOpExpr.op != BinaryOp.pow)
-            writer.append(" ");
-        writer.append(binOpExpr.op.toLexeme());
+            write(" ");
+        write(binOpExpr.op.toLexeme());
         if (binOpExpr.op != BinaryOp.pow)
-            writer.append(" ");
+            write(" ");
 
         var _ = binOpExpr.rhs.accept(this);
-        writer.append(")");
+        write(")");
         return writer;
     }
 
     @Override
     public Writer visit(FunDef funDef) {
-        // TODO Auto-generated method stub
-        return writer;
+        write(FunDef.KW_FUN_LEX);
+        write(" ");
+        write(funDef.name);
+
+        write("(");
+        if (funDef.params != null) {
+            for (int i = 0; i < funDef.params.size(); i++) {
+                var p = funDef.params.get(i);
+                write(p.name());
+                write(" : ");
+                write(p.type());
+                if (i < funDef.params.size() - 1)
+                    write(", ");
+            }
+        }
+        write(") : ");
+        write(funDef.resultType);
+        write(" {");
+        var _ = funDef.statement.accept(this);
+        return write("}");
     }
 
     @Override
     public Writer visit(Prog prog) {
-        // TODO Auto-generated method stub
+        for (var def : prog.funDefs) {
+            var _ = def.accept(this);
+        }
         return writer;
     }
 
     @Override
     public Writer visit(Var var) {
-        // TODO Auto-generated method stub
-        return writer;
+        return write(var.name);
     }
 
     @Override
     public Writer visit(FunCall funCall) {
+        write(funCall.name);
+        write("(");
+        if (funCall.args != null) {
+            for (int i = 0; i < funCall.args.size(); i++) {
+                var _ = funCall.args.get(i).accept(this);
+                if (i < funCall.args.size() - 1)
+                    write(", ");
+            }
+        }
+        return write(")");
+    }
+
     @Override
     public Writer visit(ReturnStat returnStat) {
-        return writer;
+        write("return ");
+        return returnStat.expr.accept(this);
     }
 
     private Writer write(String s) {

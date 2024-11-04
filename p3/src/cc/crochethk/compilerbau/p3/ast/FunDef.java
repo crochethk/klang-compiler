@@ -5,6 +5,8 @@ import java.util.List;
 import cc.crochethk.compilerbau.p3.Visitor;
 
 public class FunDef extends Node {
+    public static final String KW_FUN_LEX = "fn";
+
     public record Parameter(String name, String type) {
     }
 
