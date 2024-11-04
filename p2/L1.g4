@@ -11,7 +11,7 @@ start
 
 expr
 	returns[Node result]:
-	// | expr POW expr
+	| expr POW expr
 	| expr (MULT | DIV) expr
 	| expr (ADD | SUB) expr
 	| expr AND expr
@@ -30,7 +30,7 @@ bool
 NUMBER: [0-9]+;
 ADD: '+';
 SUB: '-';
-// POW: '**';
+POW: '**';
 MULT: '*';
 DIV: '/';
 LPAR: '(';

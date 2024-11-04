@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.p2;
 
+import cc.crochethk.compilerbau.p2.BinOpExpr.BinaryOp;
+
 public class PrettyPrintVisitor implements Visitor<StringBuilder> {
     StringBuilder strbuf;
 
@@ -28,9 +30,13 @@ public class PrettyPrintVisitor implements Visitor<StringBuilder> {
     public StringBuilder visit(BinOpExpr binOpExpr) throws Exception {
         strbuf.append("(");
         var _ = binOpExpr.lhs.accept(this);
-        strbuf.append(" ");
+
+        if (binOpExpr.op != BinaryOp.pow)
+            strbuf.append(" ");
         strbuf.append(binOpExpr.op.toLexeme());
-        strbuf.append(" ");
+        if (binOpExpr.op != BinaryOp.pow)
+            strbuf.append(" ");
+
         var _ = binOpExpr.rhs.accept(this);
         strbuf.append(")");
         return strbuf;

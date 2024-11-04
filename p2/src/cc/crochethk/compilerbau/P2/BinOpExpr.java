@@ -6,7 +6,7 @@ public class BinOpExpr extends Node {
 
     public enum BinaryOp {
         // Arithmetic
-        add("+"), sub("-"), mult("*"), div("/"), mod("%"),
+        add("+"), sub("-"), mult("*"), div("/"), mod("%"), pow("**"),
         // Boolean
         eq("=="), neq("!="), gt(">"), gteq(">="), lt("<"), lteq("<="),
         and("and"), or("or");
@@ -27,7 +27,7 @@ public class BinOpExpr extends Node {
 
         public boolean isArithmetic() {
             return switch (this) {
-                case add, div, mod, mult, sub -> true;
+                case add, sub, mult, div, mod, pow -> true;
                 case eq, neq, gt, gteq, lt, lteq, and, or -> false;
             };
         }

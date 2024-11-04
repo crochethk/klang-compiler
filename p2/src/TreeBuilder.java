@@ -36,10 +36,9 @@ public class TreeBuilder extends L1BaseListener {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.add);
         } else if (ctx.SUB() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.sub);
+        } else if (ctx.POW() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.pow);
         }
-        // } else if (ctx.POW() != null) {
-        //     ctx.result = parseBinOpExpr(ctx, BinaryOp.pow);
-
         // parentheses
         else if (ctx.LPAR() != null && ctx.RPAR() != null) {
             ctx.result = ctx.expr(0).result;

@@ -22,6 +22,7 @@ public class InterpretVisitor implements Visitor<Integer> {
             case sub -> lhs - rhs;
             case mult -> lhs * rhs;
             case div -> lhs / rhs;
+            case pow -> (int) Math.pow(lhs, rhs);
             case and -> lhs & rhs;
             case or -> lhs | rhs;
 

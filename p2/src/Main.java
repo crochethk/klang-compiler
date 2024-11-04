@@ -29,6 +29,7 @@ public class Main {
         input_code = "(true or false) and true"; // good example
         input_code = "(17+4)*2*1"; // good example
         input_code = "17+4*2*1"; // good example
+        input_code = "(17+4**(2*3-4)+7)*2*1"; // pow example
 
         // ----- Further work on the custom-build AST
         Node rootNode = buildNodeTree(input_code, SHOW_AST_VISUALIZATION);
@@ -57,10 +58,11 @@ public class Main {
         /**
          * Interpret the code
          */
-        var interpreter = new InterpretVisitor();
-        var result = rootNode.accept(interpreter);
+        var result = rootNode.accept(new InterpretVisitor());
         System.out.println("--- Interpreter:");
         System.out.println("Result: " + result);
+        var result2 = rootNode2.accept(new InterpretVisitor());
+        System.out.println("Result reparsed: " + result2);
     }
 
     private static Node buildNodeTree(String input_code, boolean show_antlr_ast_visualization) throws IOException {
