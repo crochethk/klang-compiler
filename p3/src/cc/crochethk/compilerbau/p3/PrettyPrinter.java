@@ -1,5 +1,9 @@
 package cc.crochethk.compilerbau.p3;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
 import cc.crochethk.compilerbau.p3.ast.BooleanLit;
 import cc.crochethk.compilerbau.p3.ast.FunCall;
@@ -9,67 +13,74 @@ import cc.crochethk.compilerbau.p3.ast.Prog;
 import cc.crochethk.compilerbau.p3.ast.Var;
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
 
-public class PrettyPrinter implements Visitor<StringBuilder> {
-    StringBuilder strbuf;
+public class PrettyPrinter implements Visitor<Writer> {
+    Writer writer;
 
-    public PrettyPrinter(StringBuilder strbuf) {
-        this.strbuf = strbuf;
+    public PrettyPrinter(Writer out) {
+        this.writer = out;
     }
 
     public PrettyPrinter() {
-        this(new StringBuilder());
+        this(new StringWriter());
     }
 
     @Override
-    public StringBuilder visit(IntLit intLit) throws Exception {
-        strbuf.append(intLit.value);
-        return strbuf;
+    public Writer visit(IntLit intLit) {
+        return write(Long.toString(intLit.value));
     }
 
     @Override
-    public StringBuilder visit(BooleanLit booleanLit) throws Exception {
-        var lex = booleanLit.value ? "true" : "false";
-        strbuf.append(lex);
-        return strbuf;
+    public Writer visit(BooleanLit booleanLit) {
+        var lex = booleanLit.value ? BooleanLit.TRUE_LEX : BooleanLit.FALSE_LEX;
+        return write(lex);
     }
 
     @Override
-    public StringBuilder visit(BinOpExpr binOpExpr) throws Exception {
-        strbuf.append("(");
+    public Writer visit(BinOpExpr binOpExpr) throws Exception {
+        writer.append("(");
         var _ = binOpExpr.lhs.accept(this);
 
         if (binOpExpr.op != BinaryOp.pow)
-            strbuf.append(" ");
-        strbuf.append(binOpExpr.op.toLexeme());
+            writer.append(" ");
+        writer.append(binOpExpr.op.toLexeme());
         if (binOpExpr.op != BinaryOp.pow)
-            strbuf.append(" ");
+            writer.append(" ");
 
         var _ = binOpExpr.rhs.accept(this);
-        strbuf.append(")");
-        return strbuf;
+        writer.append(")");
+        return writer;
     }
 
     @Override
-    public StringBuilder visit(FunDef funDef) {
+    public Writer visit(FunDef funDef) {
         // TODO Auto-generated method stub
-        return strbuf;
+        return writer;
     }
 
     @Override
-    public StringBuilder visit(Prog prog) {
+    public Writer visit(Prog prog) {
         // TODO Auto-generated method stub
-        return strbuf;
+        return writer;
     }
 
     @Override
-    public StringBuilder visit(Var var) {
+    public Writer visit(Var var) {
         // TODO Auto-generated method stub
-        return strbuf;
+        return writer;
     }
 
     @Override
-    public StringBuilder visit(FunCall funCall) {
+    public Writer visit(FunCall funCall) {
         // TODO Auto-generated method stub
-        return strbuf;
+        return writer;
+    }
+
+    private Writer write(String s) {
+        try {
+            writer.write(s);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return writer;
     }
 }

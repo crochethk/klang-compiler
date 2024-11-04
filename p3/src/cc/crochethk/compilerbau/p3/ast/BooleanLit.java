@@ -3,6 +3,9 @@ package cc.crochethk.compilerbau.p3.ast;
 import cc.crochethk.compilerbau.p3.Visitor;
 
 public class BooleanLit extends Node {
+    public static final String TRUE_LEX = "true";
+    public static final String FALSE_LEX = "false";
+
     /// The value of the boolean literal
     public boolean value;
 
