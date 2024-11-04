@@ -12,9 +12,9 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import cc.crochethk.compilerbau.p3.InterpretVisitor;
-import cc.crochethk.compilerbau.p3.PrettyPrintVisitor;
-import cc.crochethk.compilerbau.p3.TypeCheckVisitor;
+import cc.crochethk.compilerbau.p3.Interpreter;
+import cc.crochethk.compilerbau.p3.PrettyPrinter;
+import cc.crochethk.compilerbau.p3.TypeChecker;
 import cc.crochethk.compilerbau.p3.ast.Node;
 
 public class Main {
@@ -37,13 +37,13 @@ public class Main {
         /**
          * Type checking
          */
-        var typeChecker = new TypeCheckVisitor();
+        var typeChecker = new TypeChecker();
         rootNode.accept(typeChecker);
 
         /**
          * Pretty Print the built AST
          */
-        var stringifiedNodeTree = rootNode.accept(new PrettyPrintVisitor()).toString();
+        var stringifiedNodeTree = rootNode.accept(new PrettyPrinter()).toString();
         System.out.println("--- Pretty Printer:");
         var format = "%-28s : %s\n";
         System.out.printf(format, "Original Code", input_code);
@@ -51,17 +51,17 @@ public class Main {
 
         // Validate semantics: Re-parse the stringified AST
         var rootNode2 = buildNodeTree(stringifiedNodeTree);
-        var restringifiedNodeTree = rootNode2.accept(new PrettyPrintVisitor()).toString();
+        var restringifiedNodeTree = rootNode2.accept(new PrettyPrinter()).toString();
         System.out.printf(format, "Reparsed, prettyprinted AST", restringifiedNodeTree);
         System.out.println();
 
         /**
          * Interpret the code
          */
-        var result = rootNode.accept(new InterpretVisitor());
+        var result = rootNode.accept(new Interpreter());
         System.out.println("--- Interpreter:");
         System.out.println("Result: " + result);
-        var result2 = rootNode2.accept(new InterpretVisitor());
+        var result2 = rootNode2.accept(new Interpreter());
         System.out.println("Result reparsed: " + result2);
     }
 

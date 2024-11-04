@@ -5,14 +5,14 @@ import cc.crochethk.compilerbau.p3.ast.BooleanLit;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
 
-public class PrettyPrintVisitor implements Visitor<StringBuilder> {
+public class PrettyPrinter implements Visitor<StringBuilder> {
     StringBuilder strbuf;
 
-    public PrettyPrintVisitor(StringBuilder strbuf) {
+    public PrettyPrinter(StringBuilder strbuf) {
         this.strbuf = strbuf;
     }
 
-    public PrettyPrintVisitor() {
+    public PrettyPrinter() {
         this(new StringBuilder());
     }
 

@@ -5,7 +5,7 @@ import cc.crochethk.compilerbau.p3.ast.BooleanLit;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Node;
 
-public class TypeCheckVisitor implements Visitor<Void> {
+public class TypeChecker implements Visitor<Void> {
 
     @Override
     public void reportError(Node node, String msg) {

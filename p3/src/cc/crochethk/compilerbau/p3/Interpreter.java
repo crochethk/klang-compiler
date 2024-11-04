@@ -4,7 +4,7 @@ import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
 import cc.crochethk.compilerbau.p3.ast.BooleanLit;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 
-public class InterpretVisitor implements Visitor<Long> {
+public class Interpreter implements Visitor<Long> {
 
     @Override
     public Long visit(IntLit intLit) throws Exception {
