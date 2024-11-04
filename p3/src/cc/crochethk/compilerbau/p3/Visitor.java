@@ -20,11 +20,11 @@ public interface Visitor<R> {
     * A visitor encapsulates all the algorithmic logic for a procedure on the tree.
     */
     // void visit(Visitable element);
-    R visit(IntLit intLit) throws Exception;
+    R visit(IntLit intLit);
 
-    R visit(BooleanLit booleanLit) throws Exception;
+    R visit(BooleanLit booleanLit);
 
-    R visit(BinOpExpr binOpExpr) throws Exception;
+    R visit(BinOpExpr binOpExpr);
 
     R visit(FunDef funDef);
 

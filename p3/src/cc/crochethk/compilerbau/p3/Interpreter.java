@@ -11,17 +11,17 @@ import cc.crochethk.compilerbau.p3.ast.Var;
 public class Interpreter implements Visitor<Long> {
 
     @Override
-    public Long visit(IntLit intLit) throws Exception {
+    public Long visit(IntLit intLit) {
         return intLit.value;
     }
 
     @Override
-    public Long visit(BooleanLit booleanLit) throws Exception {
+    public Long visit(BooleanLit booleanLit) {
         return booleanLit.value ? 1L : 0L;
     }
 
     @Override
-    public Long visit(BinOpExpr binOpExpr) throws Exception {
+    public Long visit(BinOpExpr binOpExpr) {
         var lhs = binOpExpr.lhs.accept(this);
         var rhs = binOpExpr.rhs.accept(this);
 

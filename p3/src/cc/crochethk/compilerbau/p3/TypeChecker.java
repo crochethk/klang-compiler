@@ -17,19 +17,19 @@ public class TypeChecker implements Visitor<Void> {
     }
 
     @Override
-    public Void visit(IntLit intLit) throws Exception {
+    public Void visit(IntLit intLit) {
         intLit.theType = "int";
         return null;
     }
 
     @Override
-    public Void visit(BooleanLit booleanLit) throws Exception {
+    public Void visit(BooleanLit booleanLit) {
         booleanLit.theType = "boolean";
         return null;
     }
 
     @Override
-    public Void visit(BinOpExpr binOpExpr) throws Exception {
+    public Void visit(BinOpExpr binOpExpr) {
         // Compute type of the operands
         binOpExpr.lhs.accept(this);
         binOpExpr.rhs.accept(this);

@@ -36,7 +36,7 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
-    public Writer visit(BinOpExpr binOpExpr) throws Exception {
+    public Writer visit(BinOpExpr binOpExpr) {
         writer.append("(");
         var _ = binOpExpr.lhs.accept(this);
 

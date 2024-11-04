@@ -44,7 +44,7 @@ public class BinOpExpr extends Node {
     }
 
     @Override
-    public <R> R accept(Visitor<R> visitor) throws Exception {
+    public <R> R accept(Visitor<R> visitor) {
         return visitor.visit(this);
     }
 }
