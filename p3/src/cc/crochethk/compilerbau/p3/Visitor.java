@@ -2,8 +2,12 @@ package cc.crochethk.compilerbau.p3;
 
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
 import cc.crochethk.compilerbau.p3.ast.BooleanLit;
+import cc.crochethk.compilerbau.p3.ast.FunCall;
+import cc.crochethk.compilerbau.p3.ast.FunDef;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Node;
+import cc.crochethk.compilerbau.p3.ast.Prog;
+import cc.crochethk.compilerbau.p3.ast.Var;
 
 public interface Visitor<R> {
     default void reportError(Node node, String s) {
@@ -21,4 +25,12 @@ public interface Visitor<R> {
     R visit(BooleanLit booleanLit) throws Exception;
 
     R visit(BinOpExpr binOpExpr) throws Exception;
+
+    R visit(FunDef funDef);
+
+    R visit(Prog prog);
+
+    R visit(Var var);
+
+    R visit(FunCall funCall);
 }
