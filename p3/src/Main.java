@@ -30,6 +30,7 @@ public class Main {
         input_code = "(17+4)*2*1"; // good example
         input_code = "17+4*2*1"; // good example
         input_code = "(17+4**(2*3-4)+7)*2*1"; // pow example
+        input_code = "//hello\n// world\r\n(17+4**(2*3-4)+7)*2*1"; // linecomments
 
         // ----- Further work on the custom-build AST
         Node rootNode = buildNodeTree(input_code, SHOW_AST_VISUALIZATION);
@@ -46,7 +47,7 @@ public class Main {
         var stringifiedNodeTree = rootNode.accept(new PrettyPrinter()).toString();
         System.out.println("--- Pretty Printer:");
         var format = "%-28s : %s\n";
-        System.out.printf(format, "Original Code", input_code);
+        System.out.printf(format, "Original Code", "\n" + input_code);
         System.out.printf(format, "Prettyprinted AST", stringifiedNodeTree);
 
         // Validate semantics: Re-parse the stringified AST

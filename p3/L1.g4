@@ -3,7 +3,7 @@ grammar L1;
 // Creates import of `Node` type in the generated java source,
 // so that we can use it in the parser rules without further problems.
 @parser::header {
-    import cc.crochethk.compilerbau.p3.Node;
+    import cc.crochethk.compilerbau.p3.ast.Node;
 }
 
 start
@@ -40,4 +40,5 @@ BOOLEAN: 'true' | 'false';
 AND: '&&';
 OR: '||';
 
+LINE_COMMENT: '//' .*? '\r'? '\n' -> skip;
 WHITESPACE: [ \t\n\r]+ -> skip;
