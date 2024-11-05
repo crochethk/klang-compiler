@@ -5,10 +5,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.p3.ast.BooleanLit;
+import cc.crochethk.compilerbau.p3.ast.FunCall;
 import cc.crochethk.compilerbau.p3.ast.FunDef;
+import cc.crochethk.compilerbau.p3.ast.FunDef.Parameter;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Node;
 import cc.crochethk.compilerbau.p3.ast.Prog;
+import cc.crochethk.compilerbau.p3.ast.ReturnStat;
+import cc.crochethk.compilerbau.p3.ast.Var;
 
 public class TreeBuilder extends L1BaseListener {
     @Override
@@ -28,6 +32,10 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    // On "EXIT": if a expr type matched, than this method is executed AFTER all 
+    // components of the matched rule where already parsed. This means, we can safely
+    // assume rule components have a result and we dont have to care about computing
+    // it first.
     public void exitExpr(L1Parser.ExprContext ctx) {
         // integer
         if (ctx.zahl() != null) {
@@ -67,9 +75,30 @@ public class TreeBuilder extends L1BaseListener {
             //     ctx.result = parseBinOpExpr(ctx, BinaryOp.lt);
             // } else if (ctx.LTEQ() != null) {
             //     ctx.result = parseBinOpExpr(ctx, BinaryOp.lteq);
+        } else if (ctx.varOrFunCall() != null) {
+            ctx.result = ctx.varOrFunCall().result;
         } else {
             var srcPos = getSourcePos(ctx);
-            throw new UnsupportedOperationException("Unknown rule '" + ctx.getText() + "' at " + srcPos);
+            throw new UnsupportedOperationException(
+                    "Unhandled `expr` alternative  '" + ctx.getText() + "' at " + srcPos);
+        }
+    }
+
+    @Override
+    public void exitVarOrFunCall(L1Parser.VarOrFunCallContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        if (ctx.LPAR() != null) {
+            // function call
+            var args = ctx.expr() != null
+                    ? ctx.expr().stream().map(expr -> expr.result).toList()
+                    : null;
+            ctx.result = new FunCall(srcPos.line(), srcPos.column(), ctx.IDENT().getText(), args);
+        } else if (ctx.IDENT() != null && ctx.LPAR() == null) {
+            // variable access
+            ctx.result = new Var(srcPos.line(), srcPos.column(), ctx.IDENT().getText());
+        } else {
+            throw new UnsupportedOperationException(
+                    "Unhandled `varOrFunCall` alternative '" + ctx.getText() + "' at " + srcPos);
         }
     }
 
