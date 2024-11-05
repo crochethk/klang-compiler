@@ -31,13 +31,14 @@ public class Main {
         // input_code = "17+4*2*1"; // good example
         // input_code = "(17+4**(2*3-4)+7)*2*1"; // pow example
         // input_code = "//hello\n// world\r\n(17+4**(2*3-4)+7)*2*1"; // linecomments
+
         input_code = """
                 //Erster Test
                 fn f(x:long):long{
                   return (17   +4)*2*1+x
                 }
 
-                fun g(y:long):long {return y+f(y+1)}
+                fn g(y:long):long {return y+f(y+1)}
 
                 """;
 

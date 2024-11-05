@@ -7,7 +7,7 @@ grammar L1;
 }
 
 start
-	returns[Prog result]: definition*;
+	returns[Prog result]: definition* EOF;
 
 definition
 	returns[FunDef result]:
