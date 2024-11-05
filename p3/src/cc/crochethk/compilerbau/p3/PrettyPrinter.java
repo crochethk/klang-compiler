@@ -16,6 +16,7 @@ import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
 
 public class PrettyPrinter implements Visitor<Writer> {
     Writer writer;
+    private int indent_level = 0;
 
     public PrettyPrinter(Writer out) {
         this.writer = out;
@@ -54,26 +55,35 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(FunDef funDef) {
+        // Signature
         write(FunDef.KW_FUN_LEX);
         write(" ");
         write(funDef.name);
-
         write("(");
         if (funDef.params != null) {
             for (int i = 0; i < funDef.params.size(); i++) {
                 var p = funDef.params.get(i);
                 write(p.name());
-                write(" : ");
+                write(": ");
                 write(p.type());
                 if (i < funDef.params.size() - 1)
                     write(", ");
             }
         }
-        write(") : ");
+        write("): ");
         write(funDef.resultType);
+
+        // Body
         write(" {");
+        indent_level++;
+        write_indent();
         var _ = funDef.statement.accept(this);
-        return write("}");
+        indent_level--;
+        write_indent();
+        write("}");
+        write_indent();
+        write_indent();
+        return writer;
     }
 
     @Override
@@ -107,6 +117,11 @@ public class PrettyPrinter implements Visitor<Writer> {
     public Writer visit(ReturnStat returnStat) {
         write("return ");
         return returnStat.expr.accept(this);
+    }
+
+    private void write_indent() {
+        write("\n");
+        write("  ".repeat(indent_level));
     }
 
     private Writer write(String s) {
