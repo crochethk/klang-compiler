@@ -85,6 +85,18 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitStatement(L1Parser.StatementContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        if (ctx.KW_RETURN() != null) {
+            var expr = ctx.expr().result;
+            ctx.result = new ReturnStat(srcPos.line(), srcPos.column(), expr);
+        } else {
+            throw new UnsupportedOperationException(
+                    "Unhandled `statement` alternative '" + ctx.getText() + "' at " + srcPos);
+        }
+    }
+
+    @Override
     public void exitVarOrFunCall(L1Parser.VarOrFunCallContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.LPAR() != null) {

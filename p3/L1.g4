@@ -16,7 +16,8 @@ definition
 	LBRACE statement RBRACE; // this coould be replaced by a block rule and node type
 
 statement
-	returns[Node result]: KW_RETURN expr;
+	returns[Node result]:
+	KW_RETURN expr; // simple oneliner for now, could be also "block", "if-else" etc
 
 expr
 	returns[Node result]:
