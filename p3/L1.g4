@@ -11,9 +11,13 @@ start
 
 definition
 	returns[FunDef result]:
-	KW_FUN IDENT LPAR (FUN_PARAM (COMMA FUN_PARAM)*)? RPAR //
+	KW_FUN IDENT LPAR (funParam (COMMA funParam)*)? RPAR //
 	COLON IDENT // return type
-	LBRACE statement RBRACE; // this coould be replaced by a block rule and node type
+	LBRACE funBody RBRACE; // this coould be replaced by a block rule and node type
+
+funParam: IDENT COLON IDENT; // "name : type"
+funBody
+	returns[Node result]: statement;
 
 statement
 	returns[Node result]:
@@ -64,7 +68,6 @@ RBRACE: '}';
 COLON: ':';
 COMMA: ',';
 
-FUN_PARAM: IDENT COLON IDENT; // "name : type"
 KW_FUN: 'fn';
 KW_RETURN: 'return';
 
