@@ -45,6 +45,17 @@ public class Main {
                 }
                 """;
 
+        input_code = """
+                // Ein BOOL beispiel
+                fn not(x:bool):bool {return !x }
+                fn xor(a:bool, b:bool):bool {
+                    return a && not(b) || not(a) && b
+                }
+                fn main():bool {
+                    return xor(not(true), true) // ->true
+                }
+                """;
+
         // ----- Further work on the custom-build AST
         Node rootNode = buildNodeTree(input_code, SHOW_AST_VISUALIZATION);
 

@@ -49,7 +49,6 @@ public class Interpreter implements Visitor<InterpretResult> {
         if (!funDefs.containsKey(prog.entryPoint.name)) {
             throw new RuntimeException("Entrypoint '" + prog.entryPoint.name + "' not found");
         }
-
         return prog.entryPoint.accept(this);
     }
 
@@ -79,5 +78,19 @@ public class Interpreter implements Visitor<InterpretResult> {
     @Override
     public InterpretResult visit(ReturnStat returnStat) {
         return returnStat.expr.accept(this);
+    }
+
+    @Override
+    public InterpretResult visit(UnaryOpExpr unaryOpExpr) {
+        var operand = unaryOpExpr.operand.accept(this);
+
+        if (operand instanceof NumericalResult num) {
+            return num.applyOperator(unaryOpExpr.op);
+        } else if (operand instanceof BoolResult bool) {
+            return bool.applyOperator(unaryOpExpr.op);
+        } else {
+            throw new UnsupportedOperationException(
+                    "Unsupported InterpretResult type: " + operand.getClass());
+        }
     }
 }

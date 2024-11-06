@@ -12,6 +12,8 @@ import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Node;
 import cc.crochethk.compilerbau.p3.ast.Prog;
 import cc.crochethk.compilerbau.p3.ast.ReturnStat;
+import cc.crochethk.compilerbau.p3.ast.UnaryOpExpr;
+import cc.crochethk.compilerbau.p3.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.p3.ast.Var;
 
 public class TreeBuilder extends L1BaseListener {
@@ -63,6 +65,8 @@ public class TreeBuilder extends L1BaseListener {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.and);
         } else if (ctx.OR() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.or);
+        } else if (ctx.NOT() != null) {
+            ctx.result = parseUnaryOpExpr(ctx, UnaryOp.not);
             // } else if (ctx.EQ() != null) {
             //     ctx.result = parseBinOpExpr(ctx, BinaryOp.eq);
             // } else if (ctx.NEQ() != null) {
@@ -157,8 +161,12 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         var lhs = ctx.expr(0).result;
         var rhs = ctx.expr(1).result;
-        var node = new BinOpExpr(
-                srcPos.line(), srcPos.column(), lhs, op, rhs);
-        return node;
+        return new BinOpExpr(srcPos.line(), srcPos.column(), lhs, op, rhs);
+    }
+
+    private Node parseUnaryOpExpr(L1Parser.ExprContext ctx, UnaryOp op) {
+        var srcPos = getSourcePos(ctx);
+        var operand = ctx.expr(0).result;
+        return new UnaryOpExpr(srcPos.line(), srcPos.column(), operand, op);
     }
 }

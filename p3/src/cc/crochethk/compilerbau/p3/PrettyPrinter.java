@@ -11,6 +11,7 @@ import cc.crochethk.compilerbau.p3.ast.FunDef;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Prog;
 import cc.crochethk.compilerbau.p3.ast.ReturnStat;
+import cc.crochethk.compilerbau.p3.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.p3.ast.Var;
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
 
@@ -117,6 +118,21 @@ public class PrettyPrinter implements Visitor<Writer> {
     public Writer visit(ReturnStat returnStat) {
         write("return ");
         return returnStat.expr.accept(this);
+    }
+
+    @Override
+    public Writer visit(UnaryOpExpr unaryOpExpr) {
+        var op_lex = unaryOpExpr.op.toLexeme();
+        return switch (unaryOpExpr.op.side) {
+            case left -> {
+                write(op_lex);
+                yield unaryOpExpr.operand.accept(this);
+            }
+            case right -> {
+                unaryOpExpr.operand.accept(this);
+                yield write(op_lex);
+            }
+        };
     }
 
     private void write_indent() {

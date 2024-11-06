@@ -1,6 +1,7 @@
 package cc.crochethk.compilerbau.p3;
 
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.p3.ast.UnaryOpExpr.UnaryOp;
 
 public interface InterpretResult {
     Object value();
@@ -11,7 +12,8 @@ public interface InterpretResult {
 
     public interface NumericalResult extends InterpretResult {
         InterpretResult applyOperator(NumericalResult rhs, BinaryOp op);
-        // // InterpretResult applyOperator(UnaryOp op);
+
+        InterpretResult applyOperator(UnaryOp op);
 
         public record IntResult(Long value) implements NumericalResult {
             @Override
@@ -31,6 +33,16 @@ public interface InterpretResult {
                     throw new UnsupportedOperationException("Righthandside has unsupported type.");
                 }
             }
+
+            @Override
+            public InterpretResult applyOperator(UnaryOp op) {
+                var result = switch (op) {
+                    case neg -> -this.value();
+                    default -> throw new UnsupportedOperationException(
+                            "Unsupported unary operator: " + op + "(" + op.toLexeme() + ")");
+                };
+                return new IntResult(result);
+            }
         }
     }
 
@@ -47,6 +59,15 @@ public interface InterpretResult {
             } else {
                 throw new UnsupportedOperationException("Righthandside has unsupported type.");
             }
+        }
+
+        public InterpretResult applyOperator(UnaryOp op) {
+            var result = switch (op) {
+                case not -> !this.value();
+                default -> throw new UnsupportedOperationException(
+                        "Unsupported unary operator: " + op + "(" + op.toLexeme() + ")");
+            };
+            return new BoolResult(result);
         }
     }
 

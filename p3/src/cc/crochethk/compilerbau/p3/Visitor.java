@@ -8,6 +8,7 @@ import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Node;
 import cc.crochethk.compilerbau.p3.ast.Prog;
 import cc.crochethk.compilerbau.p3.ast.ReturnStat;
+import cc.crochethk.compilerbau.p3.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.p3.ast.Var;
 
 public interface Visitor<R> {
@@ -36,4 +37,6 @@ public interface Visitor<R> {
     R visit(FunCall funCall);
 
     R visit(ReturnStat returnStat);
+
+    R visit(UnaryOpExpr unaryOpExpr);
 }

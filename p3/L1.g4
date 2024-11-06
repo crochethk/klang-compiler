@@ -28,6 +28,7 @@ expr
 	| expr POW expr
 	| expr (MULT | DIV) expr
 	| expr (ADD | SUB) expr
+	| NOT expr
 	| expr AND expr
 	| expr OR expr
 	| LPAR expr RPAR
@@ -60,6 +61,7 @@ MULT: '*';
 DIV: '/';
 AND: '&&';
 OR: '||';
+NOT: '!';
 
 LPAR: '(';
 RPAR: ')';
