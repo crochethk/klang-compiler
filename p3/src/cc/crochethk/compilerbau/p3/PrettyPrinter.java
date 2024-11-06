@@ -71,7 +71,7 @@ public class PrettyPrinter implements Visitor<Writer> {
             }
         }
         write("): ");
-        write(funDef.resultType);
+        write(funDef.returnType);
 
         // Body
         write(" {");

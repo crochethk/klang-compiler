@@ -118,12 +118,12 @@ public class TreeBuilder extends L1BaseListener {
     public void exitDefinition(L1Parser.DefinitionContext ctx) {
         var srcPos = getSourcePos(ctx);
         var name = ctx.IDENT().getFirst().getText();
-        var resultType = ctx.IDENT().getLast().getText();
+        var resturnType = ctx.IDENT().getLast().getText();
         List<Parameter> params = ctx.funParam().stream()
                 .map(p -> new Parameter(p.IDENT(0).getText(), p.IDENT(1).getText())).toList();
         Node body = ctx.funBody().result;
         ctx.result = new FunDef(
-                srcPos.line(), srcPos.column(), name, params, resultType, body);
+                srcPos.line(), srcPos.column(), name, params, resturnType, body);
     }
 
     @Override

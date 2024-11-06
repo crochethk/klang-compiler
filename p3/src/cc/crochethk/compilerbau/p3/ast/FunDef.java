@@ -11,16 +11,16 @@ public class FunDef extends Node {
     }
 
     public String name;
-    public String resultType;
+    public String returnType;
     public List<Parameter> params;
     public Node statement;
 
     public FunDef(int line, int column, String name, List<Parameter> params,
-            String resultType, Node statement) {
+            String returnType, Node statement) {
         super(line, column);
         this.name = name;
         this.params = params;
-        this.resultType = resultType;
+        this.returnType = returnType;
         this.statement = statement;
     }
 
