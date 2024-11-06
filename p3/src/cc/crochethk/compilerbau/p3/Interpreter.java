@@ -1,7 +1,6 @@
 package cc.crochethk.compilerbau.p3;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import cc.crochethk.compilerbau.p3.InterpretResult.BoolResult;
@@ -46,7 +45,7 @@ public class Interpreter implements Visitor<InterpretResult> {
 
     @Override
     public InterpretResult visit(Prog prog) {
-        prog.funDefs.stream().map(def -> def.accept(this));
+        prog.funDefs.forEach(def -> def.accept(this));
         if (!funDefs.containsKey(prog.entryPoint.name)) {
             throw new RuntimeException("Entrypoint '" + prog.entryPoint.name + "' not found");
         }
@@ -54,28 +53,27 @@ public class Interpreter implements Visitor<InterpretResult> {
         return prog.entryPoint.accept(this);
     }
 
-    private Map<String, Node> vars = new HashMap<>();
-
     @Override
     public InterpretResult visit(Var var) {
         return vars.get(var.name).accept(this);
     }
 
+    private Map<String, Node> vars = new HashMap<>();
+
     @Override
     public InterpretResult visit(FunCall funCall) {
-        //TODO
-
-        List<Node> args = funCall.args;
         String funName = funCall.name;
         FunDef funDef = funDefs.get(funName);
+
+        // Prepare parameter variables
         for (int i = 0; i < funDef.params.size(); i++) {
             // we trust the type checker that arg count and types are correct.
-            var var_name = funDef.params.get(i).name();
-            var var_val = funCall.args.get(i).accept(this);
-            // TODO---------
+            var varName = funDef.params.get(i).name();
+            var varValue = funCall.args.get(i);
+            vars.put(varName, varValue);
         }
 
-        return new VoidResult();
+        return funDef.statement.accept(this);
     }
 
     @Override

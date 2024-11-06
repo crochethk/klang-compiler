@@ -40,6 +40,9 @@ public class Main {
 
                 fn g(y:long):long {return y+f(y+1)}
 
+                fn main():long {
+                    return g(12) // -> 67
+                }
                 """;
 
         // ----- Further work on the custom-build AST
