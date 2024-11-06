@@ -5,20 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import cc.crochethk.compilerbau.p3.InterpretResult.BoolResult;
-import cc.crochethk.compilerbau.p3.InterpretResult.IntResult;
+import cc.crochethk.compilerbau.p3.InterpretResult.NumericalResult;
+import cc.crochethk.compilerbau.p3.InterpretResult.NumericalResult.IntResult;
 import cc.crochethk.compilerbau.p3.InterpretResult.VoidResult;
-import cc.crochethk.compilerbau.p3.ast.BinOpExpr;
-import cc.crochethk.compilerbau.p3.ast.BooleanLit;
-import cc.crochethk.compilerbau.p3.ast.FunCall;
-import cc.crochethk.compilerbau.p3.ast.FunDef;
-import cc.crochethk.compilerbau.p3.ast.IntLit;
-import cc.crochethk.compilerbau.p3.ast.Node;
-import cc.crochethk.compilerbau.p3.ast.Prog;
-import cc.crochethk.compilerbau.p3.ast.ReturnStat;
-import cc.crochethk.compilerbau.p3.ast.Var;
+import cc.crochethk.compilerbau.p3.ast.*;
 
 public class Interpreter implements Visitor<InterpretResult> {
-
     @Override
     public InterpretResult visit(IntLit intLit) {
         return new IntResult(intLit.value);
@@ -34,29 +26,10 @@ public class Interpreter implements Visitor<InterpretResult> {
         var lhs = binOpExpr.lhs.accept(this);
         var rhs = binOpExpr.rhs.accept(this);
 
-        if (lhs instanceof IntResult left) {
-            var right = (IntResult) rhs; // we trust the type checker
-            var result = switch (binOpExpr.op) {
-                case add -> left.value() + right.value();
-                case sub -> left.value() - right.value();
-                case mult -> left.value() * right.value();
-                case div -> left.value() / right.value();
-                case pow -> (long) Math.pow(left.value(), right.value());
-                default -> throw new UnsupportedOperationException(
-                        "Unsupported binary operator: " + binOpExpr.op);
-            };
-            return new IntResult(result);
-
-        } else if (lhs instanceof BoolResult left) {
-            var right = (BoolResult) rhs; // we trust the type checker
-            var result = switch (binOpExpr.op) {
-                case and -> left.value() && right.value();
-                case or -> left.value() || right.value();
-                default -> throw new UnsupportedOperationException(
-                        "Unsupported binary operator: " + binOpExpr.op);
-            };
-            return new BoolResult(result);
-
+        if (lhs instanceof NumericalResult left && rhs instanceof NumericalResult right) {
+            return left.applyOperator(right, binOpExpr.op);
+        } else if (lhs instanceof BoolResult left && rhs instanceof BoolResult right) {
+            return left.applyOperator(right, binOpExpr.op);
         } else {
             throw new UnsupportedOperationException(
                     "Unsupported InterpretResult type: " + lhs.getClass());
