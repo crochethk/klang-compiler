@@ -5,15 +5,6 @@
             "name": "root",
             "path": "."
         },
-        {
-            "path": "p1"
-        },
-        {
-            "path": "p2"
-        },
-        {
-            "path": "p3"
-        },
     ],
     "settings": { // These are settings for ALL FOLDERS
         "java.format.comments.enabled": false,
@@ -24,28 +15,29 @@
         ],
         "java.project.outputPath": "bin",
         "java.project.referencedLibraries": [
-            "../lib/**/*.jar"
+            "lib/**/*.jar"
         ],
         "antlr4.generation": {
             "mode": "external",
             "listeners": true,
-            "visitors": true,
-            "outputDir": "gen",
+            "visitors": false,
+            "outputDir": "../gen",
         },
         "antlr4.format": {
             "reflowComments": false
         },
-        "github.copilot.enable": {
-            "*": true,
-            "plaintext": false,
-            "markdown": false,
-            "scminput": false
-        }
+        // "github.copilot.enable": {
+        //     "*": true,
+        //     "plaintext": false,
+        //     "markdown": false,
+        //     "scminput": false
+        // }
     },
     "extensions": {
         "recommendations": [
             "mike-lischke.vscode-antlr4",
-            "vscjava.vscode-java-pack"
+            "vscjava.vscode-java-pack",
+            "aaron-bond.better-comments"
         ]
     },
 }
