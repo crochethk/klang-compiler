@@ -35,11 +35,18 @@ expr
 	| expr AND expr
 	| expr OR expr
 	//
-	| expr TERNARY_QM expr COLON expr
+	// ternary entry point
+	| expr TERNARY_QM expr COLON ternaryExpr
 	| LPAR expr RPAR
 	| zahl
 	| bool
 	| varOrFunCall;
+
+ternaryExpr
+	returns[Node result]:
+	// enables nested ternaryExpr
+	| expr TERNARY_QM expr COLON ternaryExpr
+	| expr;
 
 varOrFunCall
 	returns[Node result]:

@@ -86,17 +86,32 @@ public class TreeBuilder extends L1BaseListener {
 
         } else if (ctx.varOrFunCall() != null) {
             ctx.result = ctx.varOrFunCall().result;
+
         } else if (ctx.TERNARY_QM() != null) {
             var srcPos = getSourcePos(ctx);
             var condition = ctx.expr(0).result;
             var then = ctx.expr(1).result;
-            var otherwise = ctx.expr(2).result;
+            var otherwise = ctx.ternaryExpr().result;
             ctx.result = new TernaryConditionalExpr(srcPos.line(), srcPos.column(),
                     condition, then, otherwise);
         } else {
             var srcPos = getSourcePos(ctx);
             throw new UnsupportedOperationException(
                     "Unhandled `expr` alternative  '" + ctx.getText() + "' at " + srcPos);
+        }
+    }
+
+    @Override
+    public void exitTernaryExpr(L1Parser.TernaryExprContext ctx) {
+        if (ctx.TERNARY_QM() != null) {
+            var srcPos = getSourcePos(ctx);
+            var condition = ctx.expr(0).result;
+            var then = ctx.expr(1).result;
+            var otherwise = ctx.ternaryExpr().result;
+            ctx.result = new TernaryConditionalExpr(srcPos.line(), srcPos.column(),
+                    condition, then, otherwise);
+        } else {
+            ctx.result = ctx.expr(0).result;
         }
     }
 
