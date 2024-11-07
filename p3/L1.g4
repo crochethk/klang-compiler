@@ -92,4 +92,5 @@ fragment ID_CHAR: ID_START | [0-9];
 
 // Ignored tokens
 LINE_COMMENT: '//' .*? '\r'? '\n' -> skip;
+MULTILINE_COMMENT: '/*' .*? '*/' -> skip;
 WHITESPACE: [ \t\n\r]+ -> skip;
