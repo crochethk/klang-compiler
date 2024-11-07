@@ -13,15 +13,15 @@ public class FunDef extends Node {
     public String name;
     public String returnType;
     public List<Parameter> params;
-    public Node statement;
+    public Node body;
 
     public FunDef(int line, int column, String name, List<Parameter> params,
-            String returnType, Node statement) {
+            String returnType, Node body) {
         super(line, column);
         this.name = name;
         this.params = params;
         this.returnType = returnType;
-        this.statement = statement;
+        this.body = body;
     }
 
     @Override

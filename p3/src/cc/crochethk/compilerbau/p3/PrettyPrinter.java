@@ -41,7 +41,7 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(BinOpExpr binOpExpr) {
         write("(");
-        var _ = binOpExpr.lhs.accept(this);
+        binOpExpr.lhs.accept(this);
 
         if (binOpExpr.op != BinaryOp.pow)
             write(" ");
@@ -49,7 +49,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         if (binOpExpr.op != BinaryOp.pow)
             write(" ");
 
-        var _ = binOpExpr.rhs.accept(this);
+        binOpExpr.rhs.accept(this);
         write(")");
         return writer;
     }
@@ -78,7 +78,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         write(" {");
         indent_level++;
         write_indent();
-        var _ = funDef.statement.accept(this);
+        funDef.body.accept(this);
         indent_level--;
         write_indent();
         write("}");
@@ -90,7 +90,7 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(Prog prog) {
         for (var def : prog.funDefs) {
-            var _ = def.accept(this);
+            def.accept(this);
         }
         return writer;
     }
@@ -106,7 +106,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         write("(");
         if (funCall.args != null) {
             for (int i = 0; i < funCall.args.size(); i++) {
-                var _ = funCall.args.get(i).accept(this);
+                funCall.args.get(i).accept(this);
                 if (i < funCall.args.size() - 1)
                     write(", ");
             }

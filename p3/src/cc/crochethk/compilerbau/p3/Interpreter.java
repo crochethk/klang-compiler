@@ -72,7 +72,7 @@ public class Interpreter implements Visitor<InterpretResult> {
             vars.put(varName, varValue);
         }
 
-        return funDef.statement.accept(this);
+        return funDef.body.accept(this);
     }
 
     @Override
