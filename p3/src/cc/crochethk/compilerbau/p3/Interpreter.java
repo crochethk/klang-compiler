@@ -2,6 +2,7 @@ package cc.crochethk.compilerbau.p3;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import cc.crochethk.compilerbau.p3.InterpretResult.BoolResult;
 import cc.crochethk.compilerbau.p3.InterpretResult.NumericalResult;
@@ -54,10 +55,10 @@ public class Interpreter implements Visitor<InterpretResult> {
 
     @Override
     public InterpretResult visit(Var var) {
-        return vars.get(var.name).accept(this);
+        return vars.get(var.name).peek();
     }
 
-    private Map<String, Node> vars = new HashMap<>();
+    private Map<String, Stack<InterpretResult>> vars = new HashMap<>();
 
     @Override
     public InterpretResult visit(FunCall funCall) {
@@ -68,11 +69,24 @@ public class Interpreter implements Visitor<InterpretResult> {
         for (int i = 0; i < funDef.params.size(); i++) {
             // we trust the type checker that arg count and types are correct.
             var varName = funDef.params.get(i).name();
-            var varValue = funCall.args.get(i);
-            vars.put(varName, varValue);
+            var varValue = funCall.args.get(i).accept(this);
+            if (vars.containsKey(varName)) {
+                vars.get(varName).push(varValue);
+            } else {
+                var stack = new Stack<InterpretResult>();
+                stack.push(varValue);
+                vars.put(varName, stack);
+            }
+        }
+        var result = funDef.body.accept(this);
+
+        // remove pushed local variables again
+        for (int i = 0; i < funDef.params.size(); i++) {
+            var varName = funDef.params.get(i).name();
+            vars.get(varName).pop();
         }
 
-        return funDef.body.accept(this);
+        return result;
     }
 
     @Override
