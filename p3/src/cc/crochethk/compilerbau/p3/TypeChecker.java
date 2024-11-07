@@ -8,6 +8,7 @@ import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Node;
 import cc.crochethk.compilerbau.p3.ast.Prog;
 import cc.crochethk.compilerbau.p3.ast.ReturnStat;
+import cc.crochethk.compilerbau.p3.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.p3.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.p3.ast.Var;
 
@@ -84,6 +85,12 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(UnaryOpExpr unaryOpExpr) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
         // TODO Auto-generated method stub
         return null;
     }

@@ -11,6 +11,7 @@ import cc.crochethk.compilerbau.p3.ast.FunDef;
 import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Prog;
 import cc.crochethk.compilerbau.p3.ast.ReturnStat;
+import cc.crochethk.compilerbau.p3.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.p3.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.p3.ast.Var;
 import cc.crochethk.compilerbau.p3.ast.BinOpExpr.BinaryOp;
@@ -133,6 +134,15 @@ public class PrettyPrinter implements Visitor<Writer> {
                 yield write(op_lex);
             }
         };
+    }
+
+    @Override
+    public Writer visit(TernaryConditionalExpr ternaryConditionalExpr) {
+        ternaryConditionalExpr.condition.accept(this);
+        write(" ? ");
+        ternaryConditionalExpr.then.accept(this);
+        write(" : ");
+        return ternaryConditionalExpr.otherwise.accept(this);
     }
 
     private void write_indent() {

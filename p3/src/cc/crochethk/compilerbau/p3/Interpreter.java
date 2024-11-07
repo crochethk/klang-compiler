@@ -93,4 +93,13 @@ public class Interpreter implements Visitor<InterpretResult> {
                     "Unsupported InterpretResult type: " + operand.getClass());
         }
     }
+
+    @Override
+    public InterpretResult visit(TernaryConditionalExpr ternaryConditionalExpr) {
+        if ((boolean) ternaryConditionalExpr.condition.accept(this).value()) {
+            return ternaryConditionalExpr.then.accept(this);
+        } else {
+            return ternaryConditionalExpr.otherwise.accept(this);
+        }
+    }
 }

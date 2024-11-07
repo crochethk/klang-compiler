@@ -35,6 +35,7 @@ expr
 	| expr AND expr
 	| expr OR expr
 	//
+	| expr TERNARY_QM expr COLON expr
 	| LPAR expr RPAR
 	| zahl
 	| bool
@@ -82,6 +83,7 @@ LBRACE: '{';
 RBRACE: '}';
 COLON: ':';
 COMMA: ',';
+TERNARY_QM: '?';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';

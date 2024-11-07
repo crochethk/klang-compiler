@@ -12,6 +12,7 @@ import cc.crochethk.compilerbau.p3.ast.IntLit;
 import cc.crochethk.compilerbau.p3.ast.Node;
 import cc.crochethk.compilerbau.p3.ast.Prog;
 import cc.crochethk.compilerbau.p3.ast.ReturnStat;
+import cc.crochethk.compilerbau.p3.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.p3.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.p3.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.p3.ast.Var;
@@ -85,6 +86,13 @@ public class TreeBuilder extends L1BaseListener {
 
         } else if (ctx.varOrFunCall() != null) {
             ctx.result = ctx.varOrFunCall().result;
+        } else if (ctx.TERNARY_QM() != null) {
+            var srcPos = getSourcePos(ctx);
+            var condition = ctx.expr(0).result;
+            var then = ctx.expr(1).result;
+            var otherwise = ctx.expr(2).result;
+            ctx.result = new TernaryConditionalExpr(srcPos.line(), srcPos.column(),
+                    condition, then, otherwise);
         } else {
             var srcPos = getSourcePos(ctx);
             throw new UnsupportedOperationException(

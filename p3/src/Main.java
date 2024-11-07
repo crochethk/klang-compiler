@@ -97,7 +97,7 @@ public class Main {
                     the_end: int = 15
                     return sum_odd_from_to(0, the_start, the_end) // 49 bzw. 64
                 */
-                    return is_odd(123)
+                    return is_odd(123)  ?1:42
                 }
                 """;
 
