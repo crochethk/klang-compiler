@@ -26,11 +26,15 @@ statement
 expr
 	returns[Node result]:
 	| expr POW expr
-	| expr (MULT | DIV) expr
+	| expr (MULT | DIV) expr // hier + MOD
 	| expr (ADD | SUB) expr
+	//
+	| expr (LT | LTEQ | GT | GTEQ) expr
+	| expr (EQ | NEQ) expr
 	| NOT expr
 	| expr AND expr
 	| expr OR expr
+	//
 	| LPAR expr RPAR
 	| zahl
 	| bool
@@ -59,9 +63,18 @@ SUB: '-';
 POW: '**';
 MULT: '*';
 DIV: '/';
+
 AND: '&&';
 OR: '||';
 NOT: '!';
+
+// comparission
+EQ: '==';
+NEQ: '!=';
+GT: '>';
+GTEQ: '>=';
+LT: '<';
+LTEQ: '<=';
 
 LPAR: '(';
 RPAR: ')';

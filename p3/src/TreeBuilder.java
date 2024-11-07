@@ -67,18 +67,22 @@ public class TreeBuilder extends L1BaseListener {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.or);
         } else if (ctx.NOT() != null) {
             ctx.result = parseUnaryOpExpr(ctx, UnaryOp.not);
-            // } else if (ctx.EQ() != null) {
-            //     ctx.result = parseBinOpExpr(ctx, BinaryOp.eq);
-            // } else if (ctx.NEQ() != null) {
-            //     ctx.result = parseBinOpExpr(ctx, BinaryOp.neq);
-            // } else if (ctx.GT() != null) {
-            //     ctx.result = parseBinOpExpr(ctx, BinaryOp.gt);
-            // } else if (ctx.GTEQ() != null) {
-            //     ctx.result = parseBinOpExpr(ctx, BinaryOp.gteq);
-            // } else if (ctx.LT() != null) {
-            //     ctx.result = parseBinOpExpr(ctx, BinaryOp.lt);
-            // } else if (ctx.LTEQ() != null) {
-            //     ctx.result = parseBinOpExpr(ctx, BinaryOp.lteq);
+        }
+
+        // comparisson
+        else if (ctx.EQ() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.eq);
+        } else if (ctx.NEQ() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.neq);
+        } else if (ctx.GT() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.gt);
+        } else if (ctx.GTEQ() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.gteq);
+        } else if (ctx.LT() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.lt);
+        } else if (ctx.LTEQ() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.lteq);
+
         } else if (ctx.varOrFunCall() != null) {
             ctx.result = ctx.varOrFunCall().result;
         } else {

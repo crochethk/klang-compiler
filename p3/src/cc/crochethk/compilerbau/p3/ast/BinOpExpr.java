@@ -10,8 +10,9 @@ public class BinOpExpr extends Node {
     public enum BinaryOp {
         // Arithmetic
         add("+"), sub("-"), mult("*"), div("/"), mod("%"), pow("**"),
-        // Boolean
+        // Comparisson
         eq("=="), neq("!="), gt(">"), gteq(">="), lt("<"), lteq("<="),
+        // Boolean
         and("&&"), or("||");
 
         String lexeme;
@@ -25,7 +26,17 @@ public class BinOpExpr extends Node {
         }
 
         public boolean isBoolean() {
-            return !isArithmetic();
+            return switch (this) {
+                case and, or -> true;
+                case eq, neq, gt, gteq, lt, lteq, add, sub, mult, div, mod, pow -> false;
+            };
+        }
+
+        public boolean isComparisson() {
+            return switch (this) {
+                case eq, neq, gt, gteq, lt, lteq -> true;
+                case add, sub, mult, div, mod, pow, and, or -> false;
+            };
         }
 
         public boolean isArithmetic() {

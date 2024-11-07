@@ -19,16 +19,24 @@ public interface InterpretResult {
             @Override
             public InterpretResult applyOperator(NumericalResult rhs, BinaryOp op) {
                 if (rhs instanceof IntResult other) {
-                    var result = switch (op) {
-                        case add -> this.value() + other.value();
-                        case sub -> this.value() - other.value();
-                        case mult -> this.value() * other.value();
-                        case div -> this.value() / other.value();
-                        case pow -> (long) Math.pow(this.value(), other.value());
+                    return switch (op) {
+                        case add -> new IntResult(this.value() + other.value());
+                        case sub -> new IntResult(this.value() - other.value());
+                        case mult -> new IntResult(this.value() * other.value());
+                        case div -> new IntResult(this.value() / other.value());
+                        case pow -> new IntResult((long) Math.pow(this.value(), other.value()));
+                        // case mod -> new IntResult(this.value() % other.value());
+
+                        // comparissons
+                        case eq -> new BoolResult(this.value().equals(other.value()));
+                        case neq -> new BoolResult(!(this.value().equals(other.value())));
+                        case gt -> new BoolResult(this.value() > other.value());
+                        case gteq -> new BoolResult(this.value() >= other.value());
+                        case lt -> new BoolResult(this.value() < other.value());
+                        case lteq -> new BoolResult(this.value() <= other.value());
                         default -> throw new UnsupportedOperationException(
                                 "Unsupported binary operator: " + op + "(" + op.toLexeme() + ")");
                     };
-                    return new IntResult(result);
                 } else {
                     throw new UnsupportedOperationException("Righthandside has unsupported type.");
                 }
@@ -50,7 +58,7 @@ public interface InterpretResult {
         public InterpretResult applyOperator(BoolResult rhs, BinaryOp op) {
             if (rhs instanceof BoolResult other) {
                 var result = switch (op) {
-                    case and -> this.value() && other.value();
+                    case and, eq, neq -> this.value() && other.value();
                     case or -> this.value() || other.value();
                     default -> throw new UnsupportedOperationException(
                             "Unsupported binary operator: " + op + "(" + op.toLexeme() + ")");
