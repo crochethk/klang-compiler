@@ -56,6 +56,51 @@ public class Main {
                 }
                 """;
 
+        input_code = """
+                // Ein BOOL beispiel
+                fn not(x:bool):bool {return !x }
+                fn xor(a:bool, b:bool):bool {
+                    return a && not(b) || not(a) && b
+                }
+                fn main():bool {
+                    return xor(not(true), true) // ->true
+                }
+                """;
+
+        input_code = """
+                // Ein kindof turing complete Beispiel
+                fn is_odd(number: int): boolean {
+                    // return number % 2 != 0
+                    return number - (number/2) * 2 != 0
+                }
+
+                /*
+                // Recursive function
+                fn sum_odd_from_to(acc: int, begin:int, end:int): int {
+                    if begin > end {  // Base case: stop when current exceeds target
+                        return acc
+                    }
+                    else {
+                        if is_odd(current) {
+                            return sum_odd_from_to(acc + current, begin+1, end)
+                        }
+                        else {
+                            return sum_odd_from_to(acc, begin+1, end)
+                        }
+                    }
+                }
+                */
+
+                fn main(): int {
+                /*
+                    the_start: int = 1
+                    the_end: int = 15
+                    return sum_odd_from_to(0, the_start, the_end) // 49 bzw. 64
+                */
+                    return is_odd(123)
+                }
+                """;
+
         // ----- Further work on the custom-build AST
         Node rootNode = buildNodeTree(input_code, SHOW_AST_VISUALIZATION);
 
@@ -70,14 +115,16 @@ public class Main {
          */
         var stringifiedNodeTree = rootNode.accept(new PrettyPrinter()).toString();
         System.out.println("--- Pretty Printer:");
-        var format = "%-28s : %s\n";
-        System.out.printf(format, "Original Code", "\n" + input_code);
-        System.out.printf(format, "Prettyprinted AST", stringifiedNodeTree);
+        var format = "%s:\n%s\n";
+        //System.out.printf(format, "Original Code", "\n" + input_code);
+        //System.out.printf(format, "Prettyprinted AST", stringifiedNodeTree);
 
         // Validate semantics: Re-parse the stringified AST
         var rootNode2 = buildNodeTree(stringifiedNodeTree);
         var restringifiedNodeTree = rootNode2.accept(new PrettyPrinter()).toString();
-        System.out.printf(format, "Reparsed, prettyprinted AST", restringifiedNodeTree);
+        //System.out.printf(format, "Reparsed, prettyprinted AST", restringifiedNodeTree);
+        System.out.println("Basic PrettyPrint validation: "
+                + (stringifiedNodeTree.equals(restringifiedNodeTree) ? "OK" : "ERROR"));
         System.out.println();
 
         /**
@@ -88,6 +135,8 @@ public class Main {
         System.out.println("Result: " + result);
         var result2 = rootNode2.accept(new Interpreter());
         System.out.println("Result reparsed: " + result2);
+        System.out.println("Reparsed result validation: "
+                + (result.equals(result2) ? "OK" : "ERROR"));
     }
 
     private static Node buildNodeTree(String input_code, boolean show_antlr_ast_visualization) throws IOException {
