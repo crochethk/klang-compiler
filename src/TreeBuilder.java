@@ -12,10 +12,13 @@ import cc.crochethk.compilerbau.praktikum.ast.IntLit;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
+import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
+import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
+import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 
 public class TreeBuilder extends L1BaseListener {
     @Override
@@ -116,11 +119,30 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitNormalStatement(L1Parser.NormalStatementContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        if (ctx.KW_LET() != null) {
+            ctx.result = new VarDeclareStat(
+                    srcPos.line(), srcPos.column(), ctx.IDENT(0).getText(), ctx.IDENT(1).getText());
+        } else if (ctx.ASSIGN() != null) {
+            ctx.result = new VarAssignStat(
+                    srcPos.line(), srcPos.column(), ctx.IDENT(0).getText(), ctx.expr().result);
+        } else {
+            throw new UnsupportedOperationException(
+                    "Unhandled `normalStatement` alternative '" + ctx.getText() + "' at " + srcPos);
+        }
+    }
+
+    @Override
     public void exitStatement(L1Parser.StatementContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.KW_RETURN() != null) {
             var expr = ctx.expr().result;
             ctx.result = new ReturnStat(srcPos.line(), srcPos.column(), expr);
+        } else if (ctx.normalStatement() != null) {
+            Node currentStatement = ctx.normalStatement().result;
+            Node next = ctx.statement() != null ? ctx.statement().result : null;
+            ctx.result = new StatementListNode(srcPos.line(), srcPos.column(), currentStatement, next);
         } else {
             throw new UnsupportedOperationException(
                     "Unhandled `statement` alternative '" + ctx.getText() + "' at " + srcPos);

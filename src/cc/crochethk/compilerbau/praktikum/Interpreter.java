@@ -128,4 +128,10 @@ public class Interpreter implements Visitor<InterpretResult> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
+
+    @Override
+    public InterpretResult visit(StatementListNode statementListNode) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
 }
