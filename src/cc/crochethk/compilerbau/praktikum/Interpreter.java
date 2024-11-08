@@ -116,4 +116,16 @@ public class Interpreter implements Visitor<InterpretResult> {
             return ternaryConditionalExpr.otherwise.accept(this);
         }
     }
+
+    @Override
+    public InterpretResult visit(VarAssignStat varAssignStat) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
+    public InterpretResult visit(VarDeclareStat varDeclareStat) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
 }

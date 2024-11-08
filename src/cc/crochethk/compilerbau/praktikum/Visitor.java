@@ -11,6 +11,8 @@ import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
+import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
+import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 
 public interface Visitor<R> {
     default void reportError(Node node, String s) {
@@ -42,4 +44,8 @@ public interface Visitor<R> {
     R visit(UnaryOpExpr unaryOpExpr);
 
     R visit(TernaryConditionalExpr ternaryConditionalExpr);
+
+    R visit(VarAssignStat varAssignStat);
+
+    R visit(VarDeclareStat varDeclareStat);
 }

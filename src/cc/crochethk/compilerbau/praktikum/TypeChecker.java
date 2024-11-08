@@ -11,6 +11,8 @@ import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
+import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
+import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 
 public class TypeChecker implements Visitor<Void> {
 
@@ -91,6 +93,18 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Void visit(VarAssignStat varAssignStat) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Void visit(VarDeclareStat varDeclareStat) {
         // TODO Auto-generated method stub
         return null;
     }

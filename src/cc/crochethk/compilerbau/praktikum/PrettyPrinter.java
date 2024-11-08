@@ -14,6 +14,8 @@ import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
+import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
+import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 
 public class PrettyPrinter implements Visitor<Writer> {
@@ -143,6 +145,18 @@ public class PrettyPrinter implements Visitor<Writer> {
         ternaryConditionalExpr.then.accept(this);
         write(" : ");
         return ternaryConditionalExpr.otherwise.accept(this);
+    }
+
+    @Override
+    public Writer visit(VarAssignStat varAssignStat) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
+    public Writer visit(VarDeclareStat varDeclareStat) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     private void write_indent() {
