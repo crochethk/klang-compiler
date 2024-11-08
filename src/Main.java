@@ -24,46 +24,27 @@ public class Main {
         System.out.println(" ");
         String input_code;
 
-        // some easy to swap sample expressions
-        // // input_code = "(true || false) && (1+2)"; // type error example
-        // // input_code = "(true || false) && true"; // good example
-        // // input_code = "(17+4)*2*1"; // good example
-        // // input_code = "17+4*2*1"; // good example
-        // // input_code = "(17+4**(2*3-4)+7)*2*1"; // pow example
-        // // input_code = "//hello\n// world\r\n(17+4**(2*3-4)+7)*2*1"; // linecomments
-
         input_code = """
                 //Erster Test
                 fn f(x:long):long{
-                  return (17   +4)*2*1+x
+                  return (17   +4)*2*1+x;
                 }
 
-                fn g(y:long):long {return y+f(y+1)}
+                fn g(y:long):long {return y+f(y+1);}
 
                 fn main():long {
-                    return g(12) // -> 67
+                    return g(12); // -> 67
                 }
                 """;
 
         input_code = """
                 // Ein BOOL beispiel
-                fn not(x:bool):bool {return !x }
+                fn not(x:bool):bool {return !x; }
                 fn xor(a:bool, b:bool):bool {
-                    return a && not(b) || not(a) && b
+                    return a && not(b) || not(a) && b;
                 }
                 fn main():bool {
-                    return xor(not(true), true) // ->true
-                }
-                """;
-
-        input_code = """
-                // Ein BOOL beispiel
-                fn not(x:bool):bool {return !x }
-                fn xor(a:bool, b:bool):bool {
-                    return a && not(b) || not(a) && b
-                }
-                fn main():bool {
-                    return xor(not(true), true) // ->true
+                    return xor(not(true), true); // ->true
                 }
                 """;
 
@@ -71,12 +52,12 @@ public class Main {
                 // Simple recursion
                 fn sum_from_to(acc: int, start:int, end:int): int {
                         return start > end ? acc
-                            : sum_from_to(acc + start, start+1, end)
+                            : sum_from_to(acc + start, start+1, end);
                 }
 
                 fn main(): int {
-                    // return sum_from_to(0, 1, 7) // -> 28 -> seems OK
-                    return sum_from_to(0, 14, 25) // -> 234 -> seems OK
+                    // return sum_from_to(0, 1, 7); // -> 28 -> seems OK
+                    return sum_from_to(0, 14, 25); // -> 234 -> seems OK
                 }
                 """;
 
