@@ -19,7 +19,15 @@ funParam: IDENT COLON IDENT; // "name : type"
 
 statement
 	returns[Node result]:
-	KW_RETURN expr; // simple oneliner for now, could be also "block", "if-else" etc
+	| normalStatement (SEMI statement)? // one or more statements separated by SEMI
+	| KW_RETURN expr;
+
+normalStatement
+	returns[Node result]:
+	// declare variable
+	| KW_LET IDENT COLON IDENT
+	// assign expr to variable
+	| IDENT ASSIGN expr;
 
 expr
 	returns[Node result]:
@@ -82,16 +90,21 @@ GTEQ: '>=';
 LT: '<';
 LTEQ: '<=';
 
+ASSIGN: '=';
+
 LPAR: '(';
 RPAR: ')';
 LBRACE: '{';
 RBRACE: '}';
 COLON: ':';
 COMMA: ',';
+SEMI: ';';
 TERNARY_QM: '?';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';
+
+KW_LET: 'let';
 
 IDENT: ID_START ID_CHAR*;
 fragment ID_START: [a-zA-Z_];
