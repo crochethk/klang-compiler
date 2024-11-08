@@ -94,8 +94,11 @@ public class Main {
                 }
 
                 fn main(): int {
-                    // // return is_odd(123)  ?1:42
-                    return sum_odd_from_to(0, 1, 15) // 64
+                    let the_start :int;
+                    let the_end :int;
+                    the_start = 1;
+                    the_end = 15;
+                    return sum_odd_from_to(0, the_start, the_end); // -> 64
                 }
                 """;
 

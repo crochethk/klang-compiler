@@ -3,12 +3,12 @@ package cc.crochethk.compilerbau.praktikum.ast;
 import cc.crochethk.compilerbau.praktikum.Visitor;
 
 public class VarAssignStat extends Node {
-    public String targetVar;
+    public String targetVarName;
     public Node expr;
 
-    public VarAssignStat(int line, int column, String targetVar, Node expr) {
+    public VarAssignStat(int line, int column, String targetVarName, Node expr) {
         super(line, column);
-        this.targetVar = targetVar;
+        this.targetVarName = targetVarName;
         this.expr = expr;
     }
 

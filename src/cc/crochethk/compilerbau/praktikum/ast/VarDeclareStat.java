@@ -3,12 +3,12 @@ package cc.crochethk.compilerbau.praktikum.ast;
 import cc.crochethk.compilerbau.praktikum.Visitor;
 
 public class VarDeclareStat extends Node {
-    public String name;
+    public String varName;
     public String declaredType;
 
-    public VarDeclareStat(int line, int column, String name, String declaredType) {
+    public VarDeclareStat(int line, int column, String varName, String declaredType) {
         super(line, column);
-        this.name = name;
+        this.varName = varName;
         this.declaredType = declaredType;
     }
 

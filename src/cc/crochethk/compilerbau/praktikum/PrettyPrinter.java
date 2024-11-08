@@ -150,20 +150,28 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(VarAssignStat varAssignStat) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        write(varAssignStat.targetVarName);
+        write(" = ");
+        return varAssignStat.expr.accept(this);
     }
 
     @Override
     public Writer visit(VarDeclareStat varDeclareStat) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        write("let ");
+        write(varDeclareStat.varName);
+        write(": ");
+        return write(varDeclareStat.declaredType);
     }
 
     @Override
     public Writer visit(StatementListNode statementListNode) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        statementListNode.value.accept(this);
+        write(";");
+        if (statementListNode.next != null) {
+            write_indent();
+            statementListNode.next.accept(this);
+        }
+        return writer;
     }
 
     private void write_indent() {
