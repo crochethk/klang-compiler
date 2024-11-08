@@ -119,19 +119,37 @@ public class Interpreter implements Visitor<InterpretResult> {
 
     @Override
     public InterpretResult visit(VarAssignStat varAssignStat) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        if (vars.containsKey(varAssignStat.targetVarName)) {
+            var targetVarStack = vars.get(varAssignStat.targetVarName);
+            targetVarStack.pop();
+            targetVarStack.push(varAssignStat.expr.accept(this));
+        } else {
+            throw new IllegalArgumentException(
+                    "Assignment target variable " + varAssignStat.targetVarName + " is not declared");
+        }
+        return new VoidResult();
     }
 
     @Override
     public InterpretResult visit(VarDeclareStat varDeclareStat) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        var varName = varDeclareStat.varName;
+        var varValue = (InterpretResult) null;
+        if (vars.containsKey(varName)) {
+            // create unassigned entry
+            vars.get(varName).push(null);
+        } else {
+            var stack = new Stack<InterpretResult>();
+            stack.push(varValue);
+            vars.put(varName, stack);
+        }
+        return new VoidResult();
     }
 
     @Override
     public InterpretResult visit(StatementListNode statementListNode) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        var currentResult = statementListNode.value.accept(this);
+        return statementListNode.next != null
+                ? statementListNode.next.accept(this)
+                : currentResult;
     }
 }
