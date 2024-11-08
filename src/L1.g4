@@ -13,11 +13,9 @@ definition
 	returns[FunDef result]:
 	KW_FUN IDENT LPAR (funParam (COMMA funParam)*)? RPAR //
 	COLON IDENT // return type
-	LBRACE funBody RBRACE; // this coould be replaced by a block rule and node type
+	LBRACE statement RBRACE;
 
 funParam: IDENT COLON IDENT; // "name : type"
-funBody
-	returns[Node result]: statement;
 
 statement
 	returns[Node result]:
