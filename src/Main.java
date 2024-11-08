@@ -85,12 +85,12 @@ public class Main {
                 fn sum_odd_from_to(acc: int, begin:int, end:int): int {
                         return begin > end ? acc
                             : is_odd(begin) ? sum_odd_from_to(acc + begin, begin+1, end)
-                                : sum_odd_from_to(acc, begin+1, end)
+                                : sum_odd_from_to(acc, begin+1, end);
                 }
 
                 fn is_odd(number: int): boolean {
                     // return number % 2 != 0
-                    return number - (number/2) * 2 != 0
+                    return number - (number/2) * 2 != 0;
                 }
 
                 fn main(): int {

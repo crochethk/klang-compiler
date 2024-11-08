@@ -19,15 +19,16 @@ funParam: IDENT COLON IDENT; // "name : type"
 
 statement
 	returns[Node result]:
-	| normalStatement (SEMI statement)? // one or more statements separated by SEMI
-	| KW_RETURN expr;
+	// basically statementList: one or more statements separated by SEMI
+	| basicStatement (SEMI | SEMI statement);
 
-normalStatement
+basicStatement
 	returns[Node result]:
 	// declare variable
 	| KW_LET IDENT COLON IDENT
 	// assign expr to variable
-	| IDENT ASSIGN expr;
+	| IDENT ASSIGN expr
+	| KW_RETURN expr;
 
 expr
 	returns[Node result]:
