@@ -2,7 +2,7 @@
     "folders": [
         // Add one path per JAVA project
         {
-            "name": "root",
+            "name": "praktikum",
             "path": "."
         },
     ],
@@ -37,7 +37,8 @@
         "recommendations": [
             "mike-lischke.vscode-antlr4",
             "vscjava.vscode-java-pack",
-            "aaron-bond.better-comments"
+            "aaron-bond.better-comments",
+            "madhavd1.javadoc-tools"
         ]
     },
 }
