@@ -2,6 +2,10 @@ package cc.crochethk.compilerbau.praktikum.ast;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
 
+/**
+ * Node type representing a variable name as part of an expression.
+ * For example <code>x</code> in <code>1+x+3</code>.
+ */
 public class Var extends Node {
     public String name;
 
