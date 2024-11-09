@@ -100,7 +100,7 @@ public class TreeBuilder extends L1BaseListener {
         } else {
             var srcPos = getSourcePos(ctx);
             throw new UnsupportedOperationException(
-                    "Unhandled `expr` alternative  '" + ctx.getText() + "' at " + srcPos);
+                    "Unhandled `expr` alternative '" + ctx.getText() + "' at " + srcPos);
         }
     }
 
@@ -128,7 +128,7 @@ public class TreeBuilder extends L1BaseListener {
             ctx.result = new VarAssignStat(
                     srcPos.line(), srcPos.column(), ctx.IDENT(0).getText(), ctx.expr().result);
         } else if (ctx.KW_RETURN() != null) {
-            var expr = ctx.expr().result;
+            var expr = ctx.expr() != null ? ctx.expr().result : null;
             ctx.result = new ReturnStat(srcPos.line(), srcPos.column(), expr);
         } else {
             throw new UnsupportedOperationException(

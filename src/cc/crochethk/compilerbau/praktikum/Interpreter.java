@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import cc.crochethk.compilerbau.praktikum.InterpretResult.BoolResult;
+import cc.crochethk.compilerbau.praktikum.InterpretResult.NoResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult.IntResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.VoidResult;
@@ -41,7 +42,7 @@ public class Interpreter implements Visitor<InterpretResult> {
     @Override
     public InterpretResult visit(FunDef funDef) {
         funDefs.put(funDef.name, funDef);
-        return new VoidResult();
+        return NoResult.instance();
     }
 
     @Override
@@ -91,7 +92,9 @@ public class Interpreter implements Visitor<InterpretResult> {
 
     @Override
     public InterpretResult visit(ReturnStat returnStat) {
-        return returnStat.expr.accept(this);
+        return returnStat.expr != null
+                ? returnStat.expr.accept(this)
+                : new VoidResult();
     }
 
     @Override
@@ -127,7 +130,7 @@ public class Interpreter implements Visitor<InterpretResult> {
             throw new IllegalArgumentException(
                     "Assignment target variable " + varAssignStat.targetVarName + " is not declared");
         }
-        return new VoidResult();
+        return NoResult.instance();
     }
 
     @Override
@@ -142,14 +145,23 @@ public class Interpreter implements Visitor<InterpretResult> {
             stack.push(varValue);
             vars.put(varName, stack);
         }
-        return new VoidResult();
+        return NoResult.instance();
     }
 
     @Override
     public InterpretResult visit(StatementListNode statementListNode) {
         var currentResult = statementListNode.value.accept(this);
-        return statementListNode.next != null
-                ? statementListNode.next.accept(this)
-                : currentResult;
+
+        if (currentResult.isNoResult()) {
+            if (statementListNode.next != null) {
+                return statementListNode.next.accept(this);
+            } else {
+                // current node was last of the list and yielded no result.
+                return NoResult.instance();
+            }
+        } else {
+            // stop evaluation and return concrete result.
+            return currentResult;
+        }
     }
 }

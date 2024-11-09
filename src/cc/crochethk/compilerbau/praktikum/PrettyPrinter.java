@@ -120,8 +120,12 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(ReturnStat returnStat) {
-        write("return ");
-        return returnStat.expr.accept(this);
+        write("return");
+        if (returnStat.expr != null) {
+            write(" ");
+            returnStat.expr.accept(this);
+        }
+        return writer;
     }
 
     @Override

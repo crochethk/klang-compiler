@@ -10,6 +10,37 @@ public interface InterpretResult {
         return value() + "";
     }
 
+    default boolean isNoResult() {
+        return this instanceof NoResult;
+    }
+
+    /**
+     * Result type that represents the outcome of a Node that doesn't yield an
+     * actual result.
+     * This is especially designed to provide means for checking whether the
+     * current scope (function) shall return in a nested statement (for example 
+     * from within {@code if-else}) and skip the remaining statments.
+     * 
+     */
+    public class NoResult implements InterpretResult {
+        private final static NoResult instance = new NoResult();
+
+        public static NoResult instance() {
+            return instance;
+        }
+
+        private NoResult() {
+        }
+
+        /**
+         * For the {@code None} result type, this method always returns {@code null}.
+         */
+        @Override
+        public Void value() {
+            return null;
+        }
+    }
+
     public interface NumericalResult extends InterpretResult {
         InterpretResult applyOperator(NumericalResult rhs, BinaryOp op);
 

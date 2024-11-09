@@ -28,6 +28,7 @@ basicStatement
 	| KW_LET IDENT COLON IDENT
 	// assign expr to variable
 	| IDENT ASSIGN expr
+	| KW_RETURN // return "void"
 	| KW_RETURN expr;
 
 expr
