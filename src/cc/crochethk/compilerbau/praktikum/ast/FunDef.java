@@ -1,5 +1,6 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
+import java.util.Collections;
 import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
@@ -19,7 +20,7 @@ public class FunDef extends Node {
             String returnType, Node body) {
         super(line, column);
         this.name = name;
-        this.params = params;
+        this.params = params != null ? params : Collections.emptyList();
         this.returnType = returnType;
         this.body = body;
     }

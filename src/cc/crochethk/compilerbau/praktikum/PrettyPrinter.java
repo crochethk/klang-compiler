@@ -67,15 +67,13 @@ public class PrettyPrinter implements Visitor<Writer> {
         write(" ");
         write(funDef.name);
         write("(");
-        if (funDef.params != null) {
-            for (int i = 0; i < funDef.params.size(); i++) {
-                var p = funDef.params.get(i);
-                write(p.name());
-                write(": ");
-                write(p.type());
-                if (i < funDef.params.size() - 1)
-                    write(", ");
-            }
+        for (int i = 0; i < funDef.params.size(); i++) {
+            var p = funDef.params.get(i);
+            write(p.name());
+            write(": ");
+            write(p.type());
+            if (i < funDef.params.size() - 1)
+                write(", ");
         }
         write("): ");
         write(funDef.returnType);
@@ -110,12 +108,10 @@ public class PrettyPrinter implements Visitor<Writer> {
     public Writer visit(FunCall funCall) {
         write(funCall.name);
         write("(");
-        if (funCall.args != null) {
-            for (int i = 0; i < funCall.args.size(); i++) {
-                funCall.args.get(i).accept(this);
-                if (i < funCall.args.size() - 1)
-                    write(", ");
-            }
+        for (int i = 0; i < funCall.args.size(); i++) {
+            funCall.args.get(i).accept(this);
+            if (i < funCall.args.size() - 1)
+                write(", ");
         }
         return write(")");
     }
