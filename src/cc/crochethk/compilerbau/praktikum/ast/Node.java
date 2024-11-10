@@ -15,4 +15,8 @@ public abstract class Node implements Visitable {
         this.line = line;
         this.column = column;
     }
+
+    public boolean isEmpty() {
+        return this instanceof EmptyNode;
+    }
 }

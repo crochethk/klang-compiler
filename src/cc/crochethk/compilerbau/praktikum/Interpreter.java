@@ -8,7 +8,6 @@ import cc.crochethk.compilerbau.praktikum.InterpretResult.BoolResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NoResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult.IntResult;
-import cc.crochethk.compilerbau.praktikum.InterpretResult.VoidResult;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 
 public class Interpreter implements Visitor<InterpretResult> {
@@ -92,9 +91,7 @@ public class Interpreter implements Visitor<InterpretResult> {
 
     @Override
     public InterpretResult visit(ReturnStat returnStat) {
-        return returnStat.expr != null
-                ? returnStat.expr.accept(this)
-                : new VoidResult();
+        return returnStat.expr.accept(this);
     }
 
     @Override
@@ -124,10 +121,8 @@ public class Interpreter implements Visitor<InterpretResult> {
     public InterpretResult visit(IfElseStat ifElseStat) {
         if ((boolean) ifElseStat.condition.accept(this).value()) {
             return ifElseStat.then.accept(this);
-        } else if (ifElseStat.otherwise != null) {
-            return ifElseStat.otherwise.accept(this);
         } else {
-            return NoResult.instance();
+            return ifElseStat.otherwise.accept(this);
         }
     }
 
@@ -164,15 +159,16 @@ public class Interpreter implements Visitor<InterpretResult> {
         var currentResult = statementListNode.value.accept(this);
 
         if (currentResult.isNoResult()) {
-            if (statementListNode.next != null) {
-                return statementListNode.next.accept(this);
-            } else {
-                // current node was last of the list and yielded no result.
-                return NoResult.instance();
-            }
+            // eval next node
+            return statementListNode.next.accept(this);
         } else {
-            // stop evaluation and return concrete result.
+            // stop evaluation and return concrete result
             return currentResult;
         }
+    }
+
+    @Override
+    public InterpretResult visit(EmptyNode emptyNode) {
+        return NoResult.instance();
     }
 }

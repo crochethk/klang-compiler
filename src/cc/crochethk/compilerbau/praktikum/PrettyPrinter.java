@@ -6,6 +6,7 @@ import java.io.Writer;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
+import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
@@ -122,7 +123,7 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(ReturnStat returnStat) {
         write("return");
-        if (returnStat.expr != null) {
+        if (!returnStat.expr.isEmpty()) {
             write(" ");
             returnStat.expr.accept(this);
         }
@@ -172,7 +173,7 @@ public class PrettyPrinter implements Visitor<Writer> {
     public Writer visit(StatementListNode statementListNode) {
         statementListNode.value.accept(this);
         write(";");
-        if (statementListNode.next != null) {
+        if (!statementListNode.next.isEmpty()) {
             write_indent();
             statementListNode.next.accept(this);
         }
@@ -191,7 +192,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         write_indent();
         write("}");
 
-        if (ifElseStat.otherwise != null) {
+        if (!ifElseStat.otherwise.isEmpty()) {
             write(" else {");
             indent_level++;
             write_indent();
@@ -201,6 +202,11 @@ public class PrettyPrinter implements Visitor<Writer> {
             write("}");
         }
         write_indent();
+        return writer;
+    }
+
+    @Override
+    public Writer visit(EmptyNode emptyNode) {
         return writer;
     }
 

@@ -2,6 +2,7 @@ package cc.crochethk.compilerbau.praktikum;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
+import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
@@ -119,6 +120,12 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(IfElseStat ifElseStat) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Void visit(EmptyNode emptyNode) {
         // TODO Auto-generated method stub
         return null;
     }

@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
+import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
@@ -58,6 +59,7 @@ public class TreeBuilder extends L1BaseListener {
         } else if (ctx.POW() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.pow);
         }
+
         // parentheses
         else if (ctx.LPAR() != null && ctx.RPAR() != null) {
             ctx.result = ctx.expr(0).result;
@@ -124,7 +126,9 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         var condition = ctx.expr().result;
         var then = ctx.statement(0).result;
-        var otherwise = ctx.statement(1) != null ? ctx.statement(1).result : null;
+        var otherwise = ctx.statement(1) != null
+                ? ctx.statement(1).result
+                : new EmptyNode(srcPos.line(), srcPos.column());
         ctx.result = new IfElseStat(srcPos.line(), srcPos.column(),
                 condition, then, otherwise);
     }
@@ -139,7 +143,9 @@ public class TreeBuilder extends L1BaseListener {
             ctx.result = new VarAssignStat(
                     srcPos.line(), srcPos.column(), ctx.IDENT(0).getText(), ctx.expr().result);
         } else if (ctx.KW_RETURN() != null) {
-            var expr = ctx.expr() != null ? ctx.expr().result : null;
+            var expr = ctx.expr() != null
+                    ? ctx.expr().result
+                    : new EmptyNode(srcPos.line(), srcPos.column());
             ctx.result = new ReturnStat(srcPos.line(), srcPos.column(), expr);
         } else {
             throw new UnsupportedOperationException(
@@ -152,7 +158,9 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         if (ctx.basicStatement() != null) {
             var currentStatement = ctx.basicStatement().result;
-            var next = ctx.statement() != null ? ctx.statement().result : null;
+            var next = ctx.statement() != null
+                    ? ctx.statement().result
+                    : new EmptyNode(srcPos.line(), srcPos.column());
             ctx.result = new StatementListNode(srcPos.line(), srcPos.column(), currentStatement, next);
         } else if (ctx.ifElse() != null) {
             ctx.result = ctx.ifElse().result;
