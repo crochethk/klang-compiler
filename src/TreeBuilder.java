@@ -7,6 +7,7 @@ import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
+import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef.Parameter;
 import cc.crochethk.compilerbau.praktikum.ast.IntLit;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
@@ -119,6 +120,16 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitIfElse(L1Parser.IfElseContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        var condition = ctx.expr().result;
+        var then = ctx.statement(0).result;
+        var otherwise = ctx.statement(1) != null ? ctx.statement(1).result : null;
+        ctx.result = new IfElseStat(srcPos.line(), srcPos.column(),
+                condition, then, otherwise);
+    }
+
+    @Override
     public void exitBasicStatement(L1Parser.BasicStatementContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.KW_LET() != null) {
@@ -143,6 +154,8 @@ public class TreeBuilder extends L1BaseListener {
             var currentStatement = ctx.basicStatement().result;
             var next = ctx.statement() != null ? ctx.statement().result : null;
             ctx.result = new StatementListNode(srcPos.line(), srcPos.column(), currentStatement, next);
+        } else if (ctx.ifElse() != null) {
+            ctx.result = ctx.ifElse().result;
         } else {
             throw new UnsupportedOperationException(
                     "Unhandled `statement` alternative '" + ctx.getText() + "' at " + srcPos);

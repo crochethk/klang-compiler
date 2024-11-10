@@ -4,6 +4,7 @@ import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
+import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
 import cc.crochethk.compilerbau.praktikum.ast.IntLit;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
@@ -51,4 +52,6 @@ public interface Visitor<R> {
     R visit(VarDeclareStat varDeclareStat);
 
     R visit(StatementListNode statementListNode);
+
+    R visit(IfElseStat ifElseStat);
 }

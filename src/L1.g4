@@ -20,6 +20,7 @@ funParam: IDENT COLON IDENT; // "name : type"
 statement
 	returns[Node result]:
 	// basically statementList: one or more statements separated by SEMI
+    | ifElse
 	| basicStatement (SEMI | SEMI statement);
 
 basicStatement
@@ -30,6 +31,11 @@ basicStatement
 	| IDENT ASSIGN expr
 	| KW_RETURN // return "void"
 	| KW_RETURN expr;
+
+ifElse
+	returns[IfElseStat result]:
+	| KW_IF expr LBRACE statement RBRACE KW_ELSE LBRACE statement RBRACE
+	| KW_IF expr LBRACE statement RBRACE;
 
 expr
 	returns[Node result]:
@@ -105,6 +111,9 @@ TERNARY_QM: '?';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';
+
+KW_IF: 'if';
+KW_ELSE: 'else';
 
 KW_LET: 'let';
 

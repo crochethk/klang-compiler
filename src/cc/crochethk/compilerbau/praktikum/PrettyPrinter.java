@@ -8,6 +8,7 @@ import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
+import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
 import cc.crochethk.compilerbau.praktikum.ast.IntLit;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
@@ -175,6 +176,31 @@ public class PrettyPrinter implements Visitor<Writer> {
             write_indent();
             statementListNode.next.accept(this);
         }
+        return writer;
+    }
+
+    @Override
+    public Writer visit(IfElseStat ifElseStat) {
+        write("if ");
+        ifElseStat.condition.accept(this);
+        write(" {");
+        indent_level++;
+        write_indent();
+        ifElseStat.then.accept(this);
+        indent_level--;
+        write_indent();
+        write("}");
+
+        if (ifElseStat.otherwise != null) {
+            write(" else {");
+            indent_level++;
+            write_indent();
+            ifElseStat.otherwise.accept(this);
+            indent_level--;
+            write_indent();
+            write("}");
+        }
+        write_indent();
         return writer;
     }
 

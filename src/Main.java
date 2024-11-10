@@ -82,6 +82,36 @@ public class Main {
                     return sum_odd_from_to(0, the_start, the_end); // -> 64
                 }
                 """;
+        /// Example code using IF-ELSE, recursion, assignment statement
+        /// and multiple statements in the function body
+        input_code = """
+                // Recursive function using IF-ELSE and ASSIGNMENTS
+                fn sum_odd_from_to(acc: int, begin:int, end:int): int {
+                    if begin > end {  // Base case: stop when current exceeds target
+                        return acc;
+                    } else {
+                        if is_odd(begin) {
+                            return sum_odd_from_to(acc + begin, begin+1, end);
+                        }
+                        else {
+                            return sum_odd_from_to(acc, begin+1, end);
+                        }
+                    }
+                }
+
+                fn is_odd(number: int): boolean {
+                    // return number % 2 != 0;
+                    return number - (number/2) * 2 != 0;
+                }
+
+                fn main(): int {
+                    let the_start :int;
+                    let the_end :int;
+                    the_start = 1;
+                    the_end = 15;
+                    return sum_odd_from_to(0, the_start, the_end); // -> 64
+                }
+                """;
 
         // ----- Further work on the custom-build AST
         Node rootNode = buildNodeTree(input_code, SHOW_AST_VISUALIZATION);

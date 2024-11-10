@@ -121,6 +121,17 @@ public class Interpreter implements Visitor<InterpretResult> {
     }
 
     @Override
+    public InterpretResult visit(IfElseStat ifElseStat) {
+        if ((boolean) ifElseStat.condition.accept(this).value()) {
+            return ifElseStat.then.accept(this);
+        } else if (ifElseStat.otherwise != null) {
+            return ifElseStat.otherwise.accept(this);
+        } else {
+            return NoResult.instance();
+        }
+    }
+
+    @Override
     public InterpretResult visit(VarAssignStat varAssignStat) {
         if (vars.containsKey(varAssignStat.targetVarName)) {
             var targetVarStack = vars.get(varAssignStat.targetVarName);
