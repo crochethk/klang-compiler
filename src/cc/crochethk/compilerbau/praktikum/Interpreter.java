@@ -47,9 +47,6 @@ public class Interpreter implements Visitor<InterpretResult> {
     @Override
     public InterpretResult visit(Prog prog) {
         prog.funDefs.forEach(def -> def.accept(this));
-        if (!funDefs.containsKey(prog.entryPoint.name)) {
-            throw new RuntimeException("Entrypoint '" + prog.entryPoint.name + "' not found");
-        }
         return prog.entryPoint.accept(this);
     }
 

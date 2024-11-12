@@ -32,7 +32,7 @@ public class Main {
 
                 fn g(y:long):long {return y+f(y+1);}
 
-                fn main():long {
+                fn ___main___():long {
                     return g(12); // -> 67
                 }
                 """;
@@ -43,7 +43,7 @@ public class Main {
                 fn xor(a:bool, b:bool):bool {
                     return a && not(b) || not(a) && b;
                 }
-                fn main():bool {
+                fn ___main___():bool {
                     return xor(not(true), true); // ->true
                 }
                 """;
@@ -55,7 +55,7 @@ public class Main {
                             : sum_from_to(acc + start, start+1, end);
                 }
 
-                fn main(): int {
+                fn ___main___(): int {
                     // return sum_from_to(0, 1, 7); // -> 28 -> seems OK
                     return sum_from_to(0, 14, 25); // -> 234 -> seems OK
                 }
@@ -74,7 +74,7 @@ public class Main {
                     return number - (number/2) * 2 != 0;
                 }
 
-                fn main(): int {
+                fn ___main___(): int {
                     let the_start :int;
                     let the_end :int;
                     the_start = 1;
@@ -104,12 +104,25 @@ public class Main {
                     return number - (number/2) * 2 != 0;
                 }
 
-                fn main(): int {
+                fn ___main___(): int {
                     let the_start :int;
                     let the_end :int;
                     the_start = 1;
                     the_end = 15;
                     return sum_odd_from_to(0, the_start, the_end); // -> 64
+                }
+                """;
+
+        // Code generation tinkering
+        input_code = """
+                // Recursive function using IF-ELSE and ASSIGNMENTS
+                fn average(a: int, b:int): int {
+                    return (
+                        a+b
+                    ) /2;
+                }
+                fn ___main___(): int {
+                    return average(14, 70); // -> 42
                 }
                 """;
 
