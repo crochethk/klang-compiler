@@ -12,6 +12,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cc.crochethk.compilerbau.praktikum.GenJBC;
 import cc.crochethk.compilerbau.praktikum.Interpreter;
 import cc.crochethk.compilerbau.praktikum.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.TypeChecker;
@@ -162,6 +163,13 @@ public class Main {
         System.out.println("Result reparsed: " + result2);
         System.out.println("Reparsed result validation: "
                 + (result.equals(result2) ? "OK" : "ERROR"));
+
+        /*
+        * Generate Java Bytecode (written into class file)
+        */
+        System.out.println("--- Generate JavaByteCodeInterpreter");
+        var outputDir = "./out_jbc";
+        rootNode.accept(new GenJBC(outputDir));
     }
 
     private static Node buildNodeTree(String input_code, boolean show_antlr_ast_visualization) throws IOException {
