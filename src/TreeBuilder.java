@@ -138,10 +138,10 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         if (ctx.KW_LET() != null) {
             ctx.result = new VarDeclareStat(
-                    srcPos.line(), srcPos.column(), ctx.IDENT(0).getText(), ctx.IDENT(1).getText());
+                    srcPos.line(), srcPos.column(), ctx.IDENT().getText(), ctx.type().getText());
         } else if (ctx.ASSIGN() != null) {
             ctx.result = new VarAssignStat(
-                    srcPos.line(), srcPos.column(), ctx.IDENT(0).getText(), ctx.expr().result);
+                    srcPos.line(), srcPos.column(), ctx.IDENT().getText(), ctx.expr().result);
         } else if (ctx.KW_RETURN() != null) {
             var expr = ctx.expr() != null
                     ? ctx.expr().result
@@ -191,10 +191,10 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitDefinition(L1Parser.DefinitionContext ctx) {
         var srcPos = getSourcePos(ctx);
-        var name = ctx.IDENT().getFirst().getText();
-        var resturnType = ctx.IDENT().getLast().getText();
+        var name = ctx.IDENT().getText();
+        var resturnType = ctx.type().getText();
         List<Parameter> params = ctx.funParam().stream()
-                .map(p -> new Parameter(p.IDENT(0).getText(), p.IDENT(1).getText())).toList();
+                .map(p -> new Parameter(p.IDENT().getText(), p.type().getText())).toList();
         Node body = ctx.statement().result;
         ctx.result = new FunDef(
                 srcPos.line(), srcPos.column(), name, params, resturnType, body);

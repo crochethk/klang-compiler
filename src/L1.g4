@@ -12,21 +12,23 @@ start
 definition
 	returns[FunDef result]:
 	KW_FUN IDENT LPAR (funParam (COMMA funParam)*)? RPAR //
-	COLON IDENT // return type
-	LBRACE statement RBRACE;
+	COLON type LBRACE statement RBRACE;
 
-funParam: IDENT COLON IDENT; // "name : type"
+funParam: IDENT COLON type; // "name : type"
+
+type: primitiveType;
+primitiveType: T_I64 | T_BOOL | T_VOID;
 
 statement
 	returns[Node result]:
+	| ifElse
 	// basically statementList: one or more statements separated by SEMI
-    | ifElse
 	| basicStatement (SEMI | SEMI statement);
 
 basicStatement
 	returns[Node result]:
 	// declare variable
-	| KW_LET IDENT COLON IDENT
+	| KW_LET IDENT COLON type
 	// assign expr to variable
 	| IDENT ASSIGN expr
 	| KW_RETURN // return "void"
@@ -116,6 +118,10 @@ KW_IF: 'if';
 KW_ELSE: 'else';
 
 KW_LET: 'let';
+
+T_I64: 'int'; //TODO change to "long"
+T_BOOL: 'boolean'; //TODO change to "bool"
+T_VOID: 'void';
 
 IDENT: ID_START ID_CHAR*;
 fragment ID_START: [a-zA-Z_];
