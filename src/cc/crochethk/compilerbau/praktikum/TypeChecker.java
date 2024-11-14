@@ -16,6 +16,7 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 public class TypeChecker implements Visitor<Void> {
 
@@ -26,13 +27,13 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(IntLit intLit) {
-        intLit.theType = "int";
+        intLit.theType = createI64T(intLit.line, intLit.column);
         return null;
     }
 
     @Override
     public Void visit(BooleanLit booleanLit) {
-        booleanLit.theType = "boolean";
+        booleanLit.theType = createBoolT(booleanLit.line, booleanLit.column);
         return null;
     }
 
@@ -41,16 +42,23 @@ public class TypeChecker implements Visitor<Void> {
         // Compute type of the operands
         binOpExpr.lhs.accept(this);
         binOpExpr.rhs.accept(this);
+        var lhsType = binOpExpr.lhs.theType;
+        var rhsType = binOpExpr.rhs.theType;
+
+        var exprLine = binOpExpr.line;
+        var exprCol = binOpExpr.column;
 
         if (binOpExpr.op.isBoolean()) {
-            binOpExpr.theType = "boolean";
-            if (!binOpExpr.lhs.theType.equals("boolean") || !binOpExpr.rhs.theType.equals("boolean")) {
-                reportError(binOpExpr, binOpExpr.lhs.theType + " " + binOpExpr.op + " " + binOpExpr.rhs.theType);
+            var exprType = createBoolT(exprLine, exprCol);
+            binOpExpr.theType = exprType;
+            if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
+                reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else if (binOpExpr.op.isArithmetic()) {
-            binOpExpr.theType = "int";
-            if (!binOpExpr.lhs.theType.equals("int") || !binOpExpr.rhs.theType.equals("int")) {
-                reportError(binOpExpr, binOpExpr.lhs.theType + " " + binOpExpr.op + " " + binOpExpr.rhs.theType);
+            var exprType = createI64T(exprLine, exprCol);
+            binOpExpr.theType = exprType;
+            if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
+                reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else {
             throw new UnsupportedOperationException("Unknown binary operator: " + binOpExpr.op);
@@ -84,19 +92,34 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(ReturnStat returnStat) {
-        // TODO Auto-generated method stub
+        returnStat.expr.accept(this);
+        returnStat.theType = returnStat.expr.theType;
         return null;
     }
 
     @Override
     public Void visit(UnaryOpExpr unaryOpExpr) {
-        // TODO Auto-generated method stub
+        unaryOpExpr.operand.accept(this);
+        unaryOpExpr.theType = unaryOpExpr.operand.theType;
         return null;
     }
 
     @Override
     public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
-        // TODO Auto-generated method stub
+        ternaryConditionalExpr.condition.accept(this);
+        ternaryConditionalExpr.then.accept(this);
+        ternaryConditionalExpr.otherwise.accept(this);
+        var condType = ternaryConditionalExpr.condition.theType;
+        var thenType = ternaryConditionalExpr.then.theType;
+        var otherwiseType = ternaryConditionalExpr.otherwise.theType;
+        ternaryConditionalExpr.theType = thenType;
+
+        if (!thenType.equals(otherwiseType)) {
+            reportError(ternaryConditionalExpr, "Conditional branches return different types");
+        }
+        if (!(condType instanceof BoolT)) {
+            reportError(ternaryConditionalExpr, "Condition must return a boolean type");
+        }
         return null;
     }
 
@@ -129,4 +152,19 @@ public class TypeChecker implements Visitor<Void> {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public Void visit(Type type) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private Type createBoolT(int line, int column) {
+        return new BoolT(line, column, "boolean");
+    }
+
+    private Type createI64T(int line, int column) {
+        return new I64T(line, column, "int");
+    }
+
 }

@@ -1,6 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
 import cc.crochethk.compilerbau.praktikum.Visitable;
+import cc.crochethk.compilerbau.praktikum.ast.types.Type;
 
 public abstract class Node implements Visitable {
     /// The line where the node's token begins in the source file.
@@ -9,9 +10,9 @@ public abstract class Node implements Visitable {
     public int column;
 
     /// The result type of the node.
-    public String theType = null;
+    public Type theType = null;
 
-    Node(int line, int column) {
+    protected Node(int line, int column) {
         this.line = line;
         this.column = column;
     }

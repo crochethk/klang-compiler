@@ -4,20 +4,21 @@ import java.util.Collections;
 import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.ast.types.Type;
 
 public class FunDef extends Node {
     public static final String KW_FUN_LEX = "fn";
 
-    public record Parameter(String name, String type) {
+    public record Parameter(String name, Type type) {
     }
 
     public String name;
-    public String returnType;
+    public Type returnType;
     public List<Parameter> params;
     public Node body;
 
     public FunDef(int line, int column, String name, List<Parameter> params,
-            String returnType, Node body) {
+            Type returnType, Node body) {
         super(line, column);
         this.name = name;
         this.params = params != null ? params : Collections.emptyList();

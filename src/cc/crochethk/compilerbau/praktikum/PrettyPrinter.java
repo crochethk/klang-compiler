@@ -20,6 +20,7 @@ import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 public class PrettyPrinter implements Visitor<Writer> {
     Writer writer;
@@ -71,12 +72,12 @@ public class PrettyPrinter implements Visitor<Writer> {
             var p = funDef.params.get(i);
             write(p.name());
             write(": ");
-            write(p.type());
+            p.type().accept(this);
             if (i < funDef.params.size() - 1)
                 write(", ");
         }
         write("): ");
-        write(funDef.returnType);
+        funDef.returnType.accept(this);
 
         // Body
         write(" {");
@@ -162,7 +163,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         write("let ");
         write(varDeclareStat.varName);
         write(": ");
-        return write(varDeclareStat.declaredType);
+        return varDeclareStat.declaredType.accept(this);
     }
 
     @Override
@@ -204,6 +205,11 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(EmptyNode emptyNode) {
         return writer;
+    }
+
+    @Override
+    public Writer visit(Type type) {
+        return write(type.typeName);
     }
 
     private void write_indent() {

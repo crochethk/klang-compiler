@@ -30,6 +30,7 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 public class GenJBC implements Visitor<Void> {
     private static final String THE_PROGRAM_CLASS = "___TheProgram___";
@@ -251,6 +252,12 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(IfElseStat ifElseStat) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Void visit(Type type) {
         // TODO Auto-generated method stub
         return null;
     }

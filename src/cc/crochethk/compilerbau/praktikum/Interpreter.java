@@ -9,6 +9,7 @@ import cc.crochethk.compilerbau.praktikum.InterpretResult.NoResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult.IntResult;
 import cc.crochethk.compilerbau.praktikum.ast.*;
+import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 public class Interpreter implements Visitor<InterpretResult> {
     @Override
@@ -167,5 +168,11 @@ public class Interpreter implements Visitor<InterpretResult> {
     @Override
     public InterpretResult visit(EmptyNode emptyNode) {
         return NoResult.instance();
+    }
+
+    @Override
+    public InterpretResult visit(Type type) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 }

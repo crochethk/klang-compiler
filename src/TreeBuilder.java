@@ -21,6 +21,7 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 public class TreeBuilder extends L1BaseListener {
     @Override
@@ -138,7 +139,7 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         if (ctx.KW_LET() != null) {
             ctx.result = new VarDeclareStat(
-                    srcPos.line(), srcPos.column(), ctx.IDENT().getText(), ctx.type().getText());
+                    srcPos.line(), srcPos.column(), ctx.IDENT().getText(), ctx.type().result);
         } else if (ctx.ASSIGN() != null) {
             ctx.result = new VarAssignStat(
                     srcPos.line(), srcPos.column(), ctx.IDENT().getText(), ctx.expr().result);
@@ -189,12 +190,32 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitType(L1Parser.TypeContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        Type result = null;
+        if (ctx.primitiveType() != null) {
+            var primitiveCtx = ctx.primitiveType();
+            if (primitiveCtx.T_I64() != null) {
+                result = new I64T(srcPos.line(), srcPos.column(), primitiveCtx.T_I64().getText());
+            } else if (primitiveCtx.T_BOOL() != null) {
+                result = new BoolT(srcPos.line(), srcPos.column(), primitiveCtx.T_BOOL().getText());
+            } else if (primitiveCtx.T_VOID() != null) {
+                result = new VoidT(srcPos.line(), srcPos.column(), primitiveCtx.T_VOID().getText());
+            } else {
+                throw new UnsupportedOperationException(
+                        "Unhandled `type` alternative '" + ctx.getText() + "' at " + srcPos);
+            }
+        }
+        ctx.result = result;
+    }
+
+    @Override
     public void exitDefinition(L1Parser.DefinitionContext ctx) {
         var srcPos = getSourcePos(ctx);
         var name = ctx.IDENT().getText();
-        var resturnType = ctx.type().getText();
+        var resturnType = ctx.type().result;
         List<Parameter> params = ctx.funParam().stream()
-                .map(p -> new Parameter(p.IDENT().getText(), p.type().getText())).toList();
+                .map(p -> new Parameter(p.IDENT().getText(), p.type().result)).toList();
         Node body = ctx.statement().result;
         ctx.result = new FunDef(
                 srcPos.line(), srcPos.column(), name, params, resturnType, body);

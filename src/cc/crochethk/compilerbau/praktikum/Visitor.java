@@ -16,6 +16,7 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 public interface Visitor<R> {
     default void reportError(Node node, String s) {
@@ -57,4 +58,6 @@ public interface Visitor<R> {
     R visit(IfElseStat ifElseStat);
 
     R visit(EmptyNode emptyNode);
+
+    R visit(Type type);
 }
