@@ -117,13 +117,13 @@ public class Main {
         // Code generation tinkering
         input_code = """
                 // Recursive function using IF-ELSE and ASSIGNMENTS
-                fn average(a: int, b:int): int {
+                fn average(a: int, b:int, dummy_bool: boolean): int {
                     return (
                         a+b
                     ) /2;
                 }
                 fn ___main___(): int {
-                    return average(14, 70); // -> 42
+                    return average(14, 70, false); // -> 42
                 }
                 """;
 

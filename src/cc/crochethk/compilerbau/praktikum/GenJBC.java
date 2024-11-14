@@ -12,7 +12,9 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.reflect.AccessFlag;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
@@ -97,25 +99,31 @@ public class GenJBC implements Visitor<Void> {
     public Void visit(FunDef funDef) {
         // Purge vars stored by previous funDef
         vars.clear();
+        varTypes.clear();
 
-        // TODO compute offset accordingly based on acutal parameter type
-
-        int i = 0;
-        final int SLOTS_PER_VAR = 2;
+        // Map parameters to JVM types and compute stack offsets
+        int stackIdx = 0;
+        List<ClassDesc> paramsClassDescs = new ArrayList<>(funDef.params.size());
         for (var p : funDef.params) {
-            vars.put(p.name(), i);
-            i += SLOTS_PER_VAR;
+            var jvmT = mapToJvmType(p.type());
+            paramsClassDescs.add(jvmT.classDesc);
+
+            vars.put(p.name(), stackIdx);
+            stackIdx += jvmT.slotSize;
+
+            // TODO ----- TEMORARY SOLUTION -------
+            varTypes.put(p.name(), jvmT);
+            // TODO -------------------------------
         }
 
         // Add to function lookup table for later use
         funDefs.put(funDef.name, funDef);
 
-        // TODO set actual return and parameter types based on actual funDef object
+        // Generate actual method defintion
         var methDescriptor = MethodTypeDesc.of(
-                ConstantDescs.CD_long, // <---- hardcoded return type for now
-                funDef.params.stream().map(_ -> {
-                    return ConstantDescs.CD_long; // <---- hardcoded parameter types for now
-                }).toList());
+                mapToJvmType(funDef.returnType).classDesc,
+                paramsClassDescs);
+
         var methFlags = AccessFlags.ofMethod(AccessFlag.STATIC, AccessFlag.PUBLIC).flagsMask();
         classBuilder.withMethod(
                 funDef.name,
@@ -126,6 +134,32 @@ public class GenJBC implements Visitor<Void> {
                     funDef.body.accept(this);
                 }));
         return null;
+    }
+
+    private JvmType mapToJvmType(Type t) {
+        var jvmT = switch (t) {
+            case BoolT _ -> {
+                yield new JvmType(ConstantDescs.CD_boolean, 1);
+            }
+            case I64T _ -> {
+                yield new JvmType(ConstantDescs.CD_long, 2);
+            }
+            case VoidT _ -> {
+                yield new JvmType(ConstantDescs.CD_void, 0);
+            }
+        };
+
+        return jvmT;
+    }
+
+    private class JvmType {
+        final ClassDesc classDesc;
+        final int slotSize;
+
+        JvmType(ClassDesc classDesc, int slotSize) {
+            this.classDesc = classDesc;
+            this.slotSize = slotSize;
+        }
     }
 
     @Override
@@ -184,20 +218,38 @@ public class GenJBC implements Visitor<Void> {
         funCall.args.forEach(arg -> arg.accept(this));
 
         var funDef = funDefs.get(funCall.name);
+
+        // TODO ----- TEMORARY SOLUTION until Node.theType is correctly set by TypeChecker -------
+        List<ClassDesc> argsClassDescs = new ArrayList<>(funCall.args.size());
+        for (var p : funDef.params) { // here we should actually work with the given arg-types
+            var jvmT = mapToJvmType(p.type());
+            argsClassDescs.add(jvmT.classDesc);
+        }
         var methDescriptor = MethodTypeDesc.of(
-                ConstantDescs.CD_long, // <---- hardcoded return type for now
-                funDef.params.stream().map(_ -> {
-                    return ConstantDescs.CD_long; // <---- hardcoded arg types for now
-                }).toList());
+                mapToJvmType(funDef.returnType).classDesc,
+                argsClassDescs);
         codeBuilder.invokestatic(ClassDesc.of(THE_PROGRAM_CLASS), funCall.name, methDescriptor);
         return null;
     }
 
+    // TODO ----- TEMORARY SOLUTION -------
+    // TODO this is a temporary solution, until TypeChecker correctly sets "Node.theType"
+    // TODO in all Node types.
+    Map<String, JvmType> varTypes = new HashMap<>();
+    // TODO -------------------------------
+
     @Override
-    public Void visit(Var var) {
-        // TODO differnetiate var types here
-        var offset = vars.get(var.name);
-        codeBuilder.lload(offset);
+    public Void visit(Var var) { // TODO dont use the temporary "varTypes" map
+        var varIdx = vars.get(var.name);
+        var classDesc = varTypes.get(var.name).classDesc;
+        if (classDesc.equals(ConstantDescs.CD_long)) {
+            codeBuilder.lload(varIdx);
+        } else if (classDesc.equals(ConstantDescs.CD_boolean)) {
+            codeBuilder.iload(varIdx);
+        } else {
+            throw new AssertionError("var type '" + classDesc + "' did not match any expected ClassDesc");
+        }
+
         return null;
     }
 
