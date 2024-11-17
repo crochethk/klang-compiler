@@ -152,7 +152,19 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(Var var) {
-        // TODO Auto-generated method stub
+        /*
+        [x] 0. Make sure local variables are somehow tracked in the visitor (e.g. Map<String, Type>)
+        [x] 1. lookup the type of "var" in the local variables stack (or whatever) using "var.name"
+            2. if lookup...
+            [x] 2.1 ...succeeded: "var" is declared -> set "var.theType = varType"
+            [x] 2.2 ...failed: report Error "Use of undefined variable '" + var.name + "'"
+        */
+        var varType = funDefVarTypes.get(var.name);
+        if (varType == null) {
+            reportError(var, "Use of undefined variable '" + var.name + "'");
+        }
+
+        var.theType = varType;
         return null;
     }
 
