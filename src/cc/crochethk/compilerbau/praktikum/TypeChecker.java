@@ -198,7 +198,31 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(VarAssignStat varAssignStat) {
-        // TODO Auto-generated method stub
+        /*
+        [x] 0. Make sure local variables are somehow tracked in the visitor (e.g. Map<String, Type>)
+        [x] 1. lookup the type of "targetVar" in the local variables stack (or whatever) using "var.name"
+            2. if lookup...
+            [x] 2.1 ...succeeded: "targetVar" is declared
+                    -> Check compatibility of "expr.theType" and "targetVarType"
+                [x]     - fail: reportError "Assignment of incompatible type"
+                [x]     - success: Assign "varAssignStat.theType = targetVar.theType" (or  ""...= expr.theType")
+            [x] 2.2 ...failed: report Error "Assignment to undeclared variable"
+        */
+
+        varAssignStat.expr.accept(this);
+
+        var varType = funDefVarTypes.get(varAssignStat.targetVarName);
+        var exprType = varAssignStat.expr.theType;
+
+        if (varType == null) {
+            reportError(varAssignStat, "Assignment to undeclared variable '" + varAssignStat.targetVarName + "'");
+        } else if (!(varType.equals(exprType))) {
+            reportError(varAssignStat, "Attempt to assign value of type '"
+                    + exprType + "' to variable '" + varAssignStat.targetVarName
+                    + "' of incompatible type '" + varType + "')");
+        }
+
+        varAssignStat.theType = exprType;
         return null;
     }
 
