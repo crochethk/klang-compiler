@@ -1,5 +1,8 @@
 package cc.crochethk.compilerbau.praktikum;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
@@ -18,6 +21,11 @@ import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
+/** TypeChecker Visitor
+ * The main task of this Visitor is to semantically check typing of the visited AST.
+ * While doing that each visited Node is annotated with its inferred type information
+ * by assigning an appropriate Type object to {@code Node.theType}.
+ */
 public class TypeChecker implements Visitor<Void> {
 
     @Override
@@ -67,18 +75,22 @@ public class TypeChecker implements Visitor<Void> {
         return null;
     }
 
-    //private List<Type> funDefPathsReturnTypes = new ArrayList<>();
+    /**
+     * List used to keep track of return types of a function's body.
+     * Here only the "Node.theType" object of the returning Node is to be added.
+     */
+    private List<Type> funDefPathsReturnTypes = new ArrayList<>();
 
     @Override
     public Void visit(FunDef funDef) {
         // Compute types of subnodes
-        //funDef.params.forEach(p -> p.type().accept(this));
-        //funDef.returnType.accept(this);
+        funDef.params.forEach(p -> p.type().accept(this));
+        funDef.returnType.accept(this);
 
-        //funDefPathsReturnTypes.clear();
+        // Make sure the list is empty before evaluation the function body
+        funDefPathsReturnTypes.clear();
 
         /*
-        TODO TODO TODO TODO 
         Each possible body-node-type must consider adding its result type to funDefPathsReturnTypes.
         Though actually only returnStat should be relevant, since all other do not immediately
         return a value to the caller.
@@ -87,20 +99,36 @@ public class TypeChecker implements Visitor<Void> {
         1. all "returnStat" have the same types ("theType" field)
         2. "returnStat" types are unequal
         3. there are no "returnStat"
-            -> infer Void in this case
+            [x] -> infer Void in this case
         */
-        // funDef.body.accept(this);
+        funDef.body.accept(this);
         /*
         Check the aggregated "funDefPathsReturnTypes":
-            - are all basically the same? (see above)
-            - are they consistent with "funDef.returnType.theType"?
+            [x] - are they consistent with "funDef.returnType.theType"?
+            [x] - are all basically the same? (see above)
         */
+
+        // Infer 'void' for no returns
+        if (funDefPathsReturnTypes.isEmpty()) {
+            funDefPathsReturnTypes.add(createVoidT(funDef.line, funDef.column));
+        }
+        var typeSample = funDefPathsReturnTypes.getFirst();
+
+        if (!(typeSample.equals(funDef.returnType.theType))) {
+            reportError(funDef, "Declared type '" + funDef.returnType.theType
+                    + "' but returns incompatible '" + typeSample + "')");
+        }
+        if (!(funDefPathsReturnTypes.stream().allMatch(t -> typeSample.equals(t)))) {
+            reportError(funDef, "Not all code paths return the same type");
+        }
 
         /*
         TODO TODO TODO TODO 
         Probably a "FunctionT" Type should be introduced as functiondef type, maybe
         something like "java.lang.constant.MethodTypeDesc" (see GenJBC).
         */
+        // TODO change to something more meaningful
+        funDef.theType = funDef.returnType.theType;
         return null;
     }
 
@@ -126,6 +154,7 @@ public class TypeChecker implements Visitor<Void> {
     public Void visit(ReturnStat returnStat) {
         returnStat.expr.accept(this);
         returnStat.theType = returnStat.expr.theType;
+        funDefPathsReturnTypes.add(returnStat.theType);
         return null;
     }
 
@@ -187,7 +216,8 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(Type type) {
-        // TODO Auto-generated method stub
+        // Self-reference. Type represents the type itself.
+        type.theType = type;
         return null;
     }
 
@@ -199,4 +229,7 @@ public class TypeChecker implements Visitor<Void> {
         return new I64T(line, column, "int");
     }
 
+    private Type createVoidT(int line, int column) {
+        return new I64T(line, column, "void");
+    }
 }
