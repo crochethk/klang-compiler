@@ -24,7 +24,8 @@
             "outputDir": "../gen",
         },
         "antlr4.format": {
-            "reflowComments": false
+            "reflowComments": false,
+            "alignSemicolons": "ownLine"
         },
         // "github.copilot.enable": {
         //     "*": true,

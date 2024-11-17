@@ -13,7 +13,8 @@ start
 definition
 	returns[FunDef result]:
 	KW_FUN IDENT LPAR (funParam (COMMA funParam)*)? RPAR //
-	COLON type LBRACE statement RBRACE;
+	COLON type LBRACE statement RBRACE
+;
 
 funParam: IDENT COLON type; // "name : type"
 
@@ -26,7 +27,8 @@ statement
 	returns[Node result]:
 	| ifElse
 	// basically statementList: one or more statements separated by SEMI
-	| basicStatement (SEMI | SEMI statement);
+	| basicStatement (SEMI | SEMI statement)
+;
 
 basicStatement
 	returns[Node result]:
@@ -35,12 +37,14 @@ basicStatement
 	// assign expr to variable
 	| IDENT ASSIGN expr
 	| KW_RETURN // return "void"
-	| KW_RETURN expr;
+	| KW_RETURN expr
+;
 
 ifElse
 	returns[IfElseStat result]:
 	| KW_IF expr LBRACE statement RBRACE KW_ELSE LBRACE statement RBRACE
-	| KW_IF expr LBRACE statement RBRACE;
+	| KW_IF expr LBRACE statement RBRACE
+;
 
 expr
 	returns[Node result]:
@@ -59,13 +63,15 @@ expr
 	| LPAR expr RPAR
 	| zahl
 	| bool
-	| varOrFunCall;
+	| varOrFunCall
+;
 
 ternaryExpr
 	returns[Node result]:
 	// enables nested ternaryExpr
 	| expr TERNARY_QM expr COLON ternaryExpr
-	| expr;
+	| expr
+;
 
 varOrFunCall
 	returns[Node result]:
@@ -74,7 +80,8 @@ varOrFunCall
 	// function call without parameters
 	| IDENT LPAR RPAR
 	// function call with one or more parameters
-	| IDENT LPAR expr (COMMA expr)* RPAR;
+	| IDENT LPAR expr (COMMA expr)* RPAR
+;
 
 zahl
 	returns[Node result]: NUMBER;
