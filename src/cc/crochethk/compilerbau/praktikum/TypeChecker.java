@@ -66,9 +66,40 @@ public class TypeChecker implements Visitor<Void> {
         return null;
     }
 
+    //private List<Type> funDefPathsReturnTypes = new ArrayList<>();
+
     @Override
     public Void visit(FunDef funDef) {
-        // TODO Auto-generated method stub
+        // Compute types of subnodes
+        //funDef.params.forEach(p -> p.type().accept(this));
+        //funDef.returnType.accept(this);
+
+        //funDefPathsReturnTypes.clear();
+
+        /*
+        TODO TODO TODO TODO 
+        Each possible body-node-type must consider adding its result type to funDefPathsReturnTypes.
+        Though actually only returnStat should be relevant, since all other do not immediately
+        return a value to the caller.
+        
+        This leads to three cases, regarding the nested nodes inside "funDef.body":
+        1. all "returnStat" have the same types ("theType" field)
+        2. "returnStat" types are unequal
+        3. there are no "returnStat"
+            -> infer Void in this case
+        */
+        // funDef.body.accept(this);
+        /*
+        Check the aggregated "funDefPathsReturnTypes":
+            - are all basically the same? (see above)
+            - are they consistent with "funDef.returnType.theType"?
+        */
+
+        /*
+        TODO TODO TODO TODO 
+        Probably a "FunctionT" Type should be introduced as functiondef type, maybe
+        something like "java.lang.constant.MethodTypeDesc" (see GenJBC).
+        */
         return null;
     }
 
