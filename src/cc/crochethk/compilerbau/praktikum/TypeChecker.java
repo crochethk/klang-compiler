@@ -1,7 +1,10 @@
 package cc.crochethk.compilerbau.praktikum;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
@@ -77,9 +80,15 @@ public class TypeChecker implements Visitor<Void> {
 
     /**
      * List used to keep track of return types of a function's body.
-     * Here only the "Node.theType" object of the returning Node is to be added.
+     * Here only references to "Node.theType" are to be added.
      */
     private List<Type> funDefPathsReturnTypes = new ArrayList<>();
+
+    /**
+     * Mapping of a function's local variable names and their  associated declared/inferred types.
+     * Here only references to "Node.theType" are to be added.
+     */
+    private Map<String, Type> funDefVarTypes = new HashMap<>();
 
     @Override
     public Void visit(FunDef funDef) {
@@ -87,8 +96,11 @@ public class TypeChecker implements Visitor<Void> {
         funDef.params.forEach(p -> p.type().accept(this));
         funDef.returnType.accept(this);
 
-        // Make sure the list is empty before evaluation the function body
+        // Make sure the lookup collections are empty before evaluating the funDef
         funDefPathsReturnTypes.clear();
+        funDefVarTypes.clear();
+
+        funDef.params.forEach(p -> funDefVarTypes.put(p.name(), p.type().theType));
 
         /*
         Each possible body-node-type must consider adding its result type to funDefPathsReturnTypes.
@@ -192,7 +204,21 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(VarDeclareStat varDeclareStat) {
-        // TODO Auto-generated method stub
+        /*
+        TODO TODO TODO TODO TODO 
+        - consider checking, whether the declared type is actually defined
+            - should only be relevant for custom types, since primitves are
+            already implicitly checked upon building the AST...
+            - probably should be delegated to "visit(Type)" instead
+        
+        - we will allow redeclaration of variables (so no check if already declared)
+        
+        - when declaration has optional initializer: check whether types match
+        */
+
+        varDeclareStat.declaredType.accept(this);
+        varDeclareStat.theType = varDeclareStat.declaredType.theType;
+        funDefVarTypes.put(varDeclareStat.varName, varDeclareStat.theType);
         return null;
     }
 
