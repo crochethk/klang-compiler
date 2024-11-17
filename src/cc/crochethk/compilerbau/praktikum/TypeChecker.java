@@ -146,31 +146,10 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(Prog prog) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+        prog.entryPoint.accept(this);
+        prog.funDefs.forEach(def -> def.accept(this));
 
-    @Override
-    public Void visit(Var var) {
-        /*
-        [x] 0. Make sure local variables are somehow tracked in the visitor (e.g. Map<String, Type>)
-        [x] 1. lookup the type of "var" in the local variables stack (or whatever) using "var.name"
-            2. if lookup...
-            [x] 2.1 ...succeeded: "var" is declared -> set "var.theType = varType"
-            [x] 2.2 ...failed: report Error "Use of undefined variable '" + var.name + "'"
-        */
-        var varType = funDefVarTypes.get(var.name);
-        if (varType == null) {
-            reportError(var, "Use of undefined variable '" + var.name + "'");
-        }
-
-        var.theType = varType;
-        return null;
-    }
-
-    @Override
-    public Void visit(FunCall funCall) {
-        // TODO Auto-generated method stub
+        prog.theType = prog.entryPoint.theType;
         return null;
     }
 
@@ -179,32 +158,6 @@ public class TypeChecker implements Visitor<Void> {
         returnStat.expr.accept(this);
         returnStat.theType = returnStat.expr.theType;
         funDefPathsReturnTypes.add(returnStat.theType);
-        return null;
-    }
-
-    @Override
-    public Void visit(UnaryOpExpr unaryOpExpr) {
-        unaryOpExpr.operand.accept(this);
-        unaryOpExpr.theType = unaryOpExpr.operand.theType;
-        return null;
-    }
-
-    @Override
-    public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
-        ternaryConditionalExpr.condition.accept(this);
-        ternaryConditionalExpr.then.accept(this);
-        ternaryConditionalExpr.otherwise.accept(this);
-        var condType = ternaryConditionalExpr.condition.theType;
-        var thenType = ternaryConditionalExpr.then.theType;
-        var otherwiseType = ternaryConditionalExpr.otherwise.theType;
-        ternaryConditionalExpr.theType = thenType;
-
-        if (!thenType.equals(otherwiseType)) {
-            reportError(ternaryConditionalExpr, "Conditional branches return different types");
-        }
-        if (!(condType instanceof BoolT)) {
-            reportError(ternaryConditionalExpr, "Condition must return a boolean type");
-        }
         return null;
     }
 
@@ -267,6 +220,57 @@ public class TypeChecker implements Visitor<Void> {
     @Override
     public Void visit(IfElseStat ifElseStat) {
         // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Void visit(Var var) {
+        /*
+        [x] 0. Make sure local variables are somehow tracked in the visitor (e.g. Map<String, Type>)
+        [x] 1. lookup the type of "var" in the local variables stack (or whatever) using "var.name"
+            2. if lookup...
+            [x] 2.1 ...succeeded: "var" is declared -> set "var.theType = varType"
+            [x] 2.2 ...failed: report Error "Use of undefined variable '" + var.name + "'"
+        */
+        var varType = funDefVarTypes.get(var.name);
+        if (varType == null) {
+            reportError(var, "Use of undefined variable '" + var.name + "'");
+        }
+
+        var.theType = varType;
+        return null;
+    }
+
+    @Override
+    public Void visit(FunCall funCall) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Void visit(UnaryOpExpr unaryOpExpr) {
+        //TODO maybe a check should be done, whether the operator is applicable to the operand type
+        unaryOpExpr.operand.accept(this);
+        unaryOpExpr.theType = unaryOpExpr.operand.theType;
+        return null;
+    }
+
+    @Override
+    public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
+        ternaryConditionalExpr.condition.accept(this);
+        ternaryConditionalExpr.then.accept(this);
+        ternaryConditionalExpr.otherwise.accept(this);
+        var condType = ternaryConditionalExpr.condition.theType;
+        var thenType = ternaryConditionalExpr.then.theType;
+        var otherwiseType = ternaryConditionalExpr.otherwise.theType;
+        ternaryConditionalExpr.theType = thenType;
+
+        if (!thenType.equals(otherwiseType)) {
+            reportError(ternaryConditionalExpr, "Conditional branches return different types");
+        }
+        if (!(condType instanceof BoolT)) {
+            reportError(ternaryConditionalExpr, "Condition must return a boolean type");
+        }
         return null;
     }
 
