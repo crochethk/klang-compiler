@@ -42,27 +42,28 @@ public class TypeChecker implements Visitor<Void> {
         // Compute type of the operands
         binOpExpr.lhs.accept(this);
         binOpExpr.rhs.accept(this);
+
         var lhsType = binOpExpr.lhs.theType;
         var rhsType = binOpExpr.rhs.theType;
-
         var exprLine = binOpExpr.line;
         var exprCol = binOpExpr.column;
 
+        Type exprType;
         if (binOpExpr.op.isBoolean()) {
-            var exprType = createBoolT(exprLine, exprCol);
-            binOpExpr.theType = exprType;
+            exprType = createBoolT(exprLine, exprCol);
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else if (binOpExpr.op.isArithmetic()) {
-            var exprType = createI64T(exprLine, exprCol);
-            binOpExpr.theType = exprType;
+            exprType = createI64T(exprLine, exprCol);
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else {
             throw new UnsupportedOperationException("Unknown binary operator: " + binOpExpr.op);
         }
+
+        binOpExpr.theType = Objects.requireNonNull(exprType, "Expected valid Type object but was null");
         return null;
     }
 
