@@ -81,15 +81,35 @@ public class GenJBC implements Visitor<Void> {
         cb.withMethod("main", methDescriptor, methFlags, mb -> {
             mb.withCode(cdb -> {
                 this.codeBuilder = cdb;
-                entryPointCall.accept(this);
 
-                // black magic... necessary, else "control flow fall through"
-                // "reverse engineered" by java-compiling the decompiled code again
-                // and comparing to the self generated, not working bytecode.
-                //
-                // I guess it could be because of "___main___()" returning a long
-                // and thus the "pop2" to clear the stack before terminating
-                codeBuilder.pop2();
+                /** Generate code that:
+                 *      - calls the entryPoint function
+                 *      - wraps its return value into a "System.out.println" call
+                 *          which outputs it to stdout
+                 */
+                var CD_PrintStream = ClassDesc.of(java.io.PrintStream.class.getName());
+                codeBuilder.getstatic(
+                        ClassDesc.of(java.lang.System.class.getName()), "out",
+                        CD_PrintStream);
+
+                entryPointCall.accept(this);
+                // the result of the entryPoint call is expected to be on top of operand stack now
+
+                codeBuilder.invokevirtual(
+                        CD_PrintStream, "println",
+                        MethodTypeDesc.of(
+                                ConstantDescs.CD_void,
+                                // TODO change this to handle the actual return type of entryPoint
+                                ConstantDescs.CD_long /* <<<< */));
+
+                /**
+                 * "pop" necessary, else "control flow fall through".
+                 * Reason seems to be:
+                 * - stack must be empty before return
+                 * - a long (which is returned by ___main__ in this case) takes two stack slots
+                 * - "pop2" removes the two slots ontop of the stack
+                 */
+                //codeBuilder.pop2();
                 codeBuilder.return_();
             });
         });
