@@ -3,11 +3,14 @@ package cc.crochethk.compilerbau.praktikum.ast;
 import cc.crochethk.compilerbau.praktikum.Visitor;
 
 public class TypeNode extends Node {
-    public String tokenText;
+    public String typeToken;
+    // public String packageToken;
+    public boolean isPrimitive;
 
-    public TypeNode(int line, int column, String tokenText) {
+    public TypeNode(int line, int column, String typeToken, boolean isPrimitiveType) {
         super(line, column);
-        this.tokenText = tokenText;
+        this.typeToken = typeToken;
+        this.isPrimitive = isPrimitiveType;
     }
 
     @Override

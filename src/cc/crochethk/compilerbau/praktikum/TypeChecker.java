@@ -19,11 +19,11 @@ import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
+import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
-import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 /** TypeChecker Visitor
  * The main task of this Visitor is to semantically check typing of the visited AST.
@@ -316,21 +316,8 @@ public class TypeChecker implements Visitor<Void> {
     }
 
     @Override
-    public Void visit(Type type) {
-        // Self-reference. Type represents the type itself.
-        type.theType = type;
-        return null;
-    }
-
-    private Type createBoolT(int line, int column) {
-        return new BoolT(line, column, "boolean");
-    }
-
-    private Type createI64T(int line, int column) {
-        return new I64T(line, column, "int");
-    }
-
-    private Type createVoidT(int line, int column) {
-        return new I64T(line, column, "void");
+    public Void visit(TypeNode type) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 }
