@@ -127,7 +127,23 @@ public class Interpreter implements Visitor<InterpretResult> {
     @Override
     public InterpretResult visit(VarAssignStat varAssignStat) {
         if (vars.containsKey(varAssignStat.targetVarName)) {
+            /*
+            TODO TODO TODO TODO 
+            "stack" management should be reworked, since how it's now
+            this will be super buggy in terms of "visibility" and scope stuff
+            
+            An APPROACH is to use a simple map as Stack. then, on entering new scope
+            backup the current stack and work with the stack as usual.
+            when exiting the scope again: restore the backup stack again
+            (which implicitly cleans the local variables again)
+            */
+
             var targetVarStack = vars.get(varAssignStat.targetVarName);
+
+            /*
+            TODO TODO TODO TODO
+            for example: here we should somehow check whether the present value
+                belongs to the current scope, and only then overwrite it */
             targetVarStack.pop();
             targetVarStack.push(varAssignStat.expr.accept(this));
         } else {
@@ -139,6 +155,11 @@ public class Interpreter implements Visitor<InterpretResult> {
 
     @Override
     public InterpretResult visit(VarDeclareStat varDeclareStat) {
+        /*
+        TODO TODO TODO TODO ----------------- 
+        this operation probably should be managed "externally" in one place (also used in funCall)
+        e.g. smth like "pushToVarStack(varName, varValue)"
+        */
         var varName = varDeclareStat.varName;
         var varValue = (InterpretResult) null;
         if (vars.containsKey(varName)) {
@@ -149,6 +170,9 @@ public class Interpreter implements Visitor<InterpretResult> {
             stack.push(varValue);
             vars.put(varName, stack);
         }
+        // TODO
+        // TODO -----------------
+
         return NoResult.instance();
     }
 
