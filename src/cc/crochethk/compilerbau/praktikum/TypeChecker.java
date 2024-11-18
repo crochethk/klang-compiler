@@ -39,13 +39,13 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(IntLit intLit) {
-        intLit.theType = createI64T(intLit.line, intLit.column);
+        intLit.theType = Type.LONG_T;
         return null;
     }
 
     @Override
     public Void visit(BooleanLit booleanLit) {
-        booleanLit.theType = createBoolT(booleanLit.line, booleanLit.column);
+        booleanLit.theType = Type.BOOLEAN_T;
         return null;
     }
 
@@ -54,21 +54,23 @@ public class TypeChecker implements Visitor<Void> {
         // Compute type of the operands
         binOpExpr.lhs.accept(this);
         binOpExpr.rhs.accept(this);
-
         var lhsType = binOpExpr.lhs.theType;
         var rhsType = binOpExpr.rhs.theType;
-        var exprLine = binOpExpr.line;
-        var exprCol = binOpExpr.column;
 
         Type exprType;
         if (binOpExpr.op.isBoolean()) {
-            exprType = createBoolT(exprLine, exprCol);
+            exprType = Type.BOOLEAN_T;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else if (binOpExpr.op.isArithmetic()) {
-            exprType = createI64T(exprLine, exprCol);
+            exprType = Type.LONG_T;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
+                reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
+            }
+        } else if (binOpExpr.op.isComparison()) {
+            exprType = Type.BOOLEAN_T;
+            if (!(lhsType.equals(rhsType) && lhsType.isNumeric() && rhsType.isNumeric())) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else {
