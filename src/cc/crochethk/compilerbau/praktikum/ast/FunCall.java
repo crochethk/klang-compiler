@@ -4,10 +4,15 @@ import java.util.Collections;
 import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
 
 public class FunCall extends Node {
     public String name;
     public List<Node> args;
+
+    public FunCall(SourcePos srcPos, String name, List<Node> args) {
+        this(srcPos.line(), srcPos.column(), name, args);
+    }
 
     public FunCall(int line, int column, String name, List<Node> args) {
         super(line, column);

@@ -1,6 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
 
 public class UnaryOpExpr extends Node {
     public UnaryOp op;
@@ -39,6 +40,10 @@ public class UnaryOpExpr extends Node {
                 case not -> false;
             };
         }
+    }
+
+    public UnaryOpExpr(SourcePos srcPos, Node operand, UnaryOp op) {
+        this(srcPos.line(), srcPos.column(), operand, op);
     }
 
     public UnaryOpExpr(int line, int col, Node operand, UnaryOp op) {

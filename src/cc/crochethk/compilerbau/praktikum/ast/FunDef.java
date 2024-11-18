@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
 
 public class FunDef extends Node {
     public static final String KW_FUN_LEX = "fn";
@@ -15,6 +16,11 @@ public class FunDef extends Node {
     public TypeNode returnType;
     public List<Parameter> params;
     public Node body;
+
+    public FunDef(SourcePos srcPos, String name, List<Parameter> params,
+            TypeNode returnType, Node body) {
+        this(srcPos.line(), srcPos.column(), name, params, returnType, body);
+    }
 
     public FunDef(int line, int column, String name, List<Parameter> params,
             TypeNode returnType, Node body) {

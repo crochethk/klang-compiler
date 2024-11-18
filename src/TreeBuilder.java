@@ -22,6 +22,7 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
 
 public class TreeBuilder extends L1BaseListener {
     @Override
@@ -227,13 +228,6 @@ public class TreeBuilder extends L1BaseListener {
     //
     // Helper methods
     //
-    private record SourcePos(int line, int column) {
-        @Override
-        public String toString() {
-            return "L" + line + ":" + column;
-        }
-    }
-
     private SourcePos getSourcePos(ParserRuleContext ctx) {
         return new SourcePos(
                 ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());

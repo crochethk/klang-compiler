@@ -1,6 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
 
 public class BinOpExpr extends Node {
     public BinaryOp op;
@@ -45,6 +46,10 @@ public class BinOpExpr extends Node {
                 case eq, neq, gt, gteq, lt, lteq, and, or -> false;
             };
         }
+    }
+
+    public BinOpExpr(SourcePos srcPos, Node lhs, BinaryOp op, Node rhs) {
+        this(srcPos.line(), srcPos.column(), lhs, op, rhs);
     }
 
     public BinOpExpr(int line, int col, Node lhs, BinaryOp op, Node rhs) {

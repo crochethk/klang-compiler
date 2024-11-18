@@ -1,6 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
 
 public class BooleanLit extends Node {
     public static final String TRUE_LEX = "true";
@@ -8,6 +9,10 @@ public class BooleanLit extends Node {
 
     /// The value of the boolean literal
     public boolean value;
+
+    public BooleanLit(SourcePos srcPos, boolean value) {
+        this(srcPos.line(), srcPos.column(), value);
+    }
 
     public BooleanLit(int line, int col, boolean value) {
         super(line, col);
