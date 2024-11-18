@@ -1,6 +1,7 @@
 package cc.crochethk.compilerbau.praktikum;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,8 +91,11 @@ public class TypeChecker implements Visitor<Void> {
      */
     private Map<String, Type> funDefVarTypes = new HashMap<>();
 
+    private Map<String, FunDef> funDefs = new HashMap<>();
+
     @Override
     public Void visit(FunDef funDef) {
+        funDefs.put(funDef.name, funDef);
         // Compute types of subnodes
         funDef.params.forEach(p -> p.type().accept(this));
         funDef.returnType.accept(this);
@@ -213,13 +217,38 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(StatementListNode statementListNode) {
-        // TODO Auto-generated method stub
+        statementListNode.value.accept(this);
+        // statementListNode.next.accept(this);
+        /*
+        TODO TODO TODO TODO TODO
+        - to consider:
+            - check that all code paths (one or more return statements) produce a similar type
+            - multiple return statements in the list
+                - "how to track and check this?"
+                    - create new list of types on funDef visit
+                    - collect each returnStat type into this list
+                    - in fundef: do type ckecks with this list after evaluation the funDef.body
+                    - empty list when done, so next funDef can start with fresh context
+                - checking if all return compatible type
+            - I believe interpreter already had a solution to the multi-return problem
+        */
         return null;
     }
 
     @Override
     public Void visit(IfElseStat ifElseStat) {
-        // TODO Auto-generated method stub
+        ifElseStat.condition.accept(this);
+        ifElseStat.then.accept(this);
+        ifElseStat.otherwise.accept(this);
+
+        /*
+        TODO TODO TODO TODO TODO 
+        - see ternaryNode and interpreter visitor impl about result typing?
+            - maybe something along the lines:
+                - check "then.theType == otherwise.theType"
+                - check whether "condition.theType == BoolT"
+                - set: ifElseStat.theType = then.theType
+        */
         return null;
     }
 
@@ -243,7 +272,13 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(FunCall funCall) {
-        // TODO Auto-generated method stub
+        funCall.args.forEach(arg -> arg.accept(this));
+        /*
+        TODO TODO TODO TODO TODO 
+        - check if FunCall args types are consistent with the matching FunDef
+        - set "funCall.theType = funDef.returnType.theType"
+        */
+
         return null;
     }
 
@@ -276,7 +311,7 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(EmptyNode emptyNode) {
-        // TODO Auto-generated method stub
+        emptyNode.theType = createVoidT(emptyNode.line, emptyNode.column);
         return null;
     }
 
