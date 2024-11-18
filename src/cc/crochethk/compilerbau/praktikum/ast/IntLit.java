@@ -8,11 +8,7 @@ public class IntLit extends Node {
     public long value;
 
     public IntLit(SourcePos srcPos, int value) {
-        this(srcPos.line(), srcPos.column(), value);
-    }
-
-    public IntLit(int line, int col, int value) {
-        super(line, col);
+        super(srcPos);
         this.value = value;
     }
 

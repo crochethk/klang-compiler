@@ -13,11 +13,7 @@ public class StatementListNode extends Node {
     public Node next;
 
     public StatementListNode(SourcePos srcPos, Node value, Node next) {
-        this(srcPos.line(), srcPos.column(), value, next);
-    }
-
-    public StatementListNode(int line, int column, Node value, Node next) {
-        super(line, column);
+        super(srcPos);
         this.value = value;
         this.next = next;
     }

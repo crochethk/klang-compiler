@@ -1,7 +1,8 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
 import cc.crochethk.compilerbau.praktikum.Visitable;
-import cc.crochethk.compilerbau.praktikum.ast.types.Type;
+import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
+import cc.crochethk.compilerbau.praktikum.Type;
 
 public abstract class Node implements Visitable {
     /// The line where the node's token begins in the source file.
@@ -12,9 +13,9 @@ public abstract class Node implements Visitable {
     /// The result type of the node.
     public Type theType = null;
 
-    protected Node(int line, int column) {
-        this.line = line;
-        this.column = column;
+    protected Node(SourcePos srcPos) {
+        this.line = srcPos.line();
+        this.column = srcPos.column();
     }
 
     public boolean isEmpty() {

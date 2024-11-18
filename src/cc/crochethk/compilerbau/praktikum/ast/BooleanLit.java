@@ -11,11 +11,7 @@ public class BooleanLit extends Node {
     public boolean value;
 
     public BooleanLit(SourcePos srcPos, boolean value) {
-        this(srcPos.line(), srcPos.column(), value);
-    }
-
-    public BooleanLit(int line, int col, boolean value) {
-        super(line, col);
+        super(srcPos);
         this.value = value;
     }
 

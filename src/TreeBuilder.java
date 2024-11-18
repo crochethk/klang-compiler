@@ -28,8 +28,7 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitZahl(L1Parser.ZahlContext ctx) {
         var srcPos = getSourcePos(ctx);
-        var node = new IntLit(
-                srcPos.line(), srcPos.column(), Integer.parseInt(ctx.NUMBER().getText()));
+        var node = new IntLit(srcPos, Integer.parseInt(ctx.NUMBER().getText()));
         ctx.result = node;
     }
 
@@ -37,7 +36,7 @@ public class TreeBuilder extends L1BaseListener {
     public void exitBool(L1Parser.BoolContext ctx) {
         var srcPos = getSourcePos(ctx);
         boolean value = ctx.BOOLEAN().getText().equals("true");
-        var node = new BooleanLit(srcPos.line(), srcPos.column(), value);
+        var node = new BooleanLit(srcPos, value);
         ctx.result = node;
     }
 
@@ -100,7 +99,7 @@ public class TreeBuilder extends L1BaseListener {
             var condition = ctx.expr(0).result;
             var then = ctx.expr(1).result;
             var otherwise = ctx.ternaryExpr().result;
-            ctx.result = new TernaryConditionalExpr(srcPos.line(), srcPos.column(),
+            ctx.result = new TernaryConditionalExpr(srcPos,
                     condition, then, otherwise);
         } else {
             var srcPos = getSourcePos(ctx);
@@ -116,7 +115,7 @@ public class TreeBuilder extends L1BaseListener {
             var condition = ctx.expr(0).result;
             var then = ctx.expr(1).result;
             var otherwise = ctx.ternaryExpr().result;
-            ctx.result = new TernaryConditionalExpr(srcPos.line(), srcPos.column(),
+            ctx.result = new TernaryConditionalExpr(srcPos,
                     condition, then, otherwise);
         } else {
             ctx.result = ctx.expr(0).result;
@@ -130,8 +129,8 @@ public class TreeBuilder extends L1BaseListener {
         var then = ctx.statement(0).result;
         var otherwise = ctx.statement(1) != null
                 ? ctx.statement(1).result
-                : new EmptyNode(srcPos.line(), srcPos.column());
-        ctx.result = new IfElseStat(srcPos.line(), srcPos.column(),
+                : new EmptyNode(srcPos);
+        ctx.result = new IfElseStat(srcPos,
                 condition, then, otherwise);
     }
 
@@ -140,15 +139,15 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         if (ctx.KW_LET() != null) {
             ctx.result = new VarDeclareStat(
-                    srcPos.line(), srcPos.column(), ctx.IDENT().getText(), ctx.type().result);
+                    srcPos, ctx.IDENT().getText(), ctx.type().result);
         } else if (ctx.ASSIGN() != null) {
             ctx.result = new VarAssignStat(
-                    srcPos.line(), srcPos.column(), ctx.IDENT().getText(), ctx.expr().result);
+                    srcPos, ctx.IDENT().getText(), ctx.expr().result);
         } else if (ctx.KW_RETURN() != null) {
             var expr = ctx.expr() != null
                     ? ctx.expr().result
-                    : new EmptyNode(srcPos.line(), srcPos.column());
-            ctx.result = new ReturnStat(srcPos.line(), srcPos.column(), expr);
+                    : new EmptyNode(srcPos);
+            ctx.result = new ReturnStat(srcPos, expr);
         } else {
             throw new UnsupportedOperationException(
                     "Unhandled `basicStatement` alternative '" + ctx.getText() + "' at " + srcPos);
@@ -162,8 +161,8 @@ public class TreeBuilder extends L1BaseListener {
             var currentStatement = ctx.basicStatement().result;
             var next = ctx.statement() != null
                     ? ctx.statement().result
-                    : new EmptyNode(srcPos.line(), srcPos.column());
-            ctx.result = new StatementListNode(srcPos.line(), srcPos.column(), currentStatement, next);
+                    : new EmptyNode(srcPos);
+            ctx.result = new StatementListNode(srcPos, currentStatement, next);
         } else if (ctx.ifElse() != null) {
             ctx.result = ctx.ifElse().result;
         } else {
@@ -180,10 +179,10 @@ public class TreeBuilder extends L1BaseListener {
             var args = ctx.expr() != null
                     ? ctx.expr().stream().map(expr -> expr.result).toList()
                     : null;
-            ctx.result = new FunCall(srcPos.line(), srcPos.column(), ctx.IDENT().getText(), args);
+            ctx.result = new FunCall(srcPos, ctx.IDENT().getText(), args);
         } else if (ctx.IDENT() != null && ctx.LPAR() == null) {
             // variable access
-            ctx.result = new Var(srcPos.line(), srcPos.column(), ctx.IDENT().getText());
+            ctx.result = new Var(srcPos, ctx.IDENT().getText());
         } else {
             throw new UnsupportedOperationException(
                     "Unhandled `varOrFunCall` alternative '" + ctx.getText() + "' at " + srcPos);
@@ -197,7 +196,7 @@ public class TreeBuilder extends L1BaseListener {
         if (ctx.primitiveType() != null) {
             var ttext = ctx.primitiveType().getText();
             result = new TypeNode(
-                    srcPos.line(), srcPos.column(),
+                    srcPos,
                     ttext, true);
         } else {
             throw new UnsupportedOperationException(
@@ -215,14 +214,14 @@ public class TreeBuilder extends L1BaseListener {
                 .map(p -> new Parameter(p.IDENT().getText(), p.type().result)).toList();
         Node body = ctx.statement().result;
         ctx.result = new FunDef(
-                srcPos.line(), srcPos.column(), name, params, resturnType, body);
+                srcPos, name, params, resturnType, body);
     }
 
     @Override
     public void exitStart(L1Parser.StartContext ctx) {
         var srcPos = getSourcePos(ctx);
         List<FunDef> defs = ctx.definition().stream().map(d -> d.result).toList();
-        ctx.result = new Prog(srcPos.line(), srcPos.column(), defs);
+        ctx.result = new Prog(srcPos, defs);
     }
 
     //
@@ -237,12 +236,12 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         var lhs = ctx.expr(0).result;
         var rhs = ctx.expr(1).result;
-        return new BinOpExpr(srcPos.line(), srcPos.column(), lhs, op, rhs);
+        return new BinOpExpr(srcPos, lhs, op, rhs);
     }
 
     private Node parseUnaryOpExpr(L1Parser.ExprContext ctx, UnaryOp op) {
         var srcPos = getSourcePos(ctx);
         var operand = ctx.expr(0).result;
-        return new UnaryOpExpr(srcPos.line(), srcPos.column(), operand, op);
+        return new UnaryOpExpr(srcPos, operand, op);
     }
 }

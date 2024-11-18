@@ -43,11 +43,7 @@ public class UnaryOpExpr extends Node {
     }
 
     public UnaryOpExpr(SourcePos srcPos, Node operand, UnaryOp op) {
-        this(srcPos.line(), srcPos.column(), operand, op);
-    }
-
-    public UnaryOpExpr(int line, int col, Node operand, UnaryOp op) {
-        super(line, col);
+        super(srcPos);
         this.operand = operand;
         this.op = op;
     }

@@ -4,19 +4,20 @@ import java.util.Collections;
 import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
 
 public class Prog extends Node {
     public List<FunDef> funDefs;
     public FunCall entryPoint;
 
-    public Prog(int line, int column, List<FunDef> funDefs) {
+    public Prog(SourcePos srcPos, List<FunDef> funDefs) {
         List<Node> args = Collections.emptyList();
-        FunCall entryPoint = new FunCall(-1, -1, "___main___", args);
-        this(line, column, funDefs, entryPoint);
+        FunCall entryPoint = new FunCall(new SourcePos(-1, -1), "___main___", args);
+        this(srcPos, funDefs, entryPoint);
     }
 
-    public Prog(int line, int column, List<FunDef> funDefs, FunCall entryPoint) {
-        super(line, column);
+    public Prog(SourcePos srcPos, List<FunDef> funDefs, FunCall entryPoint) {
+        super(srcPos);
         this.funDefs = funDefs;
         this.entryPoint = entryPoint;
         // TODO

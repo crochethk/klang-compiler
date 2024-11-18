@@ -19,12 +19,7 @@ public class FunDef extends Node {
 
     public FunDef(SourcePos srcPos, String name, List<Parameter> params,
             TypeNode returnType, Node body) {
-        this(srcPos.line(), srcPos.column(), name, params, returnType, body);
-    }
-
-    public FunDef(int line, int column, String name, List<Parameter> params,
-            TypeNode returnType, Node body) {
-        super(line, column);
+        super(srcPos);
         this.name = name;
         this.params = params != null ? params : Collections.emptyList();
         this.returnType = returnType;

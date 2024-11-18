@@ -8,11 +8,7 @@ public class IfElseStat extends Node {
     public Node then, otherwise;
 
     public IfElseStat(SourcePos srcPos, Node condition, Node then, Node otherwise) {
-        this(srcPos.line(), srcPos.column(), condition, then, otherwise);
-    }
-
-    public IfElseStat(int line, int column, Node condition, Node then, Node otherwise) {
-        super(line, column);
+        super(srcPos);
         this.condition = condition;
         this.then = then;
         this.otherwise = otherwise;

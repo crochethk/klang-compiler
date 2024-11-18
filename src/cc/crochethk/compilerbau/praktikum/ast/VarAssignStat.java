@@ -8,11 +8,7 @@ public class VarAssignStat extends Node {
     public Node expr;
 
     public VarAssignStat(SourcePos srcPos, String targetVarName, Node expr) {
-        this(srcPos.line(), srcPos.column(), targetVarName, expr);
-    }
-
-    public VarAssignStat(int line, int column, String targetVarName, Node expr) {
-        super(line, column);
+        super(srcPos);
         this.targetVarName = targetVarName;
         this.expr = expr;
     }

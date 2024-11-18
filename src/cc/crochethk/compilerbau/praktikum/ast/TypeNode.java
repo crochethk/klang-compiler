@@ -9,11 +9,7 @@ public class TypeNode extends Node {
     public boolean isPrimitive;
 
     public TypeNode(SourcePos srcPos, String typeToken, boolean isPrimitiveType) {
-        this(srcPos.line(), srcPos.column(), typeToken, isPrimitiveType);
-    }
-
-    public TypeNode(int line, int column, String typeToken, boolean isPrimitiveType) {
-        super(line, column);
+        super(srcPos);
         this.typeToken = typeToken;
         this.isPrimitive = isPrimitiveType;
     }

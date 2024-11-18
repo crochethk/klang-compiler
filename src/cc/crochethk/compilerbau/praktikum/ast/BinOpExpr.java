@@ -49,11 +49,7 @@ public class BinOpExpr extends Node {
     }
 
     public BinOpExpr(SourcePos srcPos, Node lhs, BinaryOp op, Node rhs) {
-        this(srcPos.line(), srcPos.column(), lhs, op, rhs);
-    }
-
-    public BinOpExpr(int line, int col, Node lhs, BinaryOp op, Node rhs) {
-        super(line, col);
+        super(srcPos);
         this.lhs = lhs;
         this.op = op;
         this.rhs = rhs;

@@ -11,11 +11,7 @@ public class FunCall extends Node {
     public List<Node> args;
 
     public FunCall(SourcePos srcPos, String name, List<Node> args) {
-        this(srcPos.line(), srcPos.column(), name, args);
-    }
-
-    public FunCall(int line, int column, String name, List<Node> args) {
-        super(line, column);
+        super(srcPos);
         this.name = name;
         this.args = args != null ? args : Collections.emptyList();
     }

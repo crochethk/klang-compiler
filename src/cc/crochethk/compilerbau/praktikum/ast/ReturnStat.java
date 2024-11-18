@@ -7,11 +7,7 @@ public class ReturnStat extends Node {
     public Node expr;
 
     public ReturnStat(SourcePos srcPos, Node expr) {
-        this(srcPos.line(), srcPos.column(), expr);
-    }
-
-    public ReturnStat(int line, int column, Node expr) {
-        super(line, column);
+        super(srcPos);
         this.expr = expr;
     }
 

@@ -11,11 +11,7 @@ public class Var extends Node {
     public String name;
 
     public Var(SourcePos srcPos, String name) {
-        this(srcPos.line(), srcPos.column(), name);
-    }
-
-    public Var(int line, int column, String name) {
-        super(line, column);
+        super(srcPos);
         this.name = name;
     }
 
