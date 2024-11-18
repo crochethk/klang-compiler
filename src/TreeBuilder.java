@@ -16,12 +16,12 @@ import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
+import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
-import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 public class TreeBuilder extends L1BaseListener {
     @Override
@@ -192,19 +192,15 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitType(L1Parser.TypeContext ctx) {
         var srcPos = getSourcePos(ctx);
-        Type result = null;
+        TypeNode result = null;
         if (ctx.primitiveType() != null) {
-            var primitiveCtx = ctx.primitiveType();
-            if (primitiveCtx.T_I64() != null) {
-                result = new I64T(srcPos.line(), srcPos.column(), primitiveCtx.T_I64().getText());
-            } else if (primitiveCtx.T_BOOL() != null) {
-                result = new BoolT(srcPos.line(), srcPos.column(), primitiveCtx.T_BOOL().getText());
-            } else if (primitiveCtx.T_VOID() != null) {
-                result = new VoidT(srcPos.line(), srcPos.column(), primitiveCtx.T_VOID().getText());
-            } else {
-                throw new UnsupportedOperationException(
-                        "Unhandled `type` alternative '" + ctx.getText() + "' at " + srcPos);
-            }
+            var ttext = ctx.primitiveType().getText();
+            result = new TypeNode(
+                    srcPos.line(), srcPos.column(),
+                    ttext, true);
+        } else {
+            throw new UnsupportedOperationException(
+                    "Recognized but unhandled 'type' token '" + ctx.getText() + "' at " + srcPos);
         }
         ctx.result = result;
     }

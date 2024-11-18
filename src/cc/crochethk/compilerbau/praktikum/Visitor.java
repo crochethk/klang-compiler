@@ -12,11 +12,11 @@ import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
+import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
-import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 public interface Visitor<R> {
     default void reportError(Node node, String s) {
@@ -59,5 +59,5 @@ public interface Visitor<R> {
 
     R visit(EmptyNode emptyNode);
 
-    R visit(Type type);
+    R visit(TypeNode type);
 }

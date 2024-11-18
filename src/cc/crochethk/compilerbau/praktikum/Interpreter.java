@@ -195,7 +195,7 @@ public class Interpreter implements Visitor<InterpretResult> {
     }
 
     @Override
-    public InterpretResult visit(Type type) {
+    public InterpretResult visit(TypeNode type) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }

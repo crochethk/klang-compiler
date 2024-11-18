@@ -28,11 +28,11 @@ import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
+import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
-import cc.crochethk.compilerbau.praktikum.ast.types.*;
 
 public class GenJBC implements Visitor<Void> {
     private static final String THE_PROGRAM_CLASS = "___TheProgram___";
@@ -303,41 +303,47 @@ public class GenJBC implements Visitor<Void> {
     }
 
     @Override
-    public Void visit(Type type) {
+    public Void visit(TypeNode type) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    private JvmType mapToJvmType(Type t) {
-        var jvmT = switch (t) {
-            case BoolT _ -> {
-                yield new JvmType(ConstantDescs.CD_boolean, 1);
-            }
-            case I64T _ -> {
-                yield new JvmType(ConstantDescs.CD_long, 2);
-            }
-            case VoidT _ -> {
-                yield new JvmType(ConstantDescs.CD_void, 0);
-            }
-        };
+    // @Override
+    // public Void visit(Type type) {
+    //     // TODO Auto-generated method stub
+    //     return null;
+    // }
 
-        return jvmT;
-    }
+    // private JvmType mapToJvmType(Type t) {
+    //     var jvmT = switch (t) {
+    //         case BoolT _ -> {
+    //             yield new JvmType(ConstantDescs.CD_boolean, 1);
+    //         }
+    //         case I64T _ -> {
+    //             yield new JvmType(ConstantDescs.CD_long, 2);
+    //         }
+    //         case VoidT _ -> {
+    //             yield new JvmType(ConstantDescs.CD_void, 0);
+    //         }
+    //     };
 
-    private class JvmType {
-        /**
-         * The JVM ClassDesc corresponding to this type.
-         */
-        final ClassDesc classDesc;
-        /**
-         * Amount of JVM stack slots (each 32 Bit) occupied by a value
-         * represented by this type
-         */
-        final int slotSize;
+    //     return jvmT;
+    // }
 
-        JvmType(ClassDesc classDesc, int slotSize) {
-            this.classDesc = classDesc;
-            this.slotSize = slotSize;
-        }
-    }
+    // private class JvmType {
+    //     /**
+    //      * The JVM ClassDesc corresponding to this type.
+    //      */
+    //     final ClassDesc classDesc;
+    //     /**
+    //      * Amount of JVM stack slots (each 32 Bit) occupied by a value
+    //      * represented by this type
+    //      */
+    //     final int slotSize;
+
+    //     JvmType(ClassDesc classDesc, int slotSize) {
+    //         this.classDesc = classDesc;
+    //         this.slotSize = slotSize;
+    //     }
+    // }
 }

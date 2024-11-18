@@ -4,7 +4,6 @@ grammar L1;
 // so that we can use it in the parser rules without further ado.
 @parser::header {
     import cc.crochethk.compilerbau.praktikum.ast.*;
-    import cc.crochethk.compilerbau.praktikum.ast.types.*;
 }
 
 start
@@ -19,9 +18,9 @@ definition
 funParam: IDENT COLON type; // "name : type"
 
 type
-	returns[Type result]: primitiveType; // | customType
+	returns[TypeNode result]: primitiveType | refType;
 primitiveType: T_I64 | T_BOOL | T_VOID;
-// customType: IDENT;
+refType: IDENT;
 
 statement
 	returns[Node result]:
