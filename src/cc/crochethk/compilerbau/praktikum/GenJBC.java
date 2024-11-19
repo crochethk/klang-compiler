@@ -6,6 +6,7 @@ import java.lang.classfile.AccessFlags;
 import java.lang.classfile.ClassBuilder;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.CodeBuilder;
+import java.lang.classfile.Label;
 import java.lang.classfile.TypeKind;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
@@ -17,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
@@ -34,6 +37,7 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 
 import static cc.crochethk.compilerbau.praktikum.Type.*;
 
@@ -211,15 +215,119 @@ public class GenJBC implements Visitor<Void> {
 
         // now operands should be loaded onto operand stack
 
-        switch (binOpExpr.op) {
-            // TODO in case of float support these must be adjusted
-            case BinOpExpr.BinaryOp.add -> codeBuilder.ladd();
-            case BinOpExpr.BinaryOp.div -> codeBuilder.ldiv();
+        genOpInstruction(codeBuilder, binOpExpr.lhs.theType, binOpExpr.op);
+        return null;
+    }
+
+    private void genOpInstruction(CodeBuilder cb, Type operandType, BinaryOp op) {
+        boolean error = false;
+        op_switch: switch (op) {
+            case add -> {
+                switch (operandType.jvmTypeKind()) {
+                    case LongType -> cb.ladd();
+                    case DoubleType -> cb.dadd();
+                    default -> error = true;
+                }
+            }
+            case sub -> {
+                switch (operandType.jvmTypeKind()) {
+                    case LongType -> cb.lsub();
+                    case DoubleType -> cb.dsub();
+                    default -> error = true;
+                }
+            }
+            case mult -> {
+                switch (operandType.jvmTypeKind()) {
+                    case LongType -> cb.lmul();
+                    case DoubleType -> cb.dmul();
+                    default -> error = true;
+                }
+            }
+            case div -> {
+                switch (operandType.jvmTypeKind()) {
+                    case LongType -> cb.ldiv();
+                    case DoubleType -> cb.ddiv();
+                    default -> error = true;
+                }
+            }
+            // TODO
+            // case mod -> {}
+            // case pow -> {}
+
+            /** Comparisons
+            * For Double comparisons "dcmpl" and "dcmpg" instructions are used
+            * alike javac seems to do it, i.e. dcmpg for "<"/"<=" and dcmpl otherwise.
+            */
+            case eq -> {
+                Label falseBranch = cb.newLabel();
+                Label afterFalseBranch = cb.newLabel();
+
+                // Compares operands pushing result (-1|0|1) to stack
+                switch (operandType.jvmTypeKind()) {
+                    case LongType -> cb.lcmp();
+                    case DoubleType -> cb.dcmpl();
+                    default -> {
+                        error = true;
+                        break op_switch;
+                    }
+                }
+                cb.ifne(falseBranch);
+                cb.iconst_1(); // true
+                cb.goto_(afterFalseBranch);
+                cb.labelBinding(falseBranch);
+                cb.iconst_0(); // false
+                cb.labelBinding(afterFalseBranch);
+            }
+            //TODO
+            // case neq -> {
+            //     switch (operandType.jvmTypeKind()) {
+            //         case LongType -> cb.l();
+            //         case DoubleType -> cb.d();
+            //         default -> error = true;
+            //     }
+            // }
+
+            // case gt -> {
+            //     switch (operandType.jvmTypeKind()) {
+            //         case LongType -> cb.l();
+            //         case DoubleType -> cb.d();
+            //         default -> error = true;
+            //     }
+            // }
+            // case gteq -> {
+            //     switch (operandType.jvmTypeKind()) {
+            //         case LongType -> cb.l();
+            //         case DoubleType -> cb.d();
+            //         default -> error = true;
+            //     }
+            // }
+            // case lt -> {
+            //     switch (operandType.jvmTypeKind()) {
+            //         case LongType -> cb.l();
+            //         case DoubleType -> cb.d();
+            //         default -> error = true;
+            //     }
+            // }
+            // case lteq -> {
+            //     switch (operandType.jvmTypeKind()) {
+            //         case LongType -> cb.l();
+            //         case DoubleType -> cb.d();
+            //         default -> error = true;
+            //     }
+            // }
+
+            // case and -> {}
+            // case or -> {}
             default -> {
-                throw new UnsupportedOperationException("Operation '" + binOpExpr.op + "' not yet implemented.");
+                throw new UnsupportedOperationException("Operation '" + op
+                        + "' not yet implemented for '" + operandType + ", " + operandType + "'");
             }
         }
-        return null;
+
+        if (error) {
+            throw new UnsupportedOperationException("Operation '"
+                    + op + "' not supported for '" + operandType + ", " + operandType + "'");
+        }
     }
 
     @Override
