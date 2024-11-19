@@ -20,7 +20,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
      * 
      * See bottom of {@url https://docs.oracle.com/javase/specs/jvms/se23/html/jvms-2.html#jvms-2.6.2} 
      */
-    int jvmSize();
+    JvmSize jvmSize();
 
     boolean isPrimitive();
 
@@ -33,10 +33,16 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
     }
 
     Type STRING_T = new RefType("String", "java.lang");
-    Type LONG_T = new PrimType("long", "J", 2);
-    Type BOOLEAN_T = new PrimType("boolean", "Z", 1);
-    Type DOUBLE_T = new PrimType("double", "D", 2);
-    Type VOID_T = new PrimType("void", "V", 1);
+    Type LONG_T = new PrimType("long", "J", JvmSize._2);
+    Type BOOLEAN_T = new PrimType("boolean", "Z", JvmSize._1);
+    Type DOUBLE_T = new PrimType("double", "D", JvmSize._2);
+    Type VOID_T = new PrimType("void", "V", JvmSize._1);
+
+    /**
+     * Not a real jvm type. Just placeholder to avoid null, where the type
+     * couldn't be determined
+     */
+    Type UNKNOWN_T = new PrimType("Unknown", "~", JvmSize.UNDEFINED);
 
     /**
      * Convert given source type to a corresponding JVM type representation.
@@ -53,7 +59,17 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         };
     }
 
-    record PrimType(String name, String jvmDescriptor, int jvmSize) implements Type {
+    enum JvmSize {
+        _1(1), _2(2), UNDEFINED(-1);
+
+        int slots;
+
+        JvmSize(int slots) {
+            this.slots = slots;
+        }
+    }
+
+    record PrimType(String name, String jvmDescriptor, JvmSize jvmSize) implements Type {
         @Override
         public boolean isPrimitive() {
             return true;
@@ -72,8 +88,8 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         }
 
         @Override
-        public int jvmSize() {
-            return 1;
+        public JvmSize jvmSize() {
+            return JvmSize._1;
         }
 
         @Override
