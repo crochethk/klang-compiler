@@ -169,7 +169,7 @@ public class Main {
         */
         System.out.println("--- Generate JavaByteCodeInterpreter");
         var outputDir = "./out_jbc";
-        rootNode.accept(new GenJBC(outputDir));
+        rootNode.accept(new GenJBC(outputDir, "___THE_PROGRAM___"));
     }
 
     private static Node buildNodeTree(String input_code, boolean show_antlr_ast_visualization) throws IOException {
