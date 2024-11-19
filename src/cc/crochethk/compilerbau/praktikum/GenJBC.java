@@ -335,17 +335,9 @@ public class GenJBC implements Visitor<Void> {
         // load arguments before calling function
         funCall.args.forEach(arg -> arg.accept(this));
 
-        var funDef = funDefs.get(funCall.name);
+        var argsClassDescs = funCall.args.stream().map(arg -> arg.theType.classDesc()).toList();
+        var methDescriptor = MethodTypeDesc.of(funCall.theType.classDesc(), argsClassDescs);
 
-        // TODO ----- TEMORARY SOLUTION until Node.theType is correctly set by TypeChecker -------
-        List<ClassDesc> argsClassDescs = new ArrayList<>(funCall.args.size());
-        for (var p : funDef.params) { // here we should actually work with the given arg-types
-            var jvmT = mapToJvmType(p.type());
-            argsClassDescs.add(jvmT.classDesc);
-        }
-        var methDescriptor = MethodTypeDesc.of(
-                mapToJvmType(funDef.returnType).classDesc,
-                argsClassDescs);
         codeBuilder.invokestatic(ClassDesc.of(packageName, className), funCall.name, methDescriptor);
         return null;
     }
