@@ -1,0 +1,10 @@
+
+// Calculates average of two integer values
+fn average(a: int, b:int, dummy_bool: boolean /* this is only a dummy parameter to test boolean parsing and typecheck*/): int {
+    return (
+        a+b
+    ) /2;
+}
+fn ___main___(): int {
+    return average(14, 70, false); // -> 42
+}
