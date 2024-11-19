@@ -128,13 +128,26 @@ public class TypeChecker implements Visitor<Void> {
     @Override
     public Void visit(Prog prog) {
         // Before walk down the tree, we need to make funDefs available for other "visit"s
-        prog.funDefs.forEach(funDef -> funDefs.put(funDef.name, funDef));
+        prog.funDefs.forEach(funDef -> {
+            var previous = funDefs.put(funDef.name, funDef);
+            if (previous != null) {
+                reportError(funDef, "Function '" + funDef.name + "' defined multiple times");
+            }
+        });
         prog.funDefs.forEach(def -> def.accept(this));
 
-        // Check entrypoint call
-        prog.entryPoint.accept(this);
+        prog.theType = Type.VOID_T;
 
-        // prog.theType does not matter
+        // Check optional entrypoint call
+        if (prog.entryPoint != null) {
+            prog.entryPoint.accept(this);
+            prog.theType = prog.entryPoint.theType;
+
+            if (!funDefs.containsKey(prog.entryPoint.name)) {
+                reportError(prog, "Entrypoint function '" + prog.entryPoint.name
+                        + "' specified but no definition with matching name exists");
+            }
+        }
         return null;
     }
 
