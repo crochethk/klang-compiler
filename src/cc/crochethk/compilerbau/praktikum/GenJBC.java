@@ -6,6 +6,7 @@ import java.lang.classfile.AccessFlags;
 import java.lang.classfile.ClassBuilder;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.CodeBuilder;
+import java.lang.classfile.TypeKind;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
@@ -33,6 +34,8 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+
+import static cc.crochethk.compilerbau.praktikum.Type.*;
 
 /**
  * Visitor that generates Java Byte Code by traversing the AST nodes.
@@ -121,14 +124,12 @@ public class GenJBC implements Visitor<Void> {
                 // Push the result onto operand stack
                 entryPointCall.accept(this);
 
-                var resultClassDesc = ClassDesc.ofDescriptor(entryPointCall.theType.jvmDescriptor());
-
                 codeBuilder.invokevirtual(
                         CD_PrintStream, "println",
                         MethodTypeDesc.of(
                                 // Return type of println
                                 ConstantDescs.CD_void,
-                                resultClassDesc));
+                                entryPointCall.theType.classDesc()));
 
                 codeBuilder.return_();
             });
@@ -151,7 +152,7 @@ public class GenJBC implements Visitor<Void> {
             paramsClassDescs.add(type.classDesc());
 
             vars.put(p.name(), pStoreIdx);
-            pStoreIdx += type.jvmSize().slots;
+            pStoreIdx += type.jvmSize();
         }
 
         // Generate actual method defintion
@@ -181,7 +182,7 @@ public class GenJBC implements Visitor<Void> {
     @Override
     public Void visit(ReturnStat returnStat) {
         returnStat.expr.accept(this);
-        codeBuilder.lreturn(); // TODO choose based on actual type
+        codeBuilder.return_(returnStat.theType.jvmTypeKind());
         return null;
     }
 
@@ -208,7 +209,7 @@ public class GenJBC implements Visitor<Void> {
         binOpExpr.lhs.accept(this);
         binOpExpr.rhs.accept(this);
 
-        // now operands should be loaded into idk... registers?
+        // now operands should be loaded onto operand stack
 
         switch (binOpExpr.op) {
             // TODO in case of float support these must be adjusted
