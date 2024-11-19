@@ -231,11 +231,35 @@ public class TypeChecker implements Visitor<Void> {
     @Override
     public Void visit(FunCall funCall) {
         funCall.args.forEach(arg -> arg.accept(this));
-        /*
-        TODO TODO TODO TODO TODO 
-        - check if FunCall args types are consistent with the matching FunDef
-        - set "funCall.theType = funDef.returnType.theType"
-        */
+
+        var funDef = funDefs.get(funCall.name);
+        if (funDef == null) {
+            reportError(funCall, "Unknown function '" + funCall.name + "'");
+            funCall.theType = Type.UNKNOWN_T;
+
+        } else {
+            //funDef found
+            funCall.theType = funDef.returnType.theType;
+
+            var paramCount = funDef.params.size();
+            var argsCount = funCall.args.size();
+            if (paramCount != argsCount) {
+                reportError(funCall,
+                        "Wrong number of arguments: expected " + paramCount
+                                + " but " + argsCount + " provided");
+            }
+
+            var argsIter = funCall.args.iterator();
+            for (var p : funDef.params) {
+                if (!argsIter.hasNext()) {
+                    break;
+                }
+                var arg = argsIter.next();
+                if (!p.type().theType.equals(arg.theType)) {
+                    reportError(funCall, "Invalid argument type '" + arg.theType + "'");
+                }
+            }
+        }
 
         return null;
     }

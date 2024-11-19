@@ -195,9 +195,7 @@ public class TreeBuilder extends L1BaseListener {
         TypeNode result = null;
         if (ctx.primitiveType() != null) {
             var ttext = ctx.primitiveType().getText();
-            result = new TypeNode(
-                    srcPos,
-                    ttext, true);
+            result = new TypeNode(srcPos, ttext, true);
         } else {
             throw new UnsupportedOperationException(
                     "Recognized but unhandled 'type' token '" + ctx.getText() + "' at " + srcPos);

@@ -209,7 +209,8 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(TypeNode type) {
-        return write(type.tokenText);}
+        return write(type.typeToken);
+    }
 
     private void write_indent() {
         write("\n");
