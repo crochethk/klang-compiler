@@ -107,33 +107,29 @@ public class GenJBC implements Visitor<Void> {
                 this.codeBuilder = cdb;
 
                 /** Generate code that:
-                 *      - calls the entryPoint function
-                 *      - wraps its return value into a "System.out.println" call
-                 *          which outputs it to stdout
+                 *  - calls the entryPoint function
+                 *  - passes the return value to "System.out.println" for outputs to stdout
                  */
                 var CD_PrintStream = ClassDesc.of(java.io.PrintStream.class.getName());
+
+                // Push "System.out" reference onto operand stack
                 codeBuilder.getstatic(
                         ClassDesc.of(java.lang.System.class.getName()), "out",
                         CD_PrintStream);
 
+                // Execute entrypoint function
+                // Push the result onto operand stack
                 entryPointCall.accept(this);
-                // the result of the entryPoint call is expected to be on top of operand stack now
+
+                var resultClassDesc = ClassDesc.ofDescriptor(entryPointCall.theType.jvmDescriptor());
 
                 codeBuilder.invokevirtual(
                         CD_PrintStream, "println",
                         MethodTypeDesc.of(
+                                // Return type of println
                                 ConstantDescs.CD_void,
-                                // TODO change this to handle the actual return type of entryPoint
-                                ConstantDescs.CD_long /* <<<< */));
+                                resultClassDesc));
 
-                /**
-                 * "pop" necessary, else "control flow fall through".
-                 * Reason seems to be:
-                 * - stack must be empty before return
-                 * - a long (which is returned by ___main__ in this case) takes two stack slots
-                 * - "pop2" removes the two slots ontop of the stack
-                 */
-                //codeBuilder.pop2();
                 codeBuilder.return_();
             });
         });
