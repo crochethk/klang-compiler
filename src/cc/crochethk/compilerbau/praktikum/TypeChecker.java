@@ -1,9 +1,6 @@
 package cc.crochethk.compilerbau.praktikum;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -82,62 +79,38 @@ public class TypeChecker implements Visitor<Void> {
     }
 
     /**
-     * List used to keep track of return types of a function's body.
-     * Here only references to "Node.theType" are to be added.
-     */
-    private List<Type> funDefPathsReturnTypes = new ArrayList<>();
-
-    /**
      * Mapping of a function's local variable names and their  associated declared/inferred types.
      * Here only references to "Node.theType" are to be added.
      */
     private Map<String, Type> funDefVarTypes = new HashMap<>();
 
-    private Map<String, FunDef> funDefs = new HashMap<>();
+    /** Reference to currently inspected function def */
+    private FunDef currentFun = null;
+    /** Return statements count for currentFun */
+    private int currentFunReturnCount = 0;
 
     @Override
     public Void visit(FunDef funDef) {
-        funDefs.put(funDef.name, funDef);
-        // Compute types of subnodes
+        currentFun = funDef;
+        currentFunReturnCount = 0;
+
+        // Compute types of signature nodes
         funDef.params.forEach(p -> p.type().accept(this));
         funDef.returnType.accept(this);
 
-        // Make sure the lookup collections are empty before evaluating the funDef
-        funDefPathsReturnTypes.clear();
+        // Make sure the local variables lookup table is empty before proceeding
         funDefVarTypes.clear();
 
         funDef.params.forEach(p -> funDefVarTypes.put(p.name(), p.type().theType));
 
-        /*
-        Each possible body-node-type must consider adding its result type to funDefPathsReturnTypes.
-        Though actually only returnStat should be relevant, since all other do not immediately
-        return a value to the caller.
-        
-        This leads to three cases, regarding the nested nodes inside "funDef.body":
-        1. all "returnStat" have the same types ("theType" field)
-        2. "returnStat" types are unequal
-        3. there are no "returnStat"
-            [x] -> infer Void in this case
-        */
+        // Check return type consistency in the according node(s)
+        // using "currentFun" and the "currentFunReturnCount" counter
         funDef.body.accept(this);
-        /*
-        Check the aggregated "funDefPathsReturnTypes":
-            [x] - are they consistent with "funDef.returnType.theType"?
-            [x] - are all basically the same? (see above)
-        */
 
         // Infer 'void' for no returns
-        if (funDefPathsReturnTypes.isEmpty()) {
-            funDefPathsReturnTypes.add(createVoidT(funDef.line, funDef.column));
-        }
-        var typeSample = funDefPathsReturnTypes.getFirst();
-
-        if (!(typeSample.equals(funDef.returnType.theType))) {
-            reportError(funDef, "Declared type '" + funDef.returnType.theType
-                    + "' but returns incompatible '" + typeSample + "')");
-        }
-        if (!(funDefPathsReturnTypes.stream().allMatch(t -> typeSample.equals(t)))) {
-            reportError(funDef, "Not all code paths return the same type");
+        if (currentFunReturnCount == 0 && funDef.returnType.theType != Type.VOID_T) {
+            reportError(funDef, "Declared return type '" + funDef.returnType.theType
+                    + "' but no return statement was found");
         }
 
         /*
@@ -150,20 +123,34 @@ public class TypeChecker implements Visitor<Void> {
         return null;
     }
 
+    private Map<String, FunDef> funDefs = new HashMap<>();
+
     @Override
     public Void visit(Prog prog) {
-        prog.entryPoint.accept(this);
+        // Before walk down the tree, we need to make funDefs available for other "visit"s
+        prog.funDefs.forEach(funDef -> funDefs.put(funDef.name, funDef));
         prog.funDefs.forEach(def -> def.accept(this));
 
-        prog.theType = prog.entryPoint.theType;
+        // Check entrypoint call
+        prog.entryPoint.accept(this);
+
+        // prog.theType does not matter
         return null;
     }
 
     @Override
     public Void visit(ReturnStat returnStat) {
+        var retType = currentFun.returnType.theType;
+        currentFunReturnCount += 1;
+        returnStat.theType = retType;
+
         returnStat.expr.accept(this);
-        returnStat.theType = returnStat.expr.theType;
-        funDefPathsReturnTypes.add(returnStat.theType);
+        var exprType = returnStat.expr.theType;
+
+        if (!retType.equals(exprType)) {
+            reportError(returnStat, "Expected return type '" + retType
+                    + "' but found incompatible '" + exprType + "'");
+        }
         return null;
     }
 

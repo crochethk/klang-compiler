@@ -28,10 +28,15 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         return !isPrimitive();
     }
 
+    default boolean isNumeric() {
+        return this.equals(LONG_T) || this.equals(DOUBLE_T);
+    }
+
     Type STRING_T = new RefType("String", "java.lang");
     Type LONG_T = new PrimType("long", "J", 2);
     Type BOOLEAN_T = new PrimType("boolean", "Z", 1);
     Type DOUBLE_T = new PrimType("double", "D", 2);
+    Type VOID_T = new PrimType("void", "V", 1);
 
     /**
      * Convert given source type to a corresponding JVM type representation.
