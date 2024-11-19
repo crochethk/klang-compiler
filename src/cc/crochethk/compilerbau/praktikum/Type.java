@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum;
 
+import java.lang.constant.ClassDesc;
+
 public sealed interface Type permits Type.PrimType, Type.RefType {
     /**
      * The java type/class name (e.g. "boolean" or "String")
@@ -13,6 +15,10 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
      * the matching ClassDesc.
      */
     String jvmDescriptor();
+
+    default ClassDesc classDesc() {
+        return ClassDesc.ofDescriptor(jvmDescriptor());
+    }
 
     /**
      * How many slots of the JVM's operand stack this type takes up.
@@ -59,6 +65,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         };
     }
 
+    /** Enum encapsulating the number of slots required by the represented JVM type */
     enum JvmSize {
         _1(1), _2(2), UNDEFINED(-1);
 

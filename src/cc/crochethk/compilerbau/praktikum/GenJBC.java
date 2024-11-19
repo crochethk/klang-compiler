@@ -137,31 +137,26 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(FunDef funDef) {
-        // Purge vars stored by previous funDef
-        vars.clear();
-        varTypes.clear();
-
-        // Map parameters to JVM types and compute stack offsets
-        int stackIdx = 0;
-        List<ClassDesc> paramsClassDescs = new ArrayList<>(funDef.params.size());
-        for (var p : funDef.params) {
-            var jvmT = mapToJvmType(p.type());
-            paramsClassDescs.add(jvmT.classDesc);
-
-            vars.put(p.name(), stackIdx);
-            stackIdx += jvmT.slotSize;
-
-            // TODO ----- TEMORARY SOLUTION -------
-            varTypes.put(p.name(), jvmT);
-            // TODO -------------------------------
-        }
-
         // Add to function lookup table for later use
         funDefs.put(funDef.name, funDef);
 
+        // Purge vars stored by previous funDef
+        vars.clear();
+
+        // Map parameters to JVM types and compute their initial stack indices
+        int pStoreIdx = 0;
+        List<ClassDesc> paramsClassDescs = new ArrayList<>(funDef.params.size());
+        for (var p : funDef.params) {
+            var type = p.type().theType;
+            paramsClassDescs.add(type.classDesc());
+
+            vars.put(p.name(), pStoreIdx);
+            pStoreIdx += type.jvmSize().slots;
+        }
+
         // Generate actual method defintion
         var methDescriptor = MethodTypeDesc.of(
-                mapToJvmType(funDef.returnType).classDesc,
+                funDef.returnType.theType.classDesc(),
                 paramsClassDescs);
 
         var methFlags = AccessFlags.ofMethod(AccessFlag.STATIC, AccessFlag.PUBLIC).flagsMask();
