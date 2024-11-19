@@ -7,7 +7,6 @@ import java.lang.classfile.ClassBuilder;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.CodeBuilder;
 import java.lang.classfile.Label;
-import java.lang.classfile.TypeKind;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
@@ -18,8 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
@@ -39,8 +36,6 @@ import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 
-import static cc.crochethk.compilerbau.praktikum.Type.*;
-
 /**
  * Visitor that generates Java Byte Code by traversing the AST nodes.
  * The generated code is wrapped by a class defined by the specified fully
@@ -57,9 +52,9 @@ public class GenJBC implements Visitor<Void> {
 
     private Map<String, FunDef> funDefs = new HashMap<>();
 
-    /** 
-     * Temporary offset store for local variables
-     *  while the function's code is built
+    /**
+     * Function-local variable store offsets
+     * (for use in "Xload(slot)" instructions)
      */
     private Map<String, Integer> vars = new HashMap<>();
 
@@ -342,24 +337,21 @@ public class GenJBC implements Visitor<Void> {
         return null;
     }
 
-    // TODO ----- TEMORARY SOLUTION -------
-    // TODO this is a temporary solution, until TypeChecker correctly sets "Node.theType"
-    // TODO in all Node types.
-    Map<String, JvmType> varTypes = new HashMap<>();
-    // TODO -------------------------------
-
     @Override
-    public Void visit(Var var) { // TODO dont use the temporary "varTypes" map
-        var varIdx = vars.get(var.name);
-        var classDesc = varTypes.get(var.name).classDesc;
-        if (classDesc.equals(ConstantDescs.CD_long)) {
-            codeBuilder.lload(varIdx);
-        } else if (classDesc.equals(ConstantDescs.CD_boolean)) {
-            codeBuilder.iload(varIdx);
-        } else {
-            throw new AssertionError("var type '" + classDesc + "' did not match any expected ClassDesc");
-        }
+    public Void visit(Var var) {
+        var slot = vars.get(var.name);
 
+        switch (var.theType.jvmTypeKind()) {
+            case LongType -> codeBuilder.lload(slot);
+            case DoubleType -> codeBuilder.dload(slot);
+            case BooleanType -> codeBuilder.iload(slot);
+            // case ReferenceType -> {}
+            case VoidType -> throw new UnsupportedOperationException(
+                    "Loading the type '" + var.theType.jvmName() + "' is not supported");
+            default -> throw new AssertionError(
+                    "Could not find a matching load instruction for var'" + var.name + "'");
+
+        }
         return null;
     }
 
