@@ -14,17 +14,19 @@ import cc.crochethk.compilerbau.praktikum.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 
 public class L1Compiler {
-    static String DEFAULT_OUTDIR = "out_jbc";
+    static String DEFAULT_OUTDIR = "gen/L1CompilerJBC";
     static String DEFAULT_SOURCEFILE = "tests/CalcAverage.l1";
 
-    public static void compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
+    public static GenJBC.Status compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
         var ast = buildAST(inputCode);
 
         // Type checking
         ast.accept(new TypeChecker());
 
         // Code generation
-        ast.accept(new GenJBC(outputDir, fullClassName));
+        var codeGenerator = new GenJBC(outputDir, fullClassName);
+        ast.accept(codeGenerator);
+        return codeGenerator.status;
     }
 
     /**
@@ -61,8 +63,27 @@ public class L1Compiler {
         for (var fp : filePaths) {
             var file = fp.toFile();
             var reader = new FileReader(file);
-            String fullClassName = fp.toString().replace(File.separator, ".");
-            compile(reader, outputDir, fullClassName);
+
+            var fileNameNoExt = fp.getFileName().toString();
+            var extIdx = fileNameNoExt.lastIndexOf('.');
+            fileNameNoExt = fileNameNoExt.substring(0, extIdx > 0 ? extIdx : 0);
+            var fpBase = fp.getParent();
+            fpBase = fpBase != null ? fpBase : Path.of("");
+
+            String fullClassName = fpBase
+                    .resolve(fileNameNoExt)
+                    .toString()
+                    .replace(File.separator, ".");
+            var status = compile(reader, outputDir, fullClassName);
+
+            var msg = switch (status) {
+                case GenJBC.Status.Success -> "Success: '"
+                        + Path.of(outputDir, fpBase.toString(), fileNameNoExt).toString()
+                        + ".class'";
+                case GenJBC.Status.Failure -> "Failed: '" + fp.toString() + "'";
+                case GenJBC.Status.Ready -> "Error: somehow did not even run?";
+            };
+            System.out.println(msg);
         }
     }
 }

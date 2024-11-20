@@ -43,6 +43,12 @@ import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
  * by the JVM.
  */
 public class GenJBC implements Visitor<Void> {
+    public enum Status {
+        Success, Failure, Ready
+    }
+
+    public Status status = Status.Ready;
+
     private String outDir;
     private String packageName;
     private String className;
@@ -96,8 +102,11 @@ public class GenJBC implements Visitor<Void> {
             file.write(bytes);
             file.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println(e);
+            status = Status.Failure;
         }
+
+        status = Status.Success;
         return null;
     }
 
@@ -412,7 +421,7 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(TypeNode type) {
-        // TODO Auto-generated method stub
+        // -> skip
         return null;
     }
 
