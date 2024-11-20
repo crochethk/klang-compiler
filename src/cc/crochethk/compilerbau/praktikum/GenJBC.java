@@ -57,16 +57,10 @@ public class GenJBC implements Visitor<Void> {
     private Map<String, FunDef> funDefs = new HashMap<>();
 
     /**
-     * Function-local variable store offsets
-     * (for use in "Xload(slot)" instructions)
+     * Manager for function-local variable offset lookup.
+     * (for example for use in "Xload(slot)" instructions)
      */
-    private Map<String, Integer> vars = new HashMap<>();
-
-    /**
-     * TODO encapsulate this and "vars" in a class/record 
-     * Next vars store slot index
-     */
-    private int nextLocalStoreIdx;
+    private VariableSlotManager varsManager = new VariableSlotManager();
 
     /**
      * @param outputDir The path to the directory generated files will be written to.
@@ -154,17 +148,14 @@ public class GenJBC implements Visitor<Void> {
         funDefs.put(funDef.name, funDef);
 
         // Purge vars stored by previous funDef
-        vars.clear();
-        nextLocalStoreIdx = 0;
+        varsManager.reset();
 
         // Map parameters to JVM types and compute their initial stack indices
         List<ClassDesc> paramsClassDescs = new ArrayList<>(funDef.params.size());
         for (var p : funDef.params) {
             var type = p.type().theType;
             paramsClassDescs.add(type.classDesc());
-
-            vars.put(p.name(), nextLocalStoreIdx);
-            nextLocalStoreIdx += type.jvmSize();
+            varsManager.reserveSlot(p.name(), type);
         }
 
         // Generate actual method defintion
@@ -367,7 +358,7 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(Var var) {
-        var slot = vars.get(var.name);
+        var slot = varsManager.getSlot(var.name);
 
         switch (var.theType.jvmTypeKind()) {
             case LongType -> codeBuilder.lload(slot);
@@ -420,15 +411,14 @@ public class GenJBC implements Visitor<Void> {
     @Override
     public Void visit(VarDeclareStat varDeclareStat) {
         // we are fine with redefintion
-        vars.put(varDeclareStat.varName, nextLocalStoreIdx);
-        nextLocalStoreIdx += varDeclareStat.declaredType.theType.jvmSize();
+        varsManager.reserveSlot(varDeclareStat.varName, varDeclareStat.declaredType.theType);
         return null;
     }
 
     @Override
     public Void visit(VarAssignStat varAssignStat) {
         varAssignStat.expr.accept(this);
-        var slot = vars.get(varAssignStat.targetVarName);
+        var slot = varsManager.getSlot(varAssignStat.targetVarName);
         codeBuilder.storeLocal(varAssignStat.theType.jvmTypeKind(), slot);
         return null;
     }
@@ -463,42 +453,30 @@ public class GenJBC implements Visitor<Void> {
         return null;
     }
 
-    // @Override
-    // public Void visit(Type type) {
-    //     // TODO Auto-generated method stub
-    //     return null;
-    // }
+    private class VariableSlotManager {
+        private Map<String, Integer> varSlots = new HashMap<>();
+        private int nextSlot = 0;
 
-    // private JvmType mapToJvmType(Type t) {
-    //     var jvmT = switch (t) {
-    //         case BoolT _ -> {
-    //             yield new JvmType(ConstantDescs.CD_boolean, 1);
-    //         }
-    //         case I64T _ -> {
-    //             yield new JvmType(ConstantDescs.CD_long, 2);
-    //         }
-    //         case VoidT _ -> {
-    //             yield new JvmType(ConstantDescs.CD_void, 0);
-    //         }
-    //     };
+        /** Resets this manager to a state similar to a new instance */
+        void reset() {
+            varSlots.clear();
+            nextSlot = 0;
+        }
 
-    //     return jvmT;
-    // }
+        /**
+         * Reserves slots for variable of varName suitable to store the given Type
+         * and returns starting slot index.
+         */
+        Integer reserveSlot(String varName, Type t) {
+            int slot = nextSlot;
+            varSlots.put(varName, slot);
+            nextSlot += t.jvmSize();
+            return slot;
+        }
 
-    // private class JvmType {
-    //     /**
-    //      * The JVM ClassDesc corresponding to this type.
-    //      */
-    //     final ClassDesc classDesc;
-    //     /**
-    //      * Amount of JVM stack slots (each 32 Bit) occupied by a value
-    //      * represented by this type
-    //      */
-    //     final int slotSize;
-
-    //     JvmType(ClassDesc classDesc, int slotSize) {
-    //         this.classDesc = classDesc;
-    //         this.slotSize = slotSize;
-    //     }
-    // }
+        /** Returns the slot index associated with the given varName. */
+        Integer getSlot(String varName) {
+            return varSlots.get(varName);
+        }
+    }
 }
