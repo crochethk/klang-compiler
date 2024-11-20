@@ -63,6 +63,12 @@ public class GenJBC implements Visitor<Void> {
     private Map<String, Integer> vars = new HashMap<>();
 
     /**
+     * TODO encapsulate this and "vars" in a class/record 
+     * Next vars store slot index
+     */
+    private int nextLocalStoreIdx;
+
+    /**
      * @param outputDir The path to the directory generated files will be written to.
      * @param fullClassName
      * The fully qualified class name of pattern {@code [<packageName>.]<className>},
@@ -149,16 +155,16 @@ public class GenJBC implements Visitor<Void> {
 
         // Purge vars stored by previous funDef
         vars.clear();
+        nextLocalStoreIdx = 0;
 
         // Map parameters to JVM types and compute their initial stack indices
-        int pStoreIdx = 0;
         List<ClassDesc> paramsClassDescs = new ArrayList<>(funDef.params.size());
         for (var p : funDef.params) {
             var type = p.type().theType;
             paramsClassDescs.add(type.classDesc());
 
-            vars.put(p.name(), pStoreIdx);
-            pStoreIdx += type.jvmSize();
+            vars.put(p.name(), nextLocalStoreIdx);
+            nextLocalStoreIdx += type.jvmSize();
         }
 
         // Generate actual method defintion
@@ -413,13 +419,17 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(VarDeclareStat varDeclareStat) {
-        // TODO Auto-generated method stub
+        // we are fine with redefintion
+        vars.put(varDeclareStat.varName, nextLocalStoreIdx);
+        nextLocalStoreIdx += varDeclareStat.declaredType.theType.jvmSize();
         return null;
     }
 
     @Override
     public Void visit(VarAssignStat varAssignStat) {
-        // TODO Auto-generated method stub
+        varAssignStat.expr.accept(this);
+        var slot = vars.get(varAssignStat.targetVarName);
+        codeBuilder.storeLocal(varAssignStat.theType.jvmTypeKind(), slot);
         return null;
     }
 
