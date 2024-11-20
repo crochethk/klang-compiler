@@ -223,7 +223,7 @@ public class GenJBC implements Visitor<Void> {
 
     private void genOpInstruction(CodeBuilder cb, Type operandType, BinaryOp op) {
         boolean error = false;
-        op_switch: switch (op) {
+        switch (op) {
             /** Arithmetics */
             case add -> {
                 switch (operandType.jvmTypeKind()) {
@@ -259,42 +259,12 @@ public class GenJBC implements Visitor<Void> {
 
             /** Comparisons
             * For Double comparisons "dcmpl" and "dcmpg" instructions are used
-            * alike javac seems to do it, i.e. dcmpg for "<"/"<=" and dcmpl otherwise.
+            * alike javac seems to do it: dcmpg for "<"/"<=" and dcmpl otherwise.
             */
-            case eq, neq -> {
-                error = genEqOrNeqOpInstruction(cb, operandType.jvmTypeKind(), op).isErr();
+            case eq, neq, gt, gteq, lt, lteq -> {
+                error = genComparisonOpInstr(cb, operandType.jvmTypeKind(), op).isErr();
             }
             //TODO
-
-            // case gt -> {
-            //     switch (operandType.jvmTypeKind()) {
-            //         case LongType -> cb.l();
-            //         case DoubleType -> cb.d();
-            //         default -> error = true;
-            //     }
-            // }
-            // case gteq -> {
-            //     switch (operandType.jvmTypeKind()) {
-            //         case LongType -> cb.l();
-            //         case DoubleType -> cb.d();
-            //         default -> error = true;
-            //     }
-            // }
-            // case lt -> {
-            //     switch (operandType.jvmTypeKind()) {
-            //         case LongType -> cb.l();
-            //         case DoubleType -> cb.d();
-            //         default -> error = true;
-            //     }
-            // }
-            // case lteq -> {
-            //     switch (operandType.jvmTypeKind()) {
-            //         case LongType -> cb.l();
-            //         case DoubleType -> cb.d();
-            //         default -> error = true;
-            //     }
-            // }
-
             // case and -> {}
             // case or -> {}
             default -> {
@@ -310,33 +280,69 @@ public class GenJBC implements Visitor<Void> {
     }
 
     /**
-     * Generates instructions for an equality or inequality comparison operator.
-     * @return true if an error occured, otherwise false
+     * Generates instructions for one of the comparisons eq, neq, gt or gteq.
+     * @return Result.Ok on success, Result.Err otherwise
      */
-    private Result<Void> genEqOrNeqOpInstruction(CodeBuilder cb, TypeKind jvmTypeKind, BinaryOp eq_or_neq) {
+    private Result<Void> genComparisonOpInstr(CodeBuilder cb, TypeKind jvmTypeKind, BinaryOp cmpOp) {
+        var status = genCmpInstruction(cb, jvmTypeKind, cmpOp);
+        if (status.isErr()) {
+            return status;
+        }
         Label falseBranch = cb.newLabel();
-        Label afterFalseBranch = cb.newLabel();
+        switch (cmpOp) {
+            case eq -> cb.ifne(falseBranch);
+            case neq -> cb.ifeq(falseBranch);
+            case gt -> cb.ifle(falseBranch);
+            case gteq -> cb.iflt(falseBranch);
+            case lt -> cb.ifge(falseBranch);
+            case lteq -> cb.ifgt(falseBranch);
+            default -> throw new UnsupportedOperationException(
+                    "Invalid operator provided: Only comparison operators are allowed");
+        }
+        genComparisonBranches(cb, falseBranch);
+        return status;
+    }
 
-        // Compares operands pushing result (-1|0|1) to stack
+    /**
+     * Generates the instruction for a comparison of two operands of the given TypeKind.
+     * Afterwards the comparison result (-1|0|1) is ontop of the stack and ready for
+     * further evaluation, e.g. by an "ifXX" instruction.
+     */
+    private Result<Void> genCmpInstruction(CodeBuilder cb, TypeKind jvmTypeKind, BinaryOp cmpOp) {
+        if (!cmpOp.isComparison()) {
+            throw new UnsupportedOperationException(
+                    "Invalid operator provided: Only comparison operators are allowed");
+        }
         switch (jvmTypeKind) {
             case LongType -> cb.lcmp();
-            case DoubleType -> cb.dcmpl();
+            case DoubleType -> {
+                switch (cmpOp) {
+                    case lt, lteq -> cb.dcmpg();
+                    default -> cb.dcmpl();
+                }
+            }
             default -> {
                 return Result.Err;
             }
         }
-        switch (eq_or_neq) {
-            case eq -> cb.ifne(falseBranch);
-            case neq -> cb.ifeq(falseBranch);
-            default -> throw new UnsupportedOperationException(
-                    "Only eq or neq operators can be used here");
-        }
+        return Result.Ok;
+    }
+
+    /**
+     * Generates instructions that typically follow an "ifXX" instruction.
+     * I.e. a jump is performed to the specified label ("falseBranch") if the
+     * comparison evaluated true. This effectively skips the branch right after
+     * the "if" which would otherwise push "true" onto the stack.
+     * 
+     * @param falseBranch label of the branch that will push "false" onto the stack.
+     */
+    private void genComparisonBranches(CodeBuilder cb, Label falseBranch) {
+        var afterFalseBranch = cb.newLabel();
         cb.iconst_1(); // true
         cb.goto_(afterFalseBranch);
         cb.labelBinding(falseBranch);
         cb.iconst_0(); // false
         cb.labelBinding(afterFalseBranch);
-        return Result.Ok;
     }
 
     @Override
