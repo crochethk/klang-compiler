@@ -386,13 +386,8 @@ public class GenJBC implements Visitor<Void> {
             case neg -> codeBuilder.lneg();
             case not -> {
                 var falseBranch = codeBuilder.newLabel();
-                var afterFalseBranch = codeBuilder.newLabel();
-                codeBuilder.ifne(falseBranch); // if not is 0 -> jump to "_t"
-                codeBuilder.iconst_1(); // set true
-                codeBuilder.goto_(afterFalseBranch);
-                codeBuilder.labelBinding(falseBranch);
-                codeBuilder.iconst_0(); // set false
-                codeBuilder.labelBinding(afterFalseBranch);
+                codeBuilder.ifne(falseBranch); // if not is 0 -> jump to "falseBranch"
+                genComparisonBranches(codeBuilder, falseBranch);
             }
             default -> {
                 throw new UnsupportedOperationException("Unary operation '" + unaryOpExpr.op + "' not supported.");
