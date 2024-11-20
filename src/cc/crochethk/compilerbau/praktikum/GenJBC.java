@@ -398,7 +398,16 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
-        // TODO Auto-generated method stub
+        ternaryConditionalExpr.condition.accept(this);
+        var falseBranch = codeBuilder.newLabel();
+        var afterFalseBranch = codeBuilder.newLabel();
+
+        codeBuilder.ifeq(falseBranch);
+        ternaryConditionalExpr.then.accept(this);
+        codeBuilder.goto_(afterFalseBranch);
+        codeBuilder.labelBinding(falseBranch);
+        ternaryConditionalExpr.otherwise.accept(this);
+        codeBuilder.labelBinding(afterFalseBranch);
         return null;
     }
 
