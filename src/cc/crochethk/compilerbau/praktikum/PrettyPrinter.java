@@ -168,7 +168,7 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(StatementListNode statementListNode) {
-        statementListNode.value.accept(this);
+        statementListNode.current.accept(this);
         write(";");
         if (!statementListNode.next.isEmpty()) {
             write_indent();

@@ -4,7 +4,7 @@ import cc.crochethk.compilerbau.praktikum.Visitor;
 import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
 
 public class StatementListNode extends Node {
-    public Node value;
+    public Node current;
 
     /**
      * The next listnode in the linked list. Instance of {@code EmptyNode} indicates
@@ -12,9 +12,14 @@ public class StatementListNode extends Node {
      */
     public Node next;
 
-    public StatementListNode(SourcePos srcPos, Node value, Node next) {
+    /**
+     * @param srcPos
+     * @param current The current node in the list.
+     * @param next The next node in the list. Provide "EmptyNode" to terminate list.
+     */
+    public StatementListNode(SourcePos srcPos, Node current, Node next) {
         super(srcPos);
-        this.value = value;
+        this.current = current;
         this.next = next;
     }
 

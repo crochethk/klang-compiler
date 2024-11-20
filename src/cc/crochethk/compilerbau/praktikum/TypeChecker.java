@@ -211,7 +211,7 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(StatementListNode statementListNode) {
-        statementListNode.value.accept(this);
+        statementListNode.current.accept(this);
         statementListNode.next.accept(this);
         statementListNode.theType = Type.VOID_T;
         return null;

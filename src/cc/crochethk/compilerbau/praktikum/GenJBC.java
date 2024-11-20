@@ -177,7 +177,7 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(StatementListNode statementListNode) {
-        statementListNode.value.accept(this);
+        statementListNode.current.accept(this);
         statementListNode.next.accept(this);
         return null;
     }
