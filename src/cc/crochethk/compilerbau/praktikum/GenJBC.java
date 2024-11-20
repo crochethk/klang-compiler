@@ -34,6 +34,7 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.utils.Result;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 
 /**
@@ -43,11 +44,7 @@ import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
  * by the JVM.
  */
 public class GenJBC implements Visitor<Void> {
-    public enum Status {
-        Success, Failure, Ready
-    }
-
-    public Status status = Status.Ready;
+    public Result<Void> exitStatus = null;
 
     private String outDir;
     private String packageName;
@@ -103,10 +100,10 @@ public class GenJBC implements Visitor<Void> {
             file.close();
         } catch (IOException e) {
             System.err.println(e);
-            status = Status.Failure;
+            exitStatus = Result.Err;
         }
 
-        status = Status.Success;
+        exitStatus = Result.Ok;
         return null;
     }
 
@@ -409,7 +406,7 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(EmptyNode emptyNode) {
-        // shouldn't need to generate anything, I guess...
+        // -> skip
         return null;
     }
 

@@ -12,12 +12,13 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import cc.crochethk.compilerbau.praktikum.GenJBC;
 import cc.crochethk.compilerbau.praktikum.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
+import cc.crochethk.compilerbau.praktikum.utils.Result;
 
 public class L1Compiler {
     static String DEFAULT_OUTDIR = "gen_jbc";
     static String DEFAULT_SOURCEFILE = "tests/CalcAverage.l1";
 
-    public static GenJBC.Status compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
+    public static Result<Void> compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
         var ast = buildAST(inputCode);
 
         // Type checking
@@ -26,7 +27,7 @@ public class L1Compiler {
         // Code generation
         var codeGenerator = new GenJBC(outputDir, fullClassName);
         ast.accept(codeGenerator);
-        return codeGenerator.status;
+        return codeGenerator.exitStatus;
     }
 
     /**
@@ -76,13 +77,14 @@ public class L1Compiler {
                     .replace(File.separator, ".");
             var status = compile(reader, outputDir, fullClassName);
 
-            var msg = switch (status) {
-                case GenJBC.Status.Success -> "Success: '"
+            String msg;
+            if (status.isOk()) {
+                msg = "Success: '"
                         + Path.of(outputDir, fpBase.toString(), fileNameNoExt).toString()
                         + ".class'";
-                case GenJBC.Status.Failure -> "Failed: '" + fp.toString() + "'";
-                case GenJBC.Status.Ready -> "Error: somehow did not even run?";
-            };
+            } else {
+                msg = "Failed: '" + fp.toString() + "'";
+            }
             System.out.println(msg);
         }
     }
