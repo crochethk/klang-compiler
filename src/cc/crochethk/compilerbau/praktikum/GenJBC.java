@@ -7,6 +7,7 @@ import java.lang.classfile.ClassBuilder;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.CodeBuilder;
 import java.lang.classfile.Label;
+import java.lang.classfile.TypeKind;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
@@ -260,34 +261,10 @@ public class GenJBC implements Visitor<Void> {
             * For Double comparisons "dcmpl" and "dcmpg" instructions are used
             * alike javac seems to do it, i.e. dcmpg for "<"/"<=" and dcmpl otherwise.
             */
-            case eq -> {
-                Label falseBranch = cb.newLabel();
-                Label afterFalseBranch = cb.newLabel();
-
-                // Compares operands pushing result (-1|0|1) to stack
-                switch (operandType.jvmTypeKind()) {
-                    case LongType -> cb.lcmp();
-                    case DoubleType -> cb.dcmpl();
-                    default -> {
-                        error = true;
-                        break op_switch;
-                    }
-                }
-                cb.ifne(falseBranch);
-                cb.iconst_1(); // true
-                cb.goto_(afterFalseBranch);
-                cb.labelBinding(falseBranch);
-                cb.iconst_0(); // false
-                cb.labelBinding(afterFalseBranch);
+            case eq, neq -> {
+                error = genEqOrNeqOpInstruction(cb, operandType.jvmTypeKind(), op).isErr();
             }
             //TODO
-            // case neq -> {
-            //     switch (operandType.jvmTypeKind()) {
-            //         case LongType -> cb.l();
-            //         case DoubleType -> cb.d();
-            //         default -> error = true;
-            //     }
-            // }
 
             // case gt -> {
             //     switch (operandType.jvmTypeKind()) {
@@ -330,6 +307,36 @@ public class GenJBC implements Visitor<Void> {
             throw new UnsupportedOperationException("Operation '"
                     + op + "' not supported for '" + operandType + ", " + operandType + "'");
         }
+    }
+
+    /**
+     * Generates instructions for an equality or inequality comparison operator.
+     * @return true if an error occured, otherwise false
+     */
+    private Result<Void> genEqOrNeqOpInstruction(CodeBuilder cb, TypeKind jvmTypeKind, BinaryOp eq_or_neq) {
+        Label falseBranch = cb.newLabel();
+        Label afterFalseBranch = cb.newLabel();
+
+        // Compares operands pushing result (-1|0|1) to stack
+        switch (jvmTypeKind) {
+            case LongType -> cb.lcmp();
+            case DoubleType -> cb.dcmpl();
+            default -> {
+                return Result.Err;
+            }
+        }
+        switch (eq_or_neq) {
+            case eq -> cb.ifne(falseBranch);
+            case neq -> cb.ifeq(falseBranch);
+            default -> throw new UnsupportedOperationException(
+                    "Only eq or neq operators can be used here");
+        }
+        cb.iconst_1(); // true
+        cb.goto_(afterFalseBranch);
+        cb.labelBinding(falseBranch);
+        cb.iconst_0(); // false
+        cb.labelBinding(afterFalseBranch);
+        return Result.Ok;
     }
 
     @Override
