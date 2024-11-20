@@ -264,9 +264,11 @@ public class GenJBC implements Visitor<Void> {
             case eq, neq, gt, gteq, lt, lteq -> {
                 error = genComparisonOpInstr(cb, operandType.jvmTypeKind(), op).isErr();
             }
-            //TODO
-            // case and -> {}
-            // case or -> {}
+            /**
+             * Boolean
+             */
+            case and -> cb.iand();
+            case or -> cb.ior();
             default -> {
                 throw new UnsupportedOperationException("Operation '" + op
                         + "' not yet implemented for '" + operandType + ", " + operandType + "'");

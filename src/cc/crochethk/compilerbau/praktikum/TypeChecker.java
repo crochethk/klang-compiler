@@ -91,12 +91,9 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(FunDef funDef) {
+        // Hint: Signature nodes are already evaluated in Prog
         currentFun = funDef;
         currentFunReturnCount = 0;
-
-        // Compute types of signature nodes
-        funDef.params.forEach(p -> p.type().accept(this));
-        funDef.returnType.accept(this);
 
         // Make sure the local variables lookup table is empty before proceeding
         funDefVarTypes.clear();
@@ -127,14 +124,20 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(Prog prog) {
-        // Before walk down the tree, we need to make funDefs available for other "visit"s
+        // Before traversiing the tree, we need to make funDefs available for other "visit"s
         prog.funDefs.forEach(funDef -> {
             var previous = funDefs.put(funDef.name, funDef);
             if (previous != null) {
                 reportError(funDef, "Function '" + funDef.name + "' defined multiple times");
             }
+
+            // Enables call to fun whose definition was not evaluated yet
+            // alternativels we could do ' Type.of(returnType,"")' where applicable 
+            // instead of relying on theType...
+            funDef.params.forEach(p -> p.type().accept(this));
+            funDef.returnType.accept(this);
         });
-        prog.funDefs.forEach(def -> def.accept(this));
+        prog.funDefs.forEach(funDef -> funDef.accept(this));
 
         prog.theType = Type.VOID_T;
 
@@ -249,7 +252,6 @@ public class TypeChecker implements Visitor<Void> {
         if (funDef == null) {
             reportError(funCall, "Unknown function '" + funCall.name + "'");
             funCall.theType = Type.UNKNOWN_T;
-
         } else {
             //funDef found
             funCall.theType = funDef.returnType.theType;
