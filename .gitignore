@@ -2,4 +2,4 @@
 .antlr
 **/gen
 **---LOCAL**
-out_jbc
+gen_jbc

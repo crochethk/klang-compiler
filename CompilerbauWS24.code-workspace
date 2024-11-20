@@ -12,6 +12,7 @@
         "java.project.sourcePaths": [
             "gen",
             "src",
+            "gen_jbc"
         ],
         "java.project.outputPath": "bin",
         "java.project.referencedLibraries": [

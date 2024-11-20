@@ -14,7 +14,7 @@ import cc.crochethk.compilerbau.praktikum.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 
 public class L1Compiler {
-    static String DEFAULT_OUTDIR = "gen/L1CompilerJBC";
+    static String DEFAULT_OUTDIR = "gen_jbc";
     static String DEFAULT_SOURCEFILE = "tests/CalcAverage.l1";
 
     public static GenJBC.Status compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {

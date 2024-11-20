@@ -116,7 +116,6 @@ public class Main {
 
         // Code generation tinkering
         input_code = """
-                // Recursive function using IF-ELSE and ASSIGNMENTS
                 fn average(a: int, b:int, dummy_bool: boolean): int {
                     return (
                         a+b
