@@ -431,7 +431,19 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(IfElseStat ifElseStat) {
-        // TODO Auto-generated method stub
+        ifElseStat.condition.accept(this);
+        codeBuilder.ifThenElse(
+                thenbcb -> {
+                    var cbBak = codeBuilder;
+                    codeBuilder = thenbcb;
+                    ifElseStat.then.accept(this);
+                    codeBuilder = cbBak;
+                }, elsebcb -> {
+                    var cbBak = codeBuilder;
+                    codeBuilder = elsebcb;
+                    ifElseStat.otherwise.accept(this);
+                    codeBuilder = cbBak;
+                });
         return null;
     }
 
