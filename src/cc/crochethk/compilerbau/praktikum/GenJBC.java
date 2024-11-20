@@ -226,6 +226,7 @@ public class GenJBC implements Visitor<Void> {
     private void genOpInstruction(CodeBuilder cb, Type operandType, BinaryOp op) {
         boolean error = false;
         op_switch: switch (op) {
+            /** Arithmetics */
             case add -> {
                 switch (operandType.jvmTypeKind()) {
                     case LongType -> cb.ladd();
@@ -372,15 +373,14 @@ public class GenJBC implements Visitor<Void> {
         switch (unaryOpExpr.op) {
             case neg -> codeBuilder.lneg();
             case not -> {
-                // TODO no idea whether this actually will work
-                var _setFalse = codeBuilder.newLabel();
-                var setFalse_ = codeBuilder.newLabel();
-                codeBuilder.ifne(_setFalse); // if not is 0 -> jump to "_t"
+                var falseBranch = codeBuilder.newLabel();
+                var afterFalseBranch = codeBuilder.newLabel();
+                codeBuilder.ifne(falseBranch); // if not is 0 -> jump to "_t"
                 codeBuilder.iconst_1(); // set true
-                codeBuilder.goto_(setFalse_);
-                codeBuilder.labelBinding(_setFalse);
+                codeBuilder.goto_(afterFalseBranch);
+                codeBuilder.labelBinding(falseBranch);
                 codeBuilder.iconst_0(); // set false
-                codeBuilder.labelBinding(setFalse_);
+                codeBuilder.labelBinding(afterFalseBranch);
             }
             default -> {
                 throw new UnsupportedOperationException("Unary operation '" + unaryOpExpr.op + "' not supported.");
