@@ -70,7 +70,9 @@ public class L1Compiler {
         }
 
         if (BUILD_AST) {
-            ParseTreeWalker.DEFAULT.walk(new TreeBuilder(), antlrTree);
+            // var treeBuilder = new TreeBuilder();
+            var treeBuilder = new TestParseTreeListener();
+            ParseTreeWalker.DEFAULT.walk(treeBuilder, antlrTree);
         }
         return antlrTree.result;
     }
@@ -150,7 +152,7 @@ public class L1Compiler {
         JPanel panel = new JPanel();
         TreeViewer viewer = new TreeViewer(Arrays.asList(
                 parser.getRuleNames()), tree);
-        viewer.setScale(1.); // Scale a little
+        viewer.setScale(1.5); // Scale a little
         panel.add(viewer);
         frame.add(panel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

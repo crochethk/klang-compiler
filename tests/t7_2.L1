@@ -1,0 +1,26 @@
+/**
+ * Tries out new grammar structure:
+ *      - multi statement (statement list)
+ *      - empty function
+ *      - block statements
+ */
+fn foo(): int {
+    return b;
+    a= 123+45/678-1;
+    {
+        varInsideExtraBlock = 0;
+    }
+    let a: boolean;
+    return d;
+    if a {
+        return true;
+    }
+    if b {
+        return false;
+    }
+    else {
+        return true || false;
+    }
+}
+
+fn bar():void{}

@@ -26,7 +26,8 @@
         },
         "antlr4.format": {
             "reflowComments": false,
-            "alignSemicolons": "ownLine"
+            "alignSemicolons": "ownLine",
+            "spaceBeforeAssignmentOperators": false,
         },
         // "github.copilot.enable": {
         //     "*": true,

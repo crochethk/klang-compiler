@@ -12,7 +12,7 @@ start
 definition
 	returns[FunDef result]:
 	KW_FUN IDENT LPAR (funParam (COMMA funParam)*)? RPAR //
-	COLON type LBRACE statement RBRACE
+	COLON type LBRACE statementList RBRACE
 ;
 
 funParam: IDENT COLON type; // "name : type"
@@ -22,34 +22,32 @@ type
 primitiveType: T_I64 | T_BOOL | T_VOID;
 refType: IDENT;
 
+statementList
+	returns[Node result]: statement*;
+
 statement
+	returns[Node result]: blockLikeStatement | basicStatement;
+
+blockLikeStatement
+	returns[Node result]: ifElse | block;
+
+block: LBRACE statementList RBRACE;
+
+ifElse
 	returns[Node result]:
-	ifElse
-	// basically statementList: one or more statements separated by SEMI
-	| basicStatement (SEMI | SEMI statement)
-	| emptyStatement
+	KW_IF condition=expr then=block KW_ELSE otherwise=block
+	| KW_IF condition=expr then=block
 ;
-emptyStatement:;
 
 basicStatement
 	returns[Node result]:
 	// declare variable
-	KW_LET IDENT COLON type
+	KW_LET IDENT COLON type SEMI
 	// assign expr to variable
-	| IDENT ASSIGN expr
-	| KW_RETURN expr
-	| KW_RETURN // return "void"
+	| IDENT ASSIGN expr SEMI
+	| KW_RETURN expr? SEMI
+	//	| KW_RETURN SEMI // return "void"
 ;
-
-ifElse
-	returns[Node result]:
-	// in case of a followup statement TreeBuilder must wrap ifelse into StatementListNode
-	KW_IF expr ifElseBranchBlock KW_ELSE ifElseBranchBlock statement
-	| KW_IF expr ifElseBranchBlock KW_ELSE ifElseBranchBlock
-	| KW_IF expr ifElseBranchBlock statement
-	| KW_IF expr ifElseBranchBlock
-;
-ifElseBranchBlock: LBRACE statement RBRACE;
 
 expr
 	returns[Node result]:
