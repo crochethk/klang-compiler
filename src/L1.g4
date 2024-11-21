@@ -56,7 +56,8 @@ varDeclarationOrAssignment
 expr
 	returns[Node result]:
 	// arithmetic expr
-	lhs=expr POW rhs=expr
+	SUB expr // negation
+	| lhs=expr POW rhs=expr
 	| lhs=expr (MULT | DIV) rhs=expr // hier + MOD
 	| lhs=expr (ADD | SUB) rhs=expr
 	// comparison expr
@@ -85,13 +86,16 @@ varOrFunCall
 ;
 
 number
-	returns[Node result]: NUMBER;
+	returns[Node result]: FLOAT | INTEGER;
 
 bool
 	returns[Node result]: BOOLEAN;
 
 // Lexer rules
-NUMBER: [0-9]+;
+INTEGER: [0-9]+;
+FLOAT: (DIGIT+ '.' DIGIT*) | (DIGIT* '.' DIGIT+);
+fragment DIGIT: [0-9];
+
 BOOLEAN: 'true' | 'false';
 ADD: '+';
 SUB: '-';
