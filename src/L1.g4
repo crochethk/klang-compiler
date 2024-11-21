@@ -40,10 +40,14 @@ basicStatement
 ;
 
 ifElse
-	returns[IfElseStat result]:
-	| KW_IF expr LBRACE statement RBRACE KW_ELSE LBRACE statement RBRACE
-	| KW_IF expr LBRACE statement RBRACE
+	returns[Node result]:
+	// in case of a followup statement TreeBuilder must wrap ifelse into StatementListNode
+	| KW_IF expr ifElseBranchBlock KW_ELSE ifElseBranchBlock statement
+	| KW_IF expr ifElseBranchBlock KW_ELSE ifElseBranchBlock
+	| KW_IF expr ifElseBranchBlock statement
+	| KW_IF expr ifElseBranchBlock
 ;
+ifElseBranchBlock: LBRACE statement RBRACE;
 
 expr
 	returns[Node result]:

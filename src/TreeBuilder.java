@@ -125,13 +125,18 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitIfElse(L1Parser.IfElseContext ctx) {
         var srcPos = getSourcePos(ctx);
+        // Create ifElse Node
         var condition = ctx.expr().result;
-        var then = ctx.statement(0).result;
-        var otherwise = ctx.statement(1) != null
-                ? ctx.statement(1).result
+        var then = ctx.ifElseBranchBlock(0).statement().result;
+        var otherwise = ctx.KW_ELSE() != null
+                ? ctx.ifElseBranchBlock(1).statement().result
                 : new EmptyNode(srcPos);
-        ctx.result = new IfElseStat(srcPos,
-                condition, then, otherwise);
+        var ifElseStat = new IfElseStat(srcPos, condition, then, otherwise);
+        // Check for followup statement
+        Node result = ctx.statement() != null
+                ? new StatementListNode(srcPos, ifElseStat, ctx.statement().result)
+                : ifElseStat;
+        ctx.result = result;
     }
 
     @Override
