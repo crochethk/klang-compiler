@@ -41,12 +41,16 @@ ifElse
 
 basicStatement
 	returns[Node result]:
-	// declare variable
-	KW_LET IDENT COLON type SEMI
-	// assign expr to variable
-	| IDENT ASSIGN expr SEMI
+	varDeclarationOrAssignment
 	| KW_RETURN expr? SEMI
-	//	| KW_RETURN SEMI // return "void"
+;
+
+varDeclarationOrAssignment
+	returns[Node result]:
+	// KW_LET varName=IDENT COLON type ASSIGN expr SEMI // declare and assign at once
+	// KW_LET varName=IDENT (COLON type)? SEMI  // optional type annotation
+	KW_LET varName=IDENT COLON type SEMI
+	| varName=IDENT ASSIGN expr SEMI
 ;
 
 expr
@@ -62,18 +66,13 @@ expr
 	| expr OR expr
 	//
 	// ternary entry point
-	| expr TERNARY_QM expr COLON ternaryExpr
+	| expr TERNARY_QM expr COLON expr (
+		TERNARY_QM expr COLON expr
+	)*
 	| LPAR expr RPAR
-	| zahl
+	| number
 	| bool
 	| varOrFunCall
-;
-
-ternaryExpr
-	returns[Node result]:
-	// enables nested ternaryExpr
-	expr TERNARY_QM expr COLON ternaryExpr
-	| expr
 ;
 
 varOrFunCall
@@ -86,7 +85,7 @@ varOrFunCall
 	| IDENT LPAR expr (COMMA expr)* RPAR
 ;
 
-zahl
+number
 	returns[Node result]: NUMBER;
 
 bool
