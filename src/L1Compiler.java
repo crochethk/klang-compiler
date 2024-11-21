@@ -22,16 +22,20 @@ import cc.crochethk.compilerbau.praktikum.ast.Node;
 import utils.Result;
 
 public class L1Compiler {
+    static String DOTENV_FILE = "L1Compiler.env";
+
+    // These are overridden by the .env file (if present)
     static boolean VISUALIZE_PARSETREE = false;
-    static boolean PRETTY_PRINT = false;
-    static String DEFAULT_OUTDIR = "gen_jbc";
-    static String DEFAULT_SOURCEFILE = "tests/t6.l1";
+    static boolean PRETTY_PRINT_AST = false;
+
+    static String outDir;
+    static String defaultSourceFile;
 
     public static Result<Void> compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
         var ast = buildAST(inputCode);
 
         // PrettyPrint
-        if (PRETTY_PRINT) {
+        if (PRETTY_PRINT_AST) {
             var w = ast.accept(new PrettyPrinter());
             System.out.println(w.toString());
         }
@@ -66,20 +70,34 @@ public class L1Compiler {
      *      - so fullClassName is inferred from the file's path
      *          (which therefore should be relative)
      * 
+     * - either args must be specified as follows 
+     *      or a L1Compiler.env must exist containing values for at least
+     *          OUTDIR and SOURCEFILE
+     * 
      * - Arguments:
      *      - args[0]: output directory for generated files 
      *      - args[1..]: paths to source files __relative to current dir__
      * 
      */
     public static void main(String[] args) throws IOException {
-        args = switch (args.length) {
-            case 0 -> new String[] { DEFAULT_OUTDIR, DEFAULT_SOURCEFILE };
-            case 1 -> new String[] { args[0], DEFAULT_SOURCEFILE };
-            default -> args;
-        };
+        var dotEnv = utils.Env.readEnvVarFile(DOTENV_FILE);
+        VISUALIZE_PARSETREE = Boolean.parseBoolean(
+                dotEnv.getProperty("VISUALIZE_PARSETREE", String.valueOf(VISUALIZE_PARSETREE)));
+        PRETTY_PRINT_AST = Boolean.parseBoolean(
+                dotEnv.getProperty("PRETTY_PRINT_AST", String.valueOf(PRETTY_PRINT_AST)));
+
+        switch (args.length) {
+            case 0 -> args = new String[] { dotEnv.getProperty("OUTDIR"), dotEnv.getProperty("SOURCEFILE") };
+            case 1 -> {
+                System.out.println("Error: Expected either 0 or at least 2 arguments");
+                System.exit(1);
+            }
+            default -> {
+            }
+        }
 
         var outputDir = args[0];
-        var filePaths = Arrays.asList(args).stream().skip(1).map(sf -> Path.of(sf)).toList();
+        var filePaths = Arrays.asList(args).stream().skip(1).map(src -> Path.of(src)).toList();
         for (var fp : filePaths) {
             var file = fp.toFile();
             var reader = new FileReader(file);
