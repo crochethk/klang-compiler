@@ -24,7 +24,7 @@ refType: IDENT;
 
 statement
 	returns[Node result]:
-	| ifElse
+	ifElse
 	// basically statementList: one or more statements separated by SEMI
 	| basicStatement (SEMI | SEMI statement)
 ;
@@ -32,17 +32,17 @@ statement
 basicStatement
 	returns[Node result]:
 	// declare variable
-	| KW_LET IDENT COLON type
+	KW_LET IDENT COLON type
 	// assign expr to variable
 	| IDENT ASSIGN expr
-	| KW_RETURN // return "void"
 	| KW_RETURN expr
+	| KW_RETURN // return "void"
 ;
 
 ifElse
 	returns[Node result]:
 	// in case of a followup statement TreeBuilder must wrap ifelse into StatementListNode
-	| KW_IF expr ifElseBranchBlock KW_ELSE ifElseBranchBlock statement
+	KW_IF expr ifElseBranchBlock KW_ELSE ifElseBranchBlock statement
 	| KW_IF expr ifElseBranchBlock KW_ELSE ifElseBranchBlock
 	| KW_IF expr ifElseBranchBlock statement
 	| KW_IF expr ifElseBranchBlock
@@ -51,7 +51,7 @@ ifElseBranchBlock: LBRACE statement RBRACE;
 
 expr
 	returns[Node result]:
-	| expr POW expr
+	expr POW expr
 	| expr (MULT | DIV) expr // hier + MOD
 	| expr (ADD | SUB) expr
 	//
@@ -72,7 +72,7 @@ expr
 ternaryExpr
 	returns[Node result]:
 	// enables nested ternaryExpr
-	| expr TERNARY_QM expr COLON ternaryExpr
+	expr TERNARY_QM expr COLON ternaryExpr
 	| expr
 ;
 
@@ -144,3 +144,4 @@ fragment ID_CHAR: ID_START | [0-9];
 LINE_COMMENT: '//' .*? '\r'? '\n' -> skip;
 MULTILINE_COMMENT: '/*' .*? '*/' -> skip;
 WHITESPACE: [ \t\n\r]+ -> skip;
+ANY: .;
