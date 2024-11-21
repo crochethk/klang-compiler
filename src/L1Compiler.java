@@ -5,21 +5,36 @@ import java.io.Reader;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import org.antlr.v4.gui.TreeViewer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cc.crochethk.compilerbau.praktikum.GenJBC;
+import cc.crochethk.compilerbau.praktikum.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.utils.Result;
 
 public class L1Compiler {
+    static boolean VISUALIZE_PARSETREE = false;
+    static boolean PRETTY_PRINT = false;
     static String DEFAULT_OUTDIR = "gen_jbc";
     static String DEFAULT_SOURCEFILE = "tests/t6.l1";
 
     public static Result<Void> compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
         var ast = buildAST(inputCode);
+
+        // PrettyPrint
+        if (PRETTY_PRINT) {
+            var w = ast.accept(new PrettyPrinter());
+            System.out.println(w.toString());
+        }
 
         // Type checking
         ast.accept(new TypeChecker());
@@ -38,6 +53,10 @@ public class L1Compiler {
         var lexer = new L1Lexer(CharStreams.fromReader(inputCode));
         var parser = new L1Parser(new CommonTokenStream(lexer));
         var antlrTree = parser.start();
+        if (VISUALIZE_PARSETREE) {
+            showAstVisualization(parser, antlrTree);
+        }
+
         ParseTreeWalker.DEFAULT.walk(new TreeBuilder(), antlrTree);
         return antlrTree.result;
     }
@@ -87,5 +106,19 @@ public class L1Compiler {
             }
             System.out.println(msg);
         }
+    }
+
+    private static void showAstVisualization(Parser parser, RuleContext tree) {
+        // UI AST Visualization
+        JFrame frame = new JFrame("Antlr AST");
+        JPanel panel = new JPanel();
+        TreeViewer viewer = new TreeViewer(Arrays.asList(
+                parser.getRuleNames()), tree);
+        viewer.setScale(1.); // Scale a little
+        panel.add(viewer);
+        frame.add(panel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
 }
