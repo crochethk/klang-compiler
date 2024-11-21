@@ -124,7 +124,7 @@ public class PrettyPrinter implements Visitor<Writer> {
             write(" ");
             returnStat.expr.accept(this);
         }
-        return writer;
+        return write(";");
     }
 
     @Override
@@ -155,7 +155,8 @@ public class PrettyPrinter implements Visitor<Writer> {
     public Writer visit(VarAssignStat varAssignStat) {
         write(varAssignStat.targetVarName);
         write(" = ");
-        return varAssignStat.expr.accept(this);
+        varAssignStat.expr.accept(this);
+        return write(";");
     }
 
     @Override
@@ -163,13 +164,13 @@ public class PrettyPrinter implements Visitor<Writer> {
         write("let ");
         write(varDeclareStat.varName);
         write(": ");
-        return varDeclareStat.declaredType.accept(this);
+        varDeclareStat.declaredType.accept(this);
+        return write(";");
     }
 
     @Override
     public Writer visit(StatementListNode statementListNode) {
         statementListNode.current.accept(this);
-        write(";");
         if (!statementListNode.next.isEmpty()) {
             write_indent();
             statementListNode.next.accept(this);
@@ -198,7 +199,6 @@ public class PrettyPrinter implements Visitor<Writer> {
             write_indent();
             write("}");
         }
-        write_indent();
         return writer;
     }
 
