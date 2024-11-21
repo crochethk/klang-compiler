@@ -55,20 +55,19 @@ varDeclarationOrAssignment
 
 expr
 	returns[Node result]:
-	expr POW expr
-	| expr (MULT | DIV) expr // hier + MOD
-	| expr (ADD | SUB) expr
-	//
-	| expr (LT | LTEQ | GT | GTEQ) expr
-	| expr (EQ | NEQ) expr
+	// arithmetic expr
+	lhs=expr POW rhs=expr
+	| lhs=expr (MULT | DIV) rhs=expr // hier + MOD
+	| lhs=expr (ADD | SUB) rhs=expr
+	// comparison expr
+	| lhs=expr (LT | LTEQ | GT | GTEQ) rhs=expr
+	| lhs=expr (EQ | NEQ) rhs=expr
+	// boolean expr
 	| NOT expr
-	| expr AND expr
-	| expr OR expr
-	//
-	// ternary entry point
-	| expr TERNARY_QM expr COLON expr (
-		TERNARY_QM expr COLON expr
-	)*
+	| lhs=expr AND rhs=expr
+	| lhs=expr OR rhs=expr
+	// ternary conditional
+	| expr QM expr COLON expr ( QM expr COLON expr)*
 	| LPAR expr RPAR
 	| number
 	| bool
@@ -104,7 +103,7 @@ AND: '&&';
 OR: '||';
 NOT: '!';
 
-// comparission
+// comparison
 EQ: '==';
 NEQ: '!=';
 GT: '>';
@@ -121,7 +120,7 @@ RBRACE: '}';
 COLON: ':';
 COMMA: ',';
 SEMI: ';';
-TERNARY_QM: '?';
+QM: '?';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';
