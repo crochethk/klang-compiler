@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
-import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
+import utils.SourcePos;
 
 public class FunDef extends Node {
     public static final String KW_FUN_LEX = "fn";

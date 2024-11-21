@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
-import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
+import utils.SourcePos;
 
 public class FunCall extends Node {
     public String name;

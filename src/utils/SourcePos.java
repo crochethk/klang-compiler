@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum.utils;
+package utils;
 
 public record SourcePos(int line, int column) {
     @Override

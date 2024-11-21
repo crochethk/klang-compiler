@@ -1,7 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
-import cc.crochethk.compilerbau.praktikum.utils.SourcePos;
+import utils.SourcePos;
 
 /**
  * Node type representing a variable name as part of an expression.

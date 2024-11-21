@@ -19,7 +19,7 @@ import cc.crochethk.compilerbau.praktikum.GenJBC;
 import cc.crochethk.compilerbau.praktikum.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
-import cc.crochethk.compilerbau.praktikum.utils.Result;
+import utils.Result;
 
 public class L1Compiler {
     static boolean VISUALIZE_PARSETREE = false;

@@ -35,8 +35,8 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
-import cc.crochethk.compilerbau.praktikum.utils.Result;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import utils.Result;
 
 /**
  * Visitor that generates Java Byte Code by traversing the AST nodes.

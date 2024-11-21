@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum.utils;
+package utils;
 
 public sealed interface Result<T> permits Result.Ok, Result.Err {
     final static Result<Void> Ok = new Result.Ok<Void>(null);
