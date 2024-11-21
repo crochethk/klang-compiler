@@ -16,7 +16,7 @@ import cc.crochethk.compilerbau.praktikum.utils.Result;
 
 public class L1Compiler {
     static String DEFAULT_OUTDIR = "gen_jbc";
-    static String DEFAULT_SOURCEFILE = "tests/t5.l1";
+    static String DEFAULT_SOURCEFILE = "tests/t6.l1";
 
     public static Result<Void> compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
         var ast = buildAST(inputCode);

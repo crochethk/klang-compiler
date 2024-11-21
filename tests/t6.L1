@@ -1,0 +1,33 @@
+/**
+ * Tries out:
+ *      - if without else
+ *      - other statements after "if" or "if-else"
+ */
+fn max(a: int, b: int): int {
+    if a >= b {
+        return a;
+    }
+    return b;
+}
+
+fn max3(a: int, b: int, c: int): int {
+    if max(a,b) >= max(b,c) {
+        return max(a,b);
+    } else {
+        if b >=c {
+            return b;
+        }
+    }
+    return c;
+}
+
+fn ___main___(): int {
+    /*
+    return max3(50, 60, 71);
+    return max3(50,72,60);
+    return max3(73,50,60);
+    return max3(74,60,50);
+    return max3(75,60,50);
+    */
+    return max3(60,76,50);
+}
