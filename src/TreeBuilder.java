@@ -170,6 +170,8 @@ public class TreeBuilder extends L1BaseListener {
             ctx.result = new StatementListNode(srcPos, currentStatement, next);
         } else if (ctx.ifElse() != null) {
             ctx.result = ctx.ifElse().result;
+        } else if (ctx.emptyStatement() != null) {
+            ctx.result = new EmptyNode(srcPos);
         } else {
             throw new UnsupportedOperationException(
                     "Unhandled `statement` alternative '" + ctx.getText() + "' at " + srcPos);

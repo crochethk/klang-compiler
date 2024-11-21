@@ -27,7 +27,9 @@ statement
 	ifElse
 	// basically statementList: one or more statements separated by SEMI
 	| basicStatement (SEMI | SEMI statement)
+	| emptyStatement
 ;
+emptyStatement:;
 
 basicStatement
 	returns[Node result]:

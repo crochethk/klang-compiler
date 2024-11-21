@@ -1,6 +1,7 @@
 /**
  * Tries out:
  *      - if without else
+ *      - empty statement
  *      - other statements after "if" or "if-else"
  */
 fn max(a: int, b: int): int {
@@ -16,6 +17,9 @@ fn max3(a: int, b: int, c: int): int {
     } else {
         if b >=c {
             return b;
+        }
+        else {
+            /*empty statement*/
         }
     }
     return c;
