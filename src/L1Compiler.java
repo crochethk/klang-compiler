@@ -22,16 +22,19 @@ import cc.crochethk.compilerbau.praktikum.ast.Node;
 import utils.Result;
 
 public class L1Compiler {
+    /** Compiler config that overrides defaults if present */
     static String DOTENV_FILE = "L1Compiler.env";
 
+    // Default compiler config
     // These are overridden by the .env file (if present)
     static boolean VISUALIZE_PARSETREE = false;
+    static boolean BUILD_AST = true;
     static boolean PRETTY_PRINT_AST = false;
-
-    static String outDir;
-    static String defaultSourceFile;
+    static boolean TYPECHECK = true;
+    static boolean GENERATE_JBC = true;
 
     public static Result<Void> compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
+        var exitStatus = Result.Ok;
         var ast = buildAST(inputCode);
 
         // PrettyPrint
@@ -41,12 +44,17 @@ public class L1Compiler {
         }
 
         // Type checking
-        ast.accept(new TypeChecker());
+        if (TYPECHECK) {
+            ast.accept(new TypeChecker());
+        }
 
         // Code generation
-        var codeGenerator = new GenJBC(outputDir, fullClassName);
-        ast.accept(codeGenerator);
-        return codeGenerator.exitStatus;
+        if (GENERATE_JBC) {
+            var codeGenerator = new GenJBC(outputDir, fullClassName);
+            ast.accept(codeGenerator);
+            exitStatus = codeGenerator.exitStatus;
+        }
+        return exitStatus;
     }
 
     /**
@@ -61,7 +69,9 @@ public class L1Compiler {
             showAstVisualization(parser, antlrTree);
         }
 
-        ParseTreeWalker.DEFAULT.walk(new TreeBuilder(), antlrTree);
+        if (BUILD_AST) {
+            ParseTreeWalker.DEFAULT.walk(new TreeBuilder(), antlrTree);
+        }
         return antlrTree.result;
     }
 
@@ -83,8 +93,14 @@ public class L1Compiler {
         var dotEnv = utils.Env.readEnvVarFile(DOTENV_FILE);
         VISUALIZE_PARSETREE = Boolean.parseBoolean(
                 dotEnv.getProperty("VISUALIZE_PARSETREE", String.valueOf(VISUALIZE_PARSETREE)));
+        BUILD_AST = Boolean.parseBoolean(
+                dotEnv.getProperty("BUILD_AST", String.valueOf(BUILD_AST)));
         PRETTY_PRINT_AST = Boolean.parseBoolean(
                 dotEnv.getProperty("PRETTY_PRINT_AST", String.valueOf(PRETTY_PRINT_AST)));
+        TYPECHECK = Boolean.parseBoolean(
+                dotEnv.getProperty("TYPECHECK", String.valueOf(TYPECHECK)));
+        GENERATE_JBC = Boolean.parseBoolean(
+                dotEnv.getProperty("GENERATE_JBC", String.valueOf(GENERATE_JBC)));
 
         switch (args.length) {
             case 0 -> args = new String[] { dotEnv.getProperty("OUTDIR"), dotEnv.getProperty("SOURCEFILE") };
@@ -115,12 +131,14 @@ public class L1Compiler {
             var status = compile(reader, outputDir, fullClassName);
 
             String msg;
-            if (status.isOk()) {
+            if (GENERATE_JBC && status.isOk()) {
                 msg = "Success: '"
                         + Path.of(outputDir, fpBase.toString(), fileNameNoExt).toString()
                         + ".class'";
-            } else {
+            } else if (status.isErr()) {
                 msg = "Failed: '" + fp.toString() + "'";
+            } else {
+                msg = "No JBC generated (disabled).";
             }
             System.out.println(msg);
         }
