@@ -19,6 +19,6 @@ public abstract class Node implements Visitable {
     }
 
     public boolean isEmpty() {
-        return this instanceof EmptyNode;
+        return false;
     }
 }
