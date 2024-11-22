@@ -189,7 +189,8 @@ public class TypeChecker implements Visitor<Void> {
         var exprType = varAssignStat.expr.theType;
 
         if (varType == null) {
-            reportError(varAssignStat, "Assignment to undeclared variable '" + varAssignStat.targetVarName + "'");
+            reportError(varAssignStat,
+                    "Assignment to undeclared variable '" + varAssignStat.targetVarName + "'");
         } else if (!(varType.equals(exprType))) {
             reportError(varAssignStat, "Attempt to assign value of type '"
                     + exprType + "' to variable '" + varAssignStat.targetVarName
@@ -218,16 +219,17 @@ public class TypeChecker implements Visitor<Void> {
 
     @Override
     public Void visit(StatementListNode statementListNode) {
-        statementListNode.current.accept(this);
-        statementListNode.next.accept(this);
-        statementListNode.theType = Type.VOID_T;
-        return null;
+        // TODO finally remove this from interface 
+        throw new UnsupportedOperationException("statementListNode SHOULD NOT BE IN USE ANYMORE...");
     }
 
     @Override
     public Void visit(StatementList statementList) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        statementList.statements.forEach(s -> s.accept(this));
+        statementList.theType = statementList.isEmpty()
+                ? Type.VOID_T
+                : statementList.statements.getLast().theType;
+        return null;
     }
 
     @Override
