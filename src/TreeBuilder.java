@@ -15,7 +15,6 @@ import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
@@ -228,13 +227,12 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitDefinition(L1Parser.DefinitionContext ctx) {
         var srcPos = getSourcePos(ctx);
-        var name = ctx.IDENT().getText();
-        var resturnType = ctx.type().result;
+        var name = ctx.funName.getText();
+        var returnType = ctx.type().result;
         List<Parameter> params = ctx.funParam().stream()
-                .map(p -> new Parameter(p.IDENT().getText(), p.type().result)).toList();
-        Node body = ctx.statement().result;
-        ctx.result = new FunDef(
-                srcPos, name, params, resturnType, body);
+                .map(p -> new Parameter(p.name.getText(), p.type().result)).toList();
+        Node body = ctx.funBody.result;
+        ctx.result = new FunDef(srcPos, name, params, returnType, body);
     }
 
     @Override
