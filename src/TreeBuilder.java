@@ -62,6 +62,7 @@ public class TreeBuilder extends L1BaseListener {
             throw new UnhandledAlternativeException(srcPos, "varOrFunCall", ctx.getText());
         }
     }
+
     @Override
     // On "EXIT": if a expr type matched, than this method is executed AFTER all 
     // components of the matched rule where already parsed. This means, we can safely
@@ -118,32 +119,28 @@ public class TreeBuilder extends L1BaseListener {
         } else if (ctx.varOrFunCall() != null) {
             ctx.result = ctx.varOrFunCall().result;
 
-        } else if (ctx.TERNARY_QM() != null) {
-            var srcPos = getSourcePos(ctx);
-            var condition = ctx.expr(0).result;
-            var then = ctx.expr(1).result;
-            var otherwise = ctx.ternaryExpr().result;
-            ctx.result = new TernaryConditionalExpr(srcPos,
-                    condition, then, otherwise);
+        } else if (ctx.ternaryElseBranch() != null) {
+            ctx.result = buildTernaryConditionalNode(ctx, ctx.expr(), ctx.ternaryElseBranch());
         } else {
-            var srcPos = getSourcePos(ctx);
-            throw new UnsupportedOperationException(
-                    "Unhandled `expr` alternative '" + ctx.getText() + "' at " + srcPos);
+            throw new UnhandledAlternativeException(getSourcePos(ctx), "expr", ctx.getText());
         }
     }
 
-    @Override
-    public void exitTernaryExpr(L1Parser.TernaryExprContext ctx) {
-        if (ctx.TERNARY_QM() != null) {
-            var srcPos = getSourcePos(ctx);
-            var condition = ctx.expr(0).result;
-            var then = ctx.expr(1).result;
-            var otherwise = ctx.ternaryExpr().result;
-            ctx.result = new TernaryConditionalExpr(srcPos,
-                    condition, then, otherwise);
+    public void exitTernaryElseBranch(L1Parser.TernaryElseBranchContext ctx) {
+        if (ctx.ternaryElseBranch() != null) {
+            ctx.result = buildTernaryConditionalNode(ctx, ctx.expr(), ctx.ternaryElseBranch());
         } else {
             ctx.result = ctx.expr(0).result;
         }
+    }
+
+    private Node buildTernaryConditionalNode(ParserRuleContext ctx, List<L1Parser.ExprContext> ifThenExprs,
+            L1Parser.TernaryElseBranchContext ternaryElseBranch) {
+        var srcPos = getSourcePos(ctx);
+        var condition = ifThenExprs.get(0).result;
+        var then = ifThenExprs.get(1).result;
+        var otherwise = ternaryElseBranch.result;
+        return new TernaryConditionalExpr(srcPos, condition, then, otherwise);
     }
 
     @Override
@@ -178,8 +175,7 @@ public class TreeBuilder extends L1BaseListener {
                     : new EmptyNode(srcPos);
             ctx.result = new ReturnStat(srcPos, expr);
         } else {
-            throw new UnsupportedOperationException(
-                    "Unhandled `basicStatement` alternative '" + ctx.getText() + "' at " + srcPos);
+            throw new UnhandledAlternativeException(srcPos, "basicStatement", ctx.getText());
         }
     }
 
@@ -197,7 +193,10 @@ public class TreeBuilder extends L1BaseListener {
         } else if (ctx.emptyStatement() != null) {
             ctx.result = new EmptyNode(srcPos);
         } else {
- 
+            throw new UnhandledAlternativeException(srcPos, "statement", ctx.getText());
+        }
+    }
+
     @Override
     public void exitType(L1Parser.TypeContext ctx) {
         var srcPos = getSourcePos(ctx);

@@ -73,11 +73,18 @@ expr
 	| lhs=expr AND rhs=expr
 	| lhs=expr OR rhs=expr
 	// ternary conditional
-	| expr QM expr COLON expr (QM expr COLON expr)* // TODO <---- modified ternary
+	| expr QM expr COLON ternaryElseBranch
+	// TODO <---- modified ternary
 	| LPAR exprInParens=expr RPAR
 	| number
 	| bool
 	| varOrFunCall
+;
+
+ternaryElseBranch
+	returns[Node result]:
+	expr
+	| expr QM expr COLON ternaryElseBranch
 ;
 
 varOrFunCall
