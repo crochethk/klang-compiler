@@ -23,7 +23,7 @@ primitiveType: T_I64 | T_BOOL | T_VOID;
 refType: IDENT;
 
 statementList // TODO <--------- implement exit
-	returns[Node result]:
+	returns[StatementList result]:
 	statement* //TODO <----------- (StatementListNode -> StatementList)
 ;
 

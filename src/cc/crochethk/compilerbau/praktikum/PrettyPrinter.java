@@ -13,6 +13,7 @@ import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
 import cc.crochethk.compilerbau.praktikum.ast.IntLit;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
+import cc.crochethk.compilerbau.praktikum.ast.StatementList;
 import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
@@ -210,6 +211,12 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(TypeNode type) {
         return write(type.typeToken);
+    }
+
+    @Override
+    public Writer visit(StatementList statementList) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     private void write_indent() {

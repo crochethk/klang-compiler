@@ -14,6 +14,7 @@ import cc.crochethk.compilerbau.praktikum.ast.IntLit;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
+import cc.crochethk.compilerbau.praktikum.ast.StatementList;
 import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
@@ -326,5 +327,11 @@ public class TypeChecker implements Visitor<Void> {
     public Void visit(TypeNode type) {
         type.theType = Type.of(type.typeToken, "" /*default package */);
         return null;
+    }
+
+    @Override
+    public Void visit(StatementList statementList) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 }
