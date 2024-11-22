@@ -28,10 +28,10 @@ statementList
 statement
 	returns[Node result]: blockLikeStatement | basicStatement;
 
-blockLikeStatement // TODO <--------- implement exit
+blockLikeStatement
 	returns[Node result]:
 	ifElse
-	| block // TODO <--------------- new nodetype or reuse statementList?
+	| block
 ;
 
 block

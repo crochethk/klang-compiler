@@ -202,8 +202,14 @@ public class TreeBuilder extends L1BaseListener {
 
     @Override
     public void exitBlockLikeStatement(L1Parser.BlockLikeStatementContext ctx) {
-        // TODO Auto-generated method stub
-        super.exitBlockLikeStatement(ctx);
+        var srcPos = getSourcePos(ctx);
+        if (ctx.ifElse() != null) {
+            ctx.result = ctx.ifElse().result;
+        } else if (ctx.block() != null) {
+            ctx.result = ctx.block().result;
+        } else {
+            throw new UnhandledAlternativeException(srcPos, "blockLikeStatement", ctx.getText());
+        }
     }
 
     @Override
