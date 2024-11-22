@@ -11,7 +11,7 @@ start
 
 definition
 	returns[FunDef result]:
-	KW_FUN IDENT LPAR (funParam (COMMA funParam)*)? RPAR //
+	KW_FUN IDENT LPAR (funParam (COMMA funParam)* COMMA?)? RPAR //
 	COLON type LBRACE statementList RBRACE
 ;
 
