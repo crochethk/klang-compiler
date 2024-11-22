@@ -22,10 +22,8 @@ type
 primitiveType: T_I64 | T_BOOL | T_VOID;
 refType: IDENT;
 
-statementList // TODO <--------- implement exit
-	returns[StatementList result]:
-	statement* //TODO <----------- (StatementListNode -> StatementList)
-;
+statementList
+	returns[StatementList result]: statement*;
 
 statement
 	returns[Node result]: blockLikeStatement | basicStatement;

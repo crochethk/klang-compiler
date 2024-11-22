@@ -14,6 +14,7 @@ import cc.crochethk.compilerbau.praktikum.ast.IntLit;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
+import cc.crochethk.compilerbau.praktikum.ast.StatementList;
 import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
@@ -191,6 +192,12 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitBlock(L1Parser.BlockContext ctx) {
         ctx.result = ctx.statementList().result;
+    }
+
+    @Override
+    public void exitStatementList(L1Parser.StatementListContext ctx) {
+        var statements = ctx.statement().stream().map(s -> s.result).toList();
+        ctx.result = new StatementList(getSourcePos(ctx), statements);
     }
 
     @Override
