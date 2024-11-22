@@ -167,7 +167,7 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(ReturnStat returnStat) {
         write("return");
-        if (!returnStat.expr.isEmpty()) {
+        if (!returnStat.isEmpty()) {
             write(" ");
         }
         returnStat.expr.accept(this);
