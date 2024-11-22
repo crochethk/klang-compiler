@@ -342,8 +342,8 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(StatementList statementList) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        statementList.statements.forEach(s -> s.accept(this));
+        return null;
     }
 
     @Override
