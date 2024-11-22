@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
+import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
@@ -196,8 +196,8 @@ public class GenJBC implements Visitor<Void> {
     }
 
     @Override
-    public Void visit(BooleanLit booleanLit) {
-        if (booleanLit.value) {
+    public Void visit(BoolLit boolLit) {
+        if (boolLit.value) {
             // push "true" representation
             codeBuilder.iconst_1();
         } else {

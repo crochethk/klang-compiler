@@ -5,7 +5,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
+import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
@@ -40,8 +40,8 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
-    public Writer visit(BooleanLit booleanLit) {
-        var lex = booleanLit.value ? BooleanLit.TRUE_LEX : BooleanLit.FALSE_LEX;
+    public Writer visit(BoolLit boolLit) {
+        var lex = boolLit.value ? BoolLit.TRUE_LEX : BoolLit.FALSE_LEX;
         return write(lex);
     }
 

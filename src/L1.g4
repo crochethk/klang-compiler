@@ -134,8 +134,8 @@ KW_ELSE: 'else';
 
 KW_LET: 'let';
 
-T_I64: 'int'; //TODO change to "long"
-T_BOOL: 'boolean'; //TODO change to "bool"
+T_I64: 'int'; //TODO parse this in TreeBuilder as actual "long"
+T_BOOL: 'bool';
 T_VOID: 'void';
 
 IDENT: ID_START ID_CHAR*;

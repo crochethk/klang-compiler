@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
+import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
@@ -41,8 +41,8 @@ public class TypeChecker implements Visitor<Void> {
     }
 
     @Override
-    public Void visit(BooleanLit booleanLit) {
-        booleanLit.theType = Type.BOOLEAN_T;
+    public Void visit(BoolLit boolLit) {
+        boolLit.theType = Type.BOOL_T;
         return null;
     }
 
@@ -56,7 +56,7 @@ public class TypeChecker implements Visitor<Void> {
 
         Type exprType;
         if (binOpExpr.op.isBoolean()) {
-            exprType = Type.BOOLEAN_T;
+            exprType = Type.BOOL_T;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
@@ -66,7 +66,7 @@ public class TypeChecker implements Visitor<Void> {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else if (binOpExpr.op.isComparison()) {
-            exprType = Type.BOOLEAN_T;
+            exprType = Type.BOOL_T;
             if (!(lhsType.equals(rhsType) && lhsType.isNumeric() && rhsType.isNumeric())) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
@@ -224,7 +224,7 @@ public class TypeChecker implements Visitor<Void> {
         ifElseStat.otherwise.accept(this);
         var condType = ifElseStat.condition.theType;
 
-        if (!condType.equals(Type.BOOLEAN_T)) {
+        if (!condType.equals(Type.BOOL_T)) {
             reportError(ifElseStat.condition,
                     "Condition must evaluate to boolean but is '" + condType + "'");
         }
@@ -310,7 +310,7 @@ public class TypeChecker implements Visitor<Void> {
         if (!thenType.equals(otherwiseType)) {
             reportError(ternaryConditionalExpr.then, "Conditional branches return incompatible types");
         }
-        if (!condType.equals(Type.BOOLEAN_T)) {
+        if (!condType.equals(Type.BOOL_T)) {
             reportError(ternaryConditionalExpr.condition, "Condition must return a boolean type");
         }
         return null;

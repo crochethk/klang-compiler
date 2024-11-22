@@ -10,7 +10,7 @@ fn foo(): int {
     {
         varInsideExtraBlock = 0;
     }
-    let a: boolean;
+    let a: bool;
     return d;
     if a {
         return true;

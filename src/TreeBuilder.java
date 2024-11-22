@@ -4,7 +4,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
+import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
@@ -36,7 +36,7 @@ public class TreeBuilder extends L1BaseListener {
     public void exitBool(L1Parser.BoolContext ctx) {
         var srcPos = getSourcePos(ctx);
         boolean value = ctx.BOOLEAN().getText().equals("true");
-        var node = new BooleanLit(srcPos, value);
+        var node = new BoolLit(srcPos, value);
         ctx.result = node;
     }
 

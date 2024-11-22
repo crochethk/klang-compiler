@@ -3,7 +3,7 @@
  *      - basic statements
  */
 fn foo(): int {
-    let a : boolean;
+    let a : bool;
     a = true;
     return (a || true);
 }

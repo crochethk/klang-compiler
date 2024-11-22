@@ -70,7 +70,7 @@ public class Main {
                                 : sum_odd_from_to(acc, begin+1, end);
                 }
 
-                fn is_odd(number: int): boolean {
+                fn is_odd(number: int): bool {
                     // return number % 2 != 0
                     return number - (number/2) * 2 != 0;
                 }
@@ -100,7 +100,7 @@ public class Main {
                     }
                 }
 
-                fn is_odd(number: int): boolean {
+                fn is_odd(number: int): bool {
                     // return number % 2 != 0;
                     return number - (number/2) * 2 != 0;
                 }
@@ -116,7 +116,7 @@ public class Main {
 
         // Code generation tinkering
         input_code = """
-                fn average(a: int, b:int, dummy_bool: boolean): int {
+                fn average(a: int, b:int, dummy_bool: bool): int {
                     return (
                         a+b
                     ) /2;

@@ -3,14 +3,14 @@ package cc.crochethk.compilerbau.praktikum.ast;
 import cc.crochethk.compilerbau.praktikum.Visitor;
 import utils.SourcePos;
 
-public class BooleanLit extends Node {
+public class BoolLit extends Node {
     public static final String TRUE_LEX = "true";
     public static final String FALSE_LEX = "false";
 
     /// The value of the boolean literal
     public boolean value;
 
-    public BooleanLit(SourcePos srcPos, boolean value) {
+    public BoolLit(SourcePos srcPos, boolean value) {
         super(srcPos);
         this.value = value;
     }

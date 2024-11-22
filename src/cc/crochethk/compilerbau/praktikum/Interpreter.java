@@ -17,8 +17,8 @@ public class Interpreter implements Visitor<InterpretResult> {
     }
 
     @Override
-    public InterpretResult visit(BooleanLit booleanLit) {
-        return new BoolResult(booleanLit.value);
+    public InterpretResult visit(BoolLit boolLit) {
+        return new BoolResult(boolLit.value);
     }
 
     @Override
