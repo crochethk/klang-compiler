@@ -46,9 +46,9 @@ ifElse
 
 varDeclarationOrAssignment
 	returns[Node result]:
-	// KW_LET varName=IDENT COLON type ASSIGN expr SEMI // declare and assign at once
+	KW_LET varName=IDENT COLON type ASSIGN expr SEMI
 	// KW_LET varName=IDENT (COLON type)? SEMI  // optional type annotation
-	KW_LET varName=IDENT COLON type SEMI
+	| KW_LET varName=IDENT COLON type SEMI
 	| varName=IDENT ASSIGN expr SEMI
 ;
 

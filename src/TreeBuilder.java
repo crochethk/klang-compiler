@@ -146,19 +146,25 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitVarDeclarationOrAssignment(L1Parser.VarDeclarationOrAssignmentContext ctx) {
         var srcPos = getSourcePos(ctx);
-        // if (ctx.KW_LET() != null && ctx.ASSIGN != null) {
-        //     /*create "hybrid" node*/
-        // } else
-        if (ctx.KW_LET() != null) {
-            ctx.result = new VarDeclareStat(
-                    srcPos, ctx.varName.getText(), ctx.type().result);
+        if (ctx.KW_LET() != null && ctx.ASSIGN() != null) {
+            ctx.result = new StatementList(srcPos, List.of(
+                    buildVarDeclareNode(srcPos, ctx), buildVarAssignNode(srcPos, ctx)));
+        } else if (ctx.KW_LET() != null) {
+            ctx.result = buildVarDeclareNode(srcPos, ctx);
         } else if (ctx.ASSIGN() != null) {
-            ctx.result = new VarAssignStat(
-                    srcPos, ctx.varName.getText(), ctx.expr().result);
+            ctx.result = buildVarAssignNode(srcPos, ctx);
         } else {
             throw new UnhandledAlternativeException(
                     srcPos, "varDeclarationOrAssignment", ctx.getText());
         }
+    }
+
+    private Node buildVarDeclareNode(SourcePos srcPos, L1Parser.VarDeclarationOrAssignmentContext ctx) {
+        return new VarDeclareStat(srcPos, ctx.varName.getText(), ctx.type().result);
+    }
+
+    private Node buildVarAssignNode(SourcePos srcPos, L1Parser.VarDeclarationOrAssignmentContext ctx) {
+        return new VarAssignStat(srcPos, ctx.varName.getText(), ctx.expr().result);
     }
 
     @Override
