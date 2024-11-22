@@ -94,14 +94,15 @@ number
 	returns[Node result]: FLOAT | INTEGER;
 
 bool
-	returns[Node result]: BOOLEAN;
+	returns[Node result]: TRUE | FALSE;
 
 // Lexer rules
 INTEGER: [0-9]+;
 FLOAT: (DIGIT+ '.' DIGIT*) | (DIGIT* '.' DIGIT+);
 fragment DIGIT: [0-9];
 
-BOOLEAN: 'true' | 'false';
+TRUE: 'true';
+FALSE: 'false';
 ADD: '+';
 SUB: '-';
 POW: '**';

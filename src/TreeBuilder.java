@@ -41,7 +41,7 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitBool(L1Parser.BoolContext ctx) {
         var srcPos = getSourcePos(ctx);
-        boolean value = ctx.BOOLEAN().getText().equals("true");
+        boolean value = ctx.TRUE() != null;
         var node = new BoolLit(srcPos, value);
         ctx.result = node;
     }
