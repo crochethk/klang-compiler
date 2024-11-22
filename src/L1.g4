@@ -47,7 +47,7 @@ ifElse
 basicStatement
 	returns[Node result]:
 	varDeclarationOrAssignment
-	| KW_RETURN expr? SEMI // TODO <--------- handle empty return?
+	| KW_RETURN expr? SEMI
 ;
 
 varDeclarationOrAssignment

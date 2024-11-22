@@ -162,6 +162,21 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitBasicStatement(L1Parser.BasicStatementContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        if (ctx.varDeclarationOrAssignment() != null) {
+            ctx.result = ctx.varDeclarationOrAssignment().result;
+        } else if (ctx.KW_RETURN() != null) {
+            var expr = ctx.expr() != null
+                    ? ctx.expr().result
+                    : new EmptyNode(srcPos);
+            ctx.result = new ReturnStat(srcPos, expr);
+        } else {
+            throw new UnhandledAlternativeException(srcPos, "basicStatement", ctx.getText());
+        }
+    }
+
+    @Override
     public void exitIfElse(L1Parser.IfElseContext ctx) {
         var srcPos = getSourcePos(ctx);
         // Create ifElse Node
@@ -176,25 +191,6 @@ public class TreeBuilder extends L1BaseListener {
                 ? new StatementListNode(srcPos, ifElseStat, ctx.statement().result)
                 : ifElseStat;
         ctx.result = result;
-    }
-
-    @Override
-    public void exitBasicStatement(L1Parser.BasicStatementContext ctx) {
-        var srcPos = getSourcePos(ctx);
-        if (ctx.KW_LET() != null) {
-            ctx.result = new VarDeclareStat(
-                    srcPos, ctx.IDENT().getText(), ctx.type().result);
-        } else if (ctx.ASSIGN() != null) {
-            ctx.result = new VarAssignStat(
-                    srcPos, ctx.IDENT().getText(), ctx.expr().result);
-        } else if (ctx.KW_RETURN() != null) {
-            var expr = ctx.expr() != null
-                    ? ctx.expr().result
-                    : new EmptyNode(srcPos);
-            ctx.result = new ReturnStat(srcPos, expr);
-        } else {
-            throw new UnhandledAlternativeException(srcPos, "basicStatement", ctx.getText());
-        }
     }
 
     @Override
