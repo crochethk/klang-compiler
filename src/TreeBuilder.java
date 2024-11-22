@@ -163,21 +163,6 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
-    public void exitBasicStatement(L1Parser.BasicStatementContext ctx) {
-        var srcPos = getSourcePos(ctx);
-        if (ctx.varDeclarationOrAssignment() != null) {
-            ctx.result = ctx.varDeclarationOrAssignment().result;
-        } else if (ctx.KW_RETURN() != null) {
-            var expr = ctx.expr() != null
-                    ? ctx.expr().result
-                    : new EmptyNode(srcPos);
-            ctx.result = new ReturnStat(srcPos, expr);
-        } else {
-            throw new UnhandledAlternativeException(srcPos, "basicStatement", ctx.getText());
-        }
-    }
-
-    @Override
     public void exitIfElse(L1Parser.IfElseContext ctx) {
         var srcPos = getSourcePos(ctx);
         // Create ifElse Node
@@ -215,16 +200,15 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitStatement(L1Parser.StatementContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.basicStatement() != null) {
-            var currentStatement = ctx.basicStatement().result;
-            var next = ctx.statement() != null
-                    ? ctx.statement().result
+        if (ctx.blockLikeStatement() != null) {
+            ctx.result = ctx.blockLikeStatement().result;
+        } else if (ctx.varDeclarationOrAssignment() != null) {
+            ctx.result = ctx.varDeclarationOrAssignment().result;
+        } else if (ctx.KW_RETURN() != null) {
+            var expr = ctx.expr() != null
+                    ? ctx.expr().result
                     : new EmptyNode(srcPos);
-            ctx.result = new StatementListNode(srcPos, currentStatement, next);
-        } else if (ctx.ifElse() != null) {
-            ctx.result = ctx.ifElse().result;
-        } else if (ctx.emptyStatement() != null) {
-            ctx.result = new EmptyNode(srcPos);
+            ctx.result = new ReturnStat(srcPos, expr);
         } else {
             throw new UnhandledAlternativeException(srcPos, "statement", ctx.getText());
         }

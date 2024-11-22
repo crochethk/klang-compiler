@@ -26,13 +26,14 @@ statementList
 	returns[StatementList result]: statement*;
 
 statement
-	returns[Node result]: blockLikeStatement | basicStatement;
+	returns[Node result]:
+	blockLikeStatement
+	| varDeclarationOrAssignment
+	| KW_RETURN expr? SEMI
+;
 
 blockLikeStatement
-	returns[Node result]:
-	ifElse
-	| block
-;
+	returns[Node result]: ifElse | block;
 
 block
 	returns[Node result]: LBRACE statementList RBRACE;
@@ -41,12 +42,6 @@ ifElse
 	returns[Node result]:
 	KW_IF condition=expr then=block KW_ELSE otherwise=block
 	| KW_IF condition=expr then=block
-;
-
-basicStatement
-	returns[Node result]:
-	varDeclarationOrAssignment
-	| KW_RETURN expr? SEMI
 ;
 
 varDeclarationOrAssignment
