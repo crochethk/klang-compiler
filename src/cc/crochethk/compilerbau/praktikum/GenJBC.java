@@ -387,7 +387,11 @@ public class GenJBC implements Visitor<Void> {
                 methFlags,
                 mb -> mb.withCode(cdb -> {
                     this.codeBuilder = cdb;
-                    funDef.body.accept(this);
+                    if (funDef.body.isEmpty()) {
+                        cdb.return_();
+                    } else {
+                        funDef.body.accept(this);
+                    }
                 }));
         return null;
     }
@@ -443,12 +447,15 @@ public class GenJBC implements Visitor<Void> {
                 // Push the result onto operand stack
                 entryPointCall.accept(this);
 
-                codeBuilder.invokevirtual(
-                        CD_PrintStream, "println",
-                        MethodTypeDesc.of(
-                                // Return type of println
-                                ConstantDescs.CD_void,
-                                entryPointCall.theType.classDesc()));
+                // Only print if returntype is not void
+                if (!entryPointCall.theType.equals(Type.VOID_T)) {
+                    codeBuilder.invokevirtual(
+                            CD_PrintStream, "println",
+                            MethodTypeDesc.of(
+                                    // Return type of println
+                                    ConstantDescs.CD_void,
+                                    entryPointCall.theType.classDesc()));
+                }
 
                 codeBuilder.return_();
             });
