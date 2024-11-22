@@ -217,15 +217,12 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitType(L1Parser.TypeContext ctx) {
         var srcPos = getSourcePos(ctx);
-        TypeNode result = null;
         if (ctx.primitiveType() != null) {
             var ttext = ctx.primitiveType().getText();
-            result = new TypeNode(srcPos, ttext, true);
+            ctx.result = new TypeNode(srcPos, ttext, true);
         } else {
-            throw new UnsupportedOperationException(
-                    "Recognized but unhandled 'type' token '" + ctx.getText() + "' at " + srcPos);
+            throw new UnhandledAlternativeException(srcPos, "type", ctx.getText());
         }
-        ctx.result = result;
     }
 
     @Override
