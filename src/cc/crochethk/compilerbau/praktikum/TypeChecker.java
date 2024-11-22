@@ -268,7 +268,7 @@ public class TypeChecker implements Visitor<Type> {
         funDef.body.accept(this);
 
         // Infer 'void' for no returns
-        if (currentFunReturnCount == 0 && funDef.returnType.theType != Type.VOID_T) {
+        if (currentFunReturnCount == 0 && !funDef.returnType.theType.equals(Type.VOID_T)) {
             reportError(funDef, "Declared return type '" + funDef.returnType.theType
                     + "' but no return statement was found");
         }
