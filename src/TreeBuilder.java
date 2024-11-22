@@ -144,6 +144,24 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitVarDeclarationOrAssignment(L1Parser.VarDeclarationOrAssignmentContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        // if (ctx.KW_LET() != null && ctx.ASSIGN != null) {
+        //     /*create "hybrid" node*/
+        // } else
+        if (ctx.KW_LET() != null) {
+            ctx.result = new VarDeclareStat(
+                    srcPos, ctx.varName.getText(), ctx.type().result);
+        } else if (ctx.ASSIGN() != null) {
+            ctx.result = new VarAssignStat(
+                    srcPos, ctx.varName.getText(), ctx.expr().result);
+        } else {
+            throw new UnhandledAlternativeException(
+                    srcPos, "varDeclarationOrAssignment", ctx.getText());
+        }
+    }
+
+    @Override
     public void exitIfElse(L1Parser.IfElseContext ctx) {
         var srcPos = getSourcePos(ctx);
         // Create ifElse Node

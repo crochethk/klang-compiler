@@ -50,7 +50,7 @@ basicStatement
 	| KW_RETURN expr? SEMI // TODO <--------- handle empty return?
 ;
 
-varDeclarationOrAssignment // TODO <--------- implement exit
+varDeclarationOrAssignment
 	returns[Node result]:
 	// KW_LET varName=IDENT COLON type ASSIGN expr SEMI // declare and assign at once
 	// KW_LET varName=IDENT (COLON type)? SEMI  // optional type annotation
