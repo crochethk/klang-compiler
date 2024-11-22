@@ -47,6 +47,22 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitVarOrFunCall(L1Parser.VarOrFunCallContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        if (ctx.LPAR() != null) {
+            // function call
+            var args = ctx.expr() != null
+                    ? ctx.expr().stream().map(expr -> expr.result).toList()
+                    : null;
+            ctx.result = new FunCall(srcPos, ctx.IDENT().getText(), args);
+        } else if (ctx.IDENT() != null && ctx.LPAR() == null) {
+            // variable access
+            ctx.result = new Var(srcPos, ctx.IDENT().getText());
+        } else {
+            throw new UnhandledAlternativeException(srcPos, "varOrFunCall", ctx.getText());
+        }
+    }
+    @Override
     // On "EXIT": if a expr type matched, than this method is executed AFTER all 
     // components of the matched rule where already parsed. This means, we can safely
     // assume rule components have a result and we dont have to care about computing
@@ -179,29 +195,7 @@ public class TreeBuilder extends L1BaseListener {
         } else if (ctx.emptyStatement() != null) {
             ctx.result = new EmptyNode(srcPos);
         } else {
-            throw new UnsupportedOperationException(
-                    "Unhandled `statement` alternative '" + ctx.getText() + "' at " + srcPos);
-        }
-    }
-
-    @Override
-    public void exitVarOrFunCall(L1Parser.VarOrFunCallContext ctx) {
-        var srcPos = getSourcePos(ctx);
-        if (ctx.LPAR() != null) {
-            // function call
-            var args = ctx.expr() != null
-                    ? ctx.expr().stream().map(expr -> expr.result).toList()
-                    : null;
-            ctx.result = new FunCall(srcPos, ctx.IDENT().getText(), args);
-        } else if (ctx.IDENT() != null && ctx.LPAR() == null) {
-            // variable access
-            ctx.result = new Var(srcPos, ctx.IDENT().getText());
-        } else {
-            throw new UnsupportedOperationException(
-                    "Unhandled `varOrFunCall` alternative '" + ctx.getText() + "' at " + srcPos);
-        }
-    }
-
+ 
     @Override
     public void exitType(L1Parser.TypeContext ctx) {
         var srcPos = getSourcePos(ctx);
