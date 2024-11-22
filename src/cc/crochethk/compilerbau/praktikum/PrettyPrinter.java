@@ -47,6 +47,23 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
+    public Writer visit(Var var) {
+        return write(var.name);
+    }
+
+    @Override
+    public Writer visit(FunCall funCall) {
+        write(funCall.name);
+        write("(");
+        for (int i = 0; i < funCall.args.size(); i++) {
+            funCall.args.get(i).accept(this);
+            if (i < funCall.args.size() - 1)
+                write(", ");
+        }
+        return write(")");
+    }
+
+    @Override
     public Writer visit(BinOpExpr binOpExpr) {
         write("(");
         binOpExpr.lhs.accept(this);
@@ -60,6 +77,102 @@ public class PrettyPrinter implements Visitor<Writer> {
         binOpExpr.rhs.accept(this);
         write(")");
         return writer;
+    }
+
+    @Override
+    public Writer visit(UnaryOpExpr unaryOpExpr) {
+        var op_lex = unaryOpExpr.op.toLexeme();
+        return switch (unaryOpExpr.op.side) {
+            case left -> {
+                write(op_lex);
+                yield unaryOpExpr.operand.accept(this);
+            }
+            case right -> {
+                unaryOpExpr.operand.accept(this);
+                yield write(op_lex);
+            }
+        };
+    }
+
+    @Override
+    public Writer visit(TernaryConditionalExpr ternaryConditionalExpr) {
+        ternaryConditionalExpr.condition.accept(this);
+        write(" ? ");
+        ternaryConditionalExpr.then.accept(this);
+        write(" : ");
+        return ternaryConditionalExpr.otherwise.accept(this);
+    }
+
+    @Override
+    public Writer visit(VarDeclareStat varDeclareStat) {
+        write("let ");
+        write(varDeclareStat.varName);
+        write(": ");
+        varDeclareStat.declaredType.accept(this);
+        return write(";");
+    }
+
+    @Override
+    public Writer visit(VarAssignStat varAssignStat) {
+        write(varAssignStat.targetVarName);
+        write(" = ");
+        varAssignStat.expr.accept(this);
+        return write(";");
+    }
+
+    @Override
+    public Writer visit(IfElseStat ifElseStat) {
+        write("if ");
+        ifElseStat.condition.accept(this);
+        write(" {");
+        indent_level++;
+        write_indent();
+        ifElseStat.then.accept(this);
+        indent_level--;
+        write_indent();
+        write("}");
+
+        if (!ifElseStat.otherwise.isEmpty()) {
+            write(" else {");
+            indent_level++;
+            write_indent();
+            ifElseStat.otherwise.accept(this);
+            indent_level--;
+            write_indent();
+            write("}");
+        }
+        return writer;
+    }
+
+    @Override
+    public Writer visit(StatementListNode statementListNode) {
+        statementListNode.current.accept(this);
+        if (!statementListNode.next.isEmpty()) {
+            write_indent();
+            statementListNode.next.accept(this);
+        }
+        return writer;
+    }
+
+    @Override
+    public Writer visit(StatementList statementList) {
+        // TODO Auto-generated method stub
+        return writer;
+    }
+
+    @Override
+    public Writer visit(ReturnStat returnStat) {
+        write("return");
+        if (!returnStat.expr.isEmpty()) {
+            write(" ");
+            returnStat.expr.accept(this);
+        }
+        return write(";");
+    }
+
+    @Override
+    public Writer visit(TypeNode type) {
+        return write(type.typeToken);
     }
 
     @Override
@@ -102,121 +215,8 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
-    public Writer visit(Var var) {
-        return write(var.name);
-    }
-
-    @Override
-    public Writer visit(FunCall funCall) {
-        write(funCall.name);
-        write("(");
-        for (int i = 0; i < funCall.args.size(); i++) {
-            funCall.args.get(i).accept(this);
-            if (i < funCall.args.size() - 1)
-                write(", ");
-        }
-        return write(")");
-    }
-
-    @Override
-    public Writer visit(ReturnStat returnStat) {
-        write("return");
-        if (!returnStat.expr.isEmpty()) {
-            write(" ");
-            returnStat.expr.accept(this);
-        }
-        return write(";");
-    }
-
-    @Override
-    public Writer visit(UnaryOpExpr unaryOpExpr) {
-        var op_lex = unaryOpExpr.op.toLexeme();
-        return switch (unaryOpExpr.op.side) {
-            case left -> {
-                write(op_lex);
-                yield unaryOpExpr.operand.accept(this);
-            }
-            case right -> {
-                unaryOpExpr.operand.accept(this);
-                yield write(op_lex);
-            }
-        };
-    }
-
-    @Override
-    public Writer visit(TernaryConditionalExpr ternaryConditionalExpr) {
-        ternaryConditionalExpr.condition.accept(this);
-        write(" ? ");
-        ternaryConditionalExpr.then.accept(this);
-        write(" : ");
-        return ternaryConditionalExpr.otherwise.accept(this);
-    }
-
-    @Override
-    public Writer visit(VarAssignStat varAssignStat) {
-        write(varAssignStat.targetVarName);
-        write(" = ");
-        varAssignStat.expr.accept(this);
-        return write(";");
-    }
-
-    @Override
-    public Writer visit(VarDeclareStat varDeclareStat) {
-        write("let ");
-        write(varDeclareStat.varName);
-        write(": ");
-        varDeclareStat.declaredType.accept(this);
-        return write(";");
-    }
-
-    @Override
-    public Writer visit(StatementListNode statementListNode) {
-        statementListNode.current.accept(this);
-        if (!statementListNode.next.isEmpty()) {
-            write_indent();
-            statementListNode.next.accept(this);
-        }
-        return writer;
-    }
-
-    @Override
-    public Writer visit(IfElseStat ifElseStat) {
-        write("if ");
-        ifElseStat.condition.accept(this);
-        write(" {");
-        indent_level++;
-        write_indent();
-        ifElseStat.then.accept(this);
-        indent_level--;
-        write_indent();
-        write("}");
-
-        if (!ifElseStat.otherwise.isEmpty()) {
-            write(" else {");
-            indent_level++;
-            write_indent();
-            ifElseStat.otherwise.accept(this);
-            indent_level--;
-            write_indent();
-            write("}");
-        }
-        return writer;
-    }
-
-    @Override
     public Writer visit(EmptyNode emptyNode) {
         return writer;
-    }
-
-    @Override
-    public Writer visit(TypeNode type) {
-        return write(type.typeToken);
-    }
-
-    @Override
-    public Writer visit(StatementList statementList) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     private void write_indent() {
