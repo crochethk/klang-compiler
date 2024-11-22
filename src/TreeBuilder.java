@@ -26,10 +26,16 @@ import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 
 public class TreeBuilder extends L1BaseListener {
     @Override
-    public void exitZahl(L1Parser.ZahlContext ctx) {
+    public void exitNumber(L1Parser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
-        var node = new IntLit(srcPos, Integer.parseInt(ctx.NUMBER().getText()));
-        ctx.result = node;
+        if (ctx.INTEGER() != null) {
+            var node = new IntLit(srcPos, Long.parseLong(ctx.INTEGER().getText()));
+            ctx.result = node;
+        } else if (ctx.FLOAT() != null) {
+            throw new UnsupportedOperationException("Floats are not supported, yet");
+        } else {
+            throw new UnhandledAlternativeException(srcPos, "varOrFunCall", ctx.getText());
+        }
     }
 
     @Override
@@ -248,5 +254,11 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         var operand = ctx.expr(0).result;
         return new UnaryOpExpr(srcPos, operand, op);
+    }
+
+    private class UnhandledAlternativeException extends UnsupportedOperationException {
+        UnhandledAlternativeException(SourcePos srcPos, String alternativeName, String ctxText) {
+            super("Unhandled `" + alternativeName + "` alternative '" + ctxText + "' at " + srcPos);
+        }
     }
 }

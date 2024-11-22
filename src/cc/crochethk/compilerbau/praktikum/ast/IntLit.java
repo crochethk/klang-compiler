@@ -7,7 +7,7 @@ public class IntLit extends Node {
     /// The value of the integer literal
     public long value;
 
-    public IntLit(SourcePos srcPos, int value) {
+    public IntLit(SourcePos srcPos, long value) {
         super(srcPos);
         this.value = value;
     }
