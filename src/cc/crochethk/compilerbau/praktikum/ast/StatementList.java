@@ -14,6 +14,11 @@ public class StatementList extends Node {
     }
 
     @Override
+    public boolean isEmpty() {
+        return statements.isEmpty();
+    }
+
+    @Override
     public <R> R accept(Visitor<R> visitor) {
         return visitor.visit(this);
     }

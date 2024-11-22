@@ -125,22 +125,24 @@ public class PrettyPrinter implements Visitor<Writer> {
         write("if ");
         ifElseStat.condition.accept(this);
         write(" {");
-        indent_level++;
-        write_indent();
-        ifElseStat.then.accept(this);
-        indent_level--;
-        write_indent();
+        if (!ifElseStat.then.isEmpty()) {
+            indent_level++;
+            write_indent();
+            ifElseStat.then.accept(this);
+            indent_level--;
+            write_indent();
+        }
         write("}");
+        write(" else {");
 
         if (!ifElseStat.otherwise.isEmpty()) {
-            write(" else {");
             indent_level++;
             write_indent();
             ifElseStat.otherwise.accept(this);
             indent_level--;
             write_indent();
-            write("}");
         }
+        write("}");
         return writer;
     }
 
@@ -152,12 +154,13 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(StatementList statementList) {
-        statementList.statements.forEach(s -> {
+        var statList = statementList.statements;
+        for (int i = 0; i < statList.size(); i++) {
+            var s = statList.get(i);
             s.accept(this);
-            if (!s.isEmpty()) {
+            if (!s.isEmpty() && i < statList.size() - 1)
                 write_indent();
-            }
-        });
+        }
         return writer;
     }
 
@@ -166,8 +169,8 @@ public class PrettyPrinter implements Visitor<Writer> {
         write("return");
         if (!returnStat.expr.isEmpty()) {
             write(" ");
-            returnStat.expr.accept(this);
         }
+        returnStat.expr.accept(this);
         return write(";");
     }
 
@@ -183,13 +186,12 @@ public class PrettyPrinter implements Visitor<Writer> {
         write(" ");
         write(funDef.name);
         write("(");
-        for (int i = 0; i < funDef.params.size(); i++) {
-            var p = funDef.params.get(i);
+
+        for (var p : funDef.params) {
             write(p.name());
             write(": ");
             p.type().accept(this);
-            if (i < funDef.params.size() - 1)
-                write(", ");
+            write(", ");
         }
         write("): ");
         funDef.returnType.accept(this);
