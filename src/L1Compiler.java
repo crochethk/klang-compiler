@@ -70,8 +70,8 @@ public class L1Compiler {
         }
 
         if (BUILD_AST) {
-            // var treeBuilder = new TreeBuilder();
-            var treeBuilder = new TestParseTreeListener();
+            var treeBuilder = new TreeBuilder();
+            // var treeBuilder = new TestParseTreeListener();
             ParseTreeWalker.DEFAULT.walk(treeBuilder, antlrTree);
         }
         return antlrTree.result;
