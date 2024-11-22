@@ -146,17 +146,18 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(StatementListNode statementListNode) {
-        statementListNode.current.accept(this);
-        if (!statementListNode.next.isEmpty()) {
-            write_indent();
-            statementListNode.next.accept(this);
-        }
-        return writer;
+        // TODO finally remove this from interface 
+        throw new UnsupportedOperationException("statementListNode SHOULD NOT BE IN USE ANYMORE...");
     }
 
     @Override
     public Writer visit(StatementList statementList) {
-        // TODO Auto-generated method stub
+        statementList.statements.forEach(s -> {
+            s.accept(this);
+            if (!s.isEmpty()) {
+                write_indent();
+            }
+        });
         return writer;
     }
 
