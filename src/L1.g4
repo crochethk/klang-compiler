@@ -82,12 +82,12 @@ expr
 
 varOrFunCall
 	returns[Node result]:
-	// variable value
-	IDENT
-	// function call without parameters
+	// function call with one or more args
+	IDENT LPAR expr (COMMA expr)* RPAR
+	// function call without args
 	| IDENT LPAR RPAR
-	// function call with one or more parameters
-	| IDENT LPAR expr (COMMA expr)* RPAR
+	// variable reference
+	| IDENT
 ;
 
 number
