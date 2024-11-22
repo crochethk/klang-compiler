@@ -61,7 +61,7 @@ varDeclarationOrAssignment // TODO <--------- implement exit
 expr
 	returns[Node result]:
 	// arithmetic expr
-	SUB expr // negation // TODO <------------ implement new alternative
+	negationOp=SUB expr // negation // TODO <------------ implement UnaryOpExpr.neg 
 	| lhs=expr POW rhs=expr
 	| lhs=expr (MULT | DIV) rhs=expr // hier + MOD
 	| lhs=expr (ADD | SUB) rhs=expr
@@ -74,7 +74,7 @@ expr
 	| lhs=expr OR rhs=expr
 	// ternary conditional
 	| expr QM expr COLON expr (QM expr COLON expr)* // TODO <---- modified ternary
-	| LPAR expr RPAR
+	| LPAR exprInParens=expr RPAR
 	| number
 	| bool
 	| varOrFunCall

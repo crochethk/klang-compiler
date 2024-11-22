@@ -68,15 +68,17 @@ public class TreeBuilder extends L1BaseListener {
     // assume rule components have a result and we dont have to care about computing
     // it first.
     public void exitExpr(L1Parser.ExprContext ctx) {
-        // integer
-        if (ctx.zahl() != null) {
-            ctx.result = ctx.zahl().result;
+        // arithmetic
+        if (ctx.number() != null) {
+            ctx.result = ctx.number().result;
         } else if (ctx.MULT() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.mult);
         } else if (ctx.DIV() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.div);
         } else if (ctx.ADD() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.add);
+        } else if (ctx.negationOp != null) { // must come before subtract
+            ctx.result = parseUnaryOpExpr(ctx, UnaryOp.neg);
         } else if (ctx.SUB() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.sub);
         } else if (ctx.POW() != null) {
@@ -84,8 +86,8 @@ public class TreeBuilder extends L1BaseListener {
         }
 
         // parentheses
-        else if (ctx.LPAR() != null && ctx.RPAR() != null) {
-            ctx.result = ctx.expr(0).result;
+        else if (ctx.exprInParens != null) {
+            ctx.result = ctx.exprInParens.result;
         }
 
         // boolean
@@ -99,7 +101,7 @@ public class TreeBuilder extends L1BaseListener {
             ctx.result = parseUnaryOpExpr(ctx, UnaryOp.not);
         }
 
-        // comparisson
+        // comparison
         else if (ctx.EQ() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.eq);
         } else if (ctx.NEQ() != null) {
@@ -230,7 +232,7 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     //
-    // Helper methods
+    // Helper methods and structs
     //
     private SourcePos getSourcePos(ParserRuleContext ctx) {
         return new SourcePos(
@@ -239,9 +241,7 @@ public class TreeBuilder extends L1BaseListener {
 
     private Node parseBinOpExpr(L1Parser.ExprContext ctx, BinaryOp op) {
         var srcPos = getSourcePos(ctx);
-        var lhs = ctx.expr(0).result;
-        var rhs = ctx.expr(1).result;
-        return new BinOpExpr(srcPos, lhs, op, rhs);
+        return new BinOpExpr(srcPos, ctx.lhs.result, op, ctx.rhs.result);
     }
 
     private Node parseUnaryOpExpr(L1Parser.ExprContext ctx, UnaryOp op) {
