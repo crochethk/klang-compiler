@@ -36,7 +36,8 @@ blockLikeStatement // TODO <--------- implement exit
 	| block // TODO <--------------- new nodetype or reuse statementList?
 ;
 
-block: LBRACE statementList RBRACE;
+block
+	returns[Node result]: LBRACE statementList RBRACE;
 
 ifElse
 	returns[Node result]:
