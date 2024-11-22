@@ -22,14 +22,19 @@ type
 primitiveType: T_I64 | T_BOOL | T_VOID;
 refType: IDENT;
 
-statementList
-	returns[Node result]: statement*;
+statementList // TODO <--------- implement exit
+	returns[Node result]:
+	statement* //TODO <----------- (StatementListNode -> StatementList)
+;
 
 statement
 	returns[Node result]: blockLikeStatement | basicStatement;
 
-blockLikeStatement
-	returns[Node result]: ifElse | block;
+blockLikeStatement // TODO <--------- implement exit
+	returns[Node result]:
+	ifElse
+	| block // TODO <--------------- new nodetype or reuse statementList?
+;
 
 block: LBRACE statementList RBRACE;
 
@@ -42,10 +47,10 @@ ifElse
 basicStatement
 	returns[Node result]:
 	varDeclarationOrAssignment
-	| KW_RETURN expr? SEMI
+	| KW_RETURN expr? SEMI // TODO <--------- handle empty return?
 ;
 
-varDeclarationOrAssignment
+varDeclarationOrAssignment // TODO <--------- implement exit
 	returns[Node result]:
 	// KW_LET varName=IDENT COLON type ASSIGN expr SEMI // declare and assign at once
 	// KW_LET varName=IDENT (COLON type)? SEMI  // optional type annotation
@@ -56,7 +61,7 @@ varDeclarationOrAssignment
 expr
 	returns[Node result]:
 	// arithmetic expr
-	SUB expr // negation
+	SUB expr // negation // TODO <------------ implement new alternative
 	| lhs=expr POW rhs=expr
 	| lhs=expr (MULT | DIV) rhs=expr // hier + MOD
 	| lhs=expr (ADD | SUB) rhs=expr
@@ -68,7 +73,7 @@ expr
 	| lhs=expr AND rhs=expr
 	| lhs=expr OR rhs=expr
 	// ternary conditional
-	| expr QM expr COLON expr ( QM expr COLON expr)*
+	| expr QM expr COLON expr (QM expr COLON expr)* // TODO <---- modified ternary
 	| LPAR expr RPAR
 	| number
 	| bool
