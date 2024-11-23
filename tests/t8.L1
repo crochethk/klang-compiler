@@ -1,0 +1,40 @@
+/**
+ * Tries out:
+ *      - combines declaration and assignment
+ *      - nested if-else + with empty blocks
+ *      - basic ternary
+ */
+fn max(a: int, b: int): int {
+    return a>=b ? a : b;
+}
+
+fn max3(a: int, b: int, c: int): int {
+    if max(a,b) >= max(b,c) {
+        return max(a,b);
+    } 
+    // long for "max(b,c)"
+    else {
+        if b >=c {
+            return b;
+        }
+        else {/*empty statement*/}
+        /* NO empty statement */
+    }
+    if true {/*empty statement*/}
+        /* NO empty statement */
+    return c;
+}
+
+fn ___main___(): int {
+    let MIN: int = 60;
+    let MID: int;
+    MID = 50;
+    /*
+    return max3(MID, MIN, 71);
+    return max3(MID,72,MIN);
+    return max3(73,MID,MIN);
+    return max3(74,MIN,MID);
+    return max3(75,MIN,MID);
+    */
+    return max3(MIN,76,MID);
+}

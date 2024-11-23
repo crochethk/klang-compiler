@@ -1,0 +1,9 @@
+/**
+ * Tries out new grammar structure:
+ *      - basic statements
+ */
+fn foo(): int {
+    let a : bool;
+    a = true;
+    return (a || true);
+}

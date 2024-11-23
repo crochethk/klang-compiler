@@ -43,7 +43,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
 
     Type STRING_T = new RefType("String", "java.lang");
     Type LONG_T = new PrimType(TypeKind.LongType);
-    Type BOOLEAN_T = new PrimType(TypeKind.BooleanType);
+    Type BOOL_T = new PrimType(TypeKind.BooleanType);
     Type DOUBLE_T = new PrimType(TypeKind.DoubleType);
     Type VOID_T = new PrimType(TypeKind.VoidType);
 
@@ -62,8 +62,9 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         return switch (typeName) {
             case "String" -> STRING_T;
             case "int" -> LONG_T;
-            case "boolean" -> BOOLEAN_T;
+            case "bool" -> BOOL_T;
             case "double" -> DOUBLE_T;
+            case "void" -> VOID_T;
             default -> new RefType(typeName, packageName);
         };
     }

@@ -1,6 +1,6 @@
-# Created with the help of AI
 # Function to load .env variables
 function LoadEnvVariables {
+    # Created with the help of AI
     param (
         [string]$filePath
     )
@@ -32,4 +32,16 @@ function LoadEnvVariables {
     else {
         Write-Host "Error: The file '$filePath' does not exist."
     }
+}
+
+# Compiles the given L1 source file
+function CompileFile {
+    param (
+        [string]$outDir,
+        [string]$sourceFilePath
+    )
+    $sourceFilePath = Resolve-Path -Path $sourceFilePath
+    $relativePath = $sourceFilePath.Substring($pwd.Path.Length + 1)  # Strip out the base directory part
+    java --enable-preview -cp "bin;lib/antlr4-runtime-4.13.2.jar;lib/antlr4-4.13.2.jar;lib/antlr4-4.13.2-complete.jar" L1Compiler $outDir $relativePath
+
 }

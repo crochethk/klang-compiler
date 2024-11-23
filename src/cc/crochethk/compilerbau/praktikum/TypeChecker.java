@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
+import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
@@ -14,6 +14,7 @@ import cc.crochethk.compilerbau.praktikum.ast.IntLit;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
+import cc.crochethk.compilerbau.praktikum.ast.StatementList;
 import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
@@ -27,36 +28,78 @@ import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
  * While doing that each visited Node is annotated with its inferred type information
  * by assigning an appropriate Type object to {@code Node.theType}.
  */
-public class TypeChecker implements Visitor<Void> {
-
+public class TypeChecker implements Visitor<Type> {
     @Override
     public void reportError(Node node, String msg) {
         Visitor.super.reportError(node, "Type error: " + msg);
     }
 
     @Override
-    public Void visit(IntLit intLit) {
+    public Type visit(IntLit intLit) {
         intLit.theType = Type.LONG_T;
-        return null;
+        return intLit.theType;
     }
 
     @Override
-    public Void visit(BooleanLit booleanLit) {
-        booleanLit.theType = Type.BOOLEAN_T;
-        return null;
+    public Type visit(BoolLit boolLit) {
+        boolLit.theType = Type.BOOL_T;
+        return boolLit.theType;
     }
 
     @Override
-    public Void visit(BinOpExpr binOpExpr) {
+    public Type visit(Var var) {
+        var varType = funDefVarTypes.get(var.name);
+        if (varType == null) {
+            reportError(var, "Use of undefined variable '" + var.name + "'");
+        }
+        var.theType = varType;
+        return varType;
+    }
+
+    @Override
+    public Type visit(FunCall funCall) {
+        funCall.args.forEach(arg -> arg.accept(this));
+
+        var funDef = funDefs.get(funCall.name);
+        if (funDef == null) {
+            reportError(funCall, "Unknown function '" + funCall.name + "'");
+            funCall.theType = Type.UNKNOWN_T;
+        } else {
+            //funDef found
+            funCall.theType = funDef.returnType.theType;
+
+            var paramCount = funDef.params.size();
+            var argsCount = funCall.args.size();
+            if (paramCount != argsCount) {
+                reportError(funCall,
+                        "Wrong number of arguments: expected " + paramCount
+                                + " but " + argsCount + " provided");
+            }
+
+            var argsIter = funCall.args.iterator();
+            for (var p : funDef.params) {
+                if (!argsIter.hasNext()) {
+                    break;
+                }
+                var arg = argsIter.next();
+                if (!p.type().theType.equals(arg.theType)) {
+                    reportError(funCall, "Invalid argument type '" + arg.theType + "'");
+                }
+            }
+        }
+
+        return funCall.theType;
+    }
+
+    @Override
+    public Type visit(BinOpExpr binOpExpr) {
         // Compute type of the operands
-        binOpExpr.lhs.accept(this);
-        binOpExpr.rhs.accept(this);
-        var lhsType = binOpExpr.lhs.theType;
-        var rhsType = binOpExpr.rhs.theType;
+        var lhsType = binOpExpr.lhs.accept(this);
+        var rhsType = binOpExpr.rhs.accept(this);
 
         Type exprType;
         if (binOpExpr.op.isBoolean()) {
-            exprType = Type.BOOLEAN_T;
+            exprType = Type.BOOL_T;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
@@ -66,7 +109,7 @@ public class TypeChecker implements Visitor<Void> {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else if (binOpExpr.op.isComparison()) {
-            exprType = Type.BOOLEAN_T;
+            exprType = Type.BOOL_T;
             if (!(lhsType.equals(rhsType) && lhsType.isNumeric() && rhsType.isNumeric())) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
@@ -75,7 +118,127 @@ public class TypeChecker implements Visitor<Void> {
         }
 
         binOpExpr.theType = Objects.requireNonNull(exprType, "Expected valid Type object but was null");
-        return null;
+        return binOpExpr.theType;
+    }
+
+    @Override
+    public Type visit(UnaryOpExpr unaryOpExpr) {
+        var operandType = unaryOpExpr.operand.accept(this);
+        unaryOpExpr.theType = operandType;
+        var op = unaryOpExpr.op;
+
+        if (op.isBoolean() && operandType.isNumeric()) {
+            reportError(unaryOpExpr, "Boolean operator incompatible with '"
+                    + operandType + "' operand");
+        }
+        if (op.isArithmetic() && !operandType.isNumeric()) {
+            reportError(unaryOpExpr, "Arithmetic operator '" + op
+                    + "' incompatible with '" + operandType + "' operand");
+        }
+        return unaryOpExpr.theType;
+    }
+
+    @Override
+    public Type visit(TernaryConditionalExpr ternaryConditionalExpr) {
+        var condType = ternaryConditionalExpr.condition.accept(this);
+        var thenType = ternaryConditionalExpr.then.accept(this);
+        var otherwiseType = ternaryConditionalExpr.otherwise.accept(this);
+        ternaryConditionalExpr.theType = thenType;
+
+        if (!thenType.equals(otherwiseType)) {
+            reportError(ternaryConditionalExpr.then, "Conditional branches return incompatible types");
+        }
+        if (!condType.equals(Type.BOOL_T)) {
+            reportError(ternaryConditionalExpr.condition, "Condition must return a boolean type");
+        }
+        return ternaryConditionalExpr.theType;
+    }
+
+    @Override
+    public Type visit(VarDeclareStat varDeclareStat) {
+        /*
+        TODO TODO TODO TODO TODO 
+        - consider checking, whether the declared type is actually defined
+            - should only be relevant for custom types, since primitves are
+            already implicitly checked upon building the AST...
+            - probably should be delegated to "visit(Type)" instead
+        
+        - we will allow redeclaration of variables (so no check if already declared)
+        
+        - when declaration has optional initializer: check whether types match
+        */
+
+        varDeclareStat.theType = varDeclareStat.declaredType.accept(this);
+        funDefVarTypes.put(varDeclareStat.varName, varDeclareStat.theType);
+        return varDeclareStat.theType;
+    }
+
+    @Override
+    public Type visit(VarAssignStat varAssignStat) {
+        var varType = funDefVarTypes.get(varAssignStat.targetVarName);
+        var exprType = varAssignStat.expr.accept(this);
+
+        if (varType == null) {
+            reportError(varAssignStat,
+                    "Assignment to undeclared variable '" + varAssignStat.targetVarName + "'");
+        } else if (!(varType.equals(exprType))) {
+            reportError(varAssignStat, "Attempt to assign value of type '"
+                    + exprType + "' to variable '" + varAssignStat.targetVarName
+                    + "' of incompatible type '" + varType + "'");
+        }
+
+        varAssignStat.theType = varType;
+        return varAssignStat.theType;
+    }
+
+    @Override
+    public Type visit(IfElseStat ifElseStat) {
+        var condType = ifElseStat.condition.accept(this);
+        var thenType = ifElseStat.then.accept(this);
+        ifElseStat.otherwise.accept(this);
+
+        if (!condType.equals(Type.BOOL_T)) {
+            reportError(ifElseStat.condition,
+                    "Condition must evaluate to boolean but is '" + condType + "'");
+        }
+
+        ifElseStat.theType = thenType;
+        return ifElseStat.theType;
+    }
+
+    @Override
+    public Type visit(StatementListNode statementListNode) {
+        // TODO finally remove this from interface 
+        throw new UnsupportedOperationException("statementListNode SHOULD NOT BE IN USE ANYMORE...");
+    }
+
+    @Override
+    public Type visit(StatementList statementList) {
+        statementList.statements.forEach(s -> s.accept(this));
+        statementList.theType = statementList.isEmpty()
+                ? Type.VOID_T
+                : statementList.statements.getLast().theType;
+        return statementList.theType;
+    }
+
+    @Override
+    public Type visit(ReturnStat returnStat) {
+        var retType = currentFun.returnType.theType;
+        currentFunReturnCount += 1;
+        returnStat.theType = retType;
+
+        var exprType = returnStat.expr.accept(this);
+        if (!retType.equals(exprType)) {
+            reportError(returnStat, "Expected return type '" + retType
+                    + "' but found incompatible '" + exprType + "'");
+        }
+        return returnStat.theType;
+    }
+
+    @Override
+    public Type visit(TypeNode type) {
+        type.theType = Type.of(type.typeToken, "" /*default package */);
+        return type.theType;
     }
 
     /**
@@ -90,7 +253,7 @@ public class TypeChecker implements Visitor<Void> {
     private int currentFunReturnCount = 0;
 
     @Override
-    public Void visit(FunDef funDef) {
+    public Type visit(FunDef funDef) {
         // Hint: Signature nodes are already evaluated in Prog
         currentFun = funDef;
         currentFunReturnCount = 0;
@@ -105,7 +268,7 @@ public class TypeChecker implements Visitor<Void> {
         funDef.body.accept(this);
 
         // Infer 'void' for no returns
-        if (currentFunReturnCount == 0 && funDef.returnType.theType != Type.VOID_T) {
+        if (currentFunReturnCount == 0 && !funDef.returnType.theType.equals(Type.VOID_T)) {
             reportError(funDef, "Declared return type '" + funDef.returnType.theType
                     + "' but no return statement was found");
         }
@@ -117,13 +280,13 @@ public class TypeChecker implements Visitor<Void> {
         */
         // TODO change to something more meaningful
         funDef.theType = funDef.returnType.theType;
-        return null;
+        return funDef.theType;
     }
 
     private Map<String, FunDef> funDefs = new HashMap<>();
 
     @Override
-    public Void visit(Prog prog) {
+    public Type visit(Prog prog) {
         // Before traversiing the tree, we need to make funDefs available for other "visit"s
         prog.funDefs.forEach(funDef -> {
             var previous = funDefs.put(funDef.name, funDef);
@@ -155,176 +318,8 @@ public class TypeChecker implements Visitor<Void> {
     }
 
     @Override
-    public Void visit(ReturnStat returnStat) {
-        var retType = currentFun.returnType.theType;
-        currentFunReturnCount += 1;
-        returnStat.theType = retType;
-
-        returnStat.expr.accept(this);
-        var exprType = returnStat.expr.theType;
-
-        if (!retType.equals(exprType)) {
-            reportError(returnStat, "Expected return type '" + retType
-                    + "' but found incompatible '" + exprType + "'");
-        }
-        return null;
-    }
-
-    @Override
-    public Void visit(VarAssignStat varAssignStat) {
-        varAssignStat.expr.accept(this);
-
-        var varType = funDefVarTypes.get(varAssignStat.targetVarName);
-        var exprType = varAssignStat.expr.theType;
-
-        if (varType == null) {
-            reportError(varAssignStat, "Assignment to undeclared variable '" + varAssignStat.targetVarName + "'");
-        } else if (!(varType.equals(exprType))) {
-            reportError(varAssignStat, "Attempt to assign value of type '"
-                    + exprType + "' to variable '" + varAssignStat.targetVarName
-                    + "' of incompatible type '" + varType + "'");
-        }
-
-        varAssignStat.theType = varType;
-        return null;
-    }
-
-    @Override
-    public Void visit(VarDeclareStat varDeclareStat) {
-        /*
-        TODO TODO TODO TODO TODO 
-        - consider checking, whether the declared type is actually defined
-            - should only be relevant for custom types, since primitves are
-            already implicitly checked upon building the AST...
-            - probably should be delegated to "visit(Type)" instead
-        
-        - we will allow redeclaration of variables (so no check if already declared)
-        
-        - when declaration has optional initializer: check whether types match
-        */
-
-        varDeclareStat.declaredType.accept(this);
-        varDeclareStat.theType = varDeclareStat.declaredType.theType;
-        funDefVarTypes.put(varDeclareStat.varName, varDeclareStat.theType);
-        return null;
-    }
-
-    @Override
-    public Void visit(StatementListNode statementListNode) {
-        statementListNode.current.accept(this);
-        statementListNode.next.accept(this);
-        statementListNode.theType = Type.VOID_T;
-        return null;
-    }
-
-    @Override
-    public Void visit(IfElseStat ifElseStat) {
-        ifElseStat.condition.accept(this);
-        ifElseStat.then.accept(this);
-        ifElseStat.otherwise.accept(this);
-        var condType = ifElseStat.condition.theType;
-
-        if (!condType.equals(Type.BOOLEAN_T)) {
-            reportError(ifElseStat.condition,
-                    "Condition must evaluate to boolean but is '" + condType + "'");
-        }
-
-        ifElseStat.theType = ifElseStat.then.theType;
-        return null;
-    }
-
-    @Override
-    public Void visit(Var var) {
-        var varType = funDefVarTypes.get(var.name);
-        if (varType == null) {
-            reportError(var, "Use of undefined variable '" + var.name + "'");
-        }
-
-        var.theType = varType;
-        return null;
-    }
-
-    @Override
-    public Void visit(FunCall funCall) {
-        funCall.args.forEach(arg -> arg.accept(this));
-
-        var funDef = funDefs.get(funCall.name);
-        if (funDef == null) {
-            reportError(funCall, "Unknown function '" + funCall.name + "'");
-            funCall.theType = Type.UNKNOWN_T;
-        } else {
-            //funDef found
-            funCall.theType = funDef.returnType.theType;
-
-            var paramCount = funDef.params.size();
-            var argsCount = funCall.args.size();
-            if (paramCount != argsCount) {
-                reportError(funCall,
-                        "Wrong number of arguments: expected " + paramCount
-                                + " but " + argsCount + " provided");
-            }
-
-            var argsIter = funCall.args.iterator();
-            for (var p : funDef.params) {
-                if (!argsIter.hasNext()) {
-                    break;
-                }
-                var arg = argsIter.next();
-                if (!p.type().theType.equals(arg.theType)) {
-                    reportError(funCall, "Invalid argument type '" + arg.theType + "'");
-                }
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public Void visit(UnaryOpExpr unaryOpExpr) {
-        unaryOpExpr.operand.accept(this);
-        var operandType = unaryOpExpr.operand.theType;
-        unaryOpExpr.theType = operandType;
-        var op = unaryOpExpr.op;
-
-        if (op.isBoolean() && operandType.isNumeric()) {
-            reportError(unaryOpExpr, "Boolean operator incompatible with '"
-                    + operandType + "' operand");
-        }
-        if (op.isArithmetic() && !operandType.isNumeric()) {
-            reportError(unaryOpExpr, "Arithmetic operator '" + op
-                    + "' incompatible with '" + operandType + "' operand");
-        }
-        return null;
-    }
-
-    @Override
-    public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
-        ternaryConditionalExpr.condition.accept(this);
-        ternaryConditionalExpr.then.accept(this);
-        ternaryConditionalExpr.otherwise.accept(this);
-        var condType = ternaryConditionalExpr.condition.theType;
-        var thenType = ternaryConditionalExpr.then.theType;
-        var otherwiseType = ternaryConditionalExpr.otherwise.theType;
-        ternaryConditionalExpr.theType = thenType;
-
-        if (!thenType.equals(otherwiseType)) {
-            reportError(ternaryConditionalExpr.then, "Conditional branches return incompatible types");
-        }
-        if (!condType.equals(Type.BOOLEAN_T)) {
-            reportError(ternaryConditionalExpr.condition, "Condition must return a boolean type");
-        }
-        return null;
-    }
-
-    @Override
-    public Void visit(EmptyNode emptyNode) {
+    public Type visit(EmptyNode emptyNode) {
         emptyNode.theType = Type.VOID_T;
-        return null;
-    }
-
-    @Override
-    public Void visit(TypeNode type) {
-        type.theType = Type.of(type.typeToken, "" /*default package */);
-        return null;
+        return emptyNode.theType;
     }
 }

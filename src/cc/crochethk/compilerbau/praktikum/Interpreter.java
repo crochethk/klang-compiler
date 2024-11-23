@@ -17,8 +17,8 @@ public class Interpreter implements Visitor<InterpretResult> {
     }
 
     @Override
-    public InterpretResult visit(BooleanLit booleanLit) {
-        return new BoolResult(booleanLit.value);
+    public InterpretResult visit(BoolLit boolLit) {
+        return new BoolResult(boolLit.value);
     }
 
     @Override
@@ -195,6 +195,12 @@ public class Interpreter implements Visitor<InterpretResult> {
 
     @Override
     public InterpretResult visit(TypeNode type) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
+    public InterpretResult visit(StatementList statementList) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }

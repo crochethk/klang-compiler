@@ -8,7 +8,6 @@ public class VarDeclareStat extends Node {
     public TypeNode declaredType;
 
     public VarDeclareStat(SourcePos srcPos, String varName, TypeNode declaredType) {
-
         super(srcPos);
         this.varName = varName;
         this.declaredType = declaredType;

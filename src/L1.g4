@@ -11,92 +11,99 @@ start
 
 definition
 	returns[FunDef result]:
-	KW_FUN IDENT LPAR (funParam (COMMA funParam)*)? RPAR //
-	COLON type LBRACE statement RBRACE
+	KW_FUN funName=IDENT LPAR (funParam (COMMA funParam)* COMMA?)? RPAR //
+	COLON type LBRACE funBody=statementList RBRACE
 ;
 
-funParam: IDENT COLON type; // "name : type"
+funParam: name=IDENT COLON type;
 
 type
 	returns[TypeNode result]: primitiveType | refType;
 primitiveType: T_I64 | T_BOOL | T_VOID;
 refType: IDENT;
 
+statementList
+	returns[StatementList result]: statement*;
+
 statement
 	returns[Node result]:
-	ifElse
-	// basically statementList: one or more statements separated by SEMI
-	| basicStatement (SEMI | SEMI statement)
-	| emptyStatement
+	blockLikeStatement
+	| varDeclarationOrAssignment
+	| KW_RETURN expr? SEMI
 ;
-emptyStatement:;
 
-basicStatement
-	returns[Node result]:
-	// declare variable
-	KW_LET IDENT COLON type
-	// assign expr to variable
-	| IDENT ASSIGN expr
-	| KW_RETURN expr
-	| KW_RETURN // return "void"
-;
+blockLikeStatement
+	returns[Node result]: ifElse | block;
+
+block
+	returns[Node result]: LBRACE statementList RBRACE;
 
 ifElse
 	returns[Node result]:
-	// in case of a followup statement TreeBuilder must wrap ifelse into StatementListNode
-	KW_IF expr ifElseBranchBlock KW_ELSE ifElseBranchBlock statement
-	| KW_IF expr ifElseBranchBlock KW_ELSE ifElseBranchBlock
-	| KW_IF expr ifElseBranchBlock statement
-	| KW_IF expr ifElseBranchBlock
+	KW_IF condition=expr then=block KW_ELSE otherwise=block
+	| KW_IF condition=expr then=block
 ;
-ifElseBranchBlock: LBRACE statement RBRACE;
+
+varDeclarationOrAssignment
+	returns[Node result]:
+	KW_LET varName=IDENT COLON type ASSIGN expr SEMI
+	// KW_LET varName=IDENT (COLON type)? SEMI  // optional type annotation
+	| KW_LET varName=IDENT COLON type SEMI
+	| varName=IDENT ASSIGN expr SEMI
+;
 
 expr
 	returns[Node result]:
-	expr POW expr
-	| expr (MULT | DIV) expr // hier + MOD
-	| expr (ADD | SUB) expr
-	//
-	| expr (LT | LTEQ | GT | GTEQ) expr
-	| expr (EQ | NEQ) expr
+	// arithmetic expr
+	negationOp=SUB expr // negation // TODO <------------ implement UnaryOpExpr.neg 
+	| lhs=expr POW rhs=expr
+	| lhs=expr (MULT | DIV) rhs=expr // hier + MOD
+	| lhs=expr (ADD | SUB) rhs=expr
+	// comparison expr
+	| lhs=expr (LT | LTEQ | GT | GTEQ) rhs=expr
+	| lhs=expr (EQ | NEQ) rhs=expr
+	// boolean expr
 	| NOT expr
-	| expr AND expr
-	| expr OR expr
-	//
-	// ternary entry point
-	| expr TERNARY_QM expr COLON ternaryExpr
-	| LPAR expr RPAR
-	| zahl
+	| lhs=expr AND rhs=expr
+	| lhs=expr OR rhs=expr
+	// ternary conditional
+	| expr QM expr COLON ternaryElseBranch
+	// TODO <---- modified ternary
+	| LPAR exprInParens=expr RPAR
+	| number
 	| bool
 	| varOrFunCall
 ;
 
-ternaryExpr
+ternaryElseBranch
 	returns[Node result]:
-	// enables nested ternaryExpr
-	expr TERNARY_QM expr COLON ternaryExpr
-	| expr
+	expr
+	| expr QM expr COLON ternaryElseBranch
 ;
 
 varOrFunCall
 	returns[Node result]:
-	// variable value
-	IDENT
-	// function call without parameters
+	// function call with one or more args
+	IDENT LPAR expr (COMMA expr)* RPAR
+	// function call without args
 	| IDENT LPAR RPAR
-	// function call with one or more parameters
-	| IDENT LPAR expr (COMMA expr)* RPAR
+	// variable reference
+	| IDENT
 ;
 
-zahl
-	returns[Node result]: NUMBER;
+number
+	returns[Node result]: FLOAT | INTEGER;
 
 bool
-	returns[Node result]: BOOLEAN;
+	returns[Node result]: TRUE | FALSE;
 
 // Lexer rules
-NUMBER: [0-9]+;
-BOOLEAN: 'true' | 'false';
+INTEGER: [0-9]+;
+FLOAT: (DIGIT+ '.' DIGIT*) | (DIGIT* '.' DIGIT+);
+fragment DIGIT: [0-9];
+
+TRUE: 'true';
+FALSE: 'false';
 ADD: '+';
 SUB: '-';
 POW: '**';
@@ -107,7 +114,7 @@ AND: '&&';
 OR: '||';
 NOT: '!';
 
-// comparission
+// comparison
 EQ: '==';
 NEQ: '!=';
 GT: '>';
@@ -124,7 +131,7 @@ RBRACE: '}';
 COLON: ':';
 COMMA: ',';
 SEMI: ';';
-TERNARY_QM: '?';
+QM: '?';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';
@@ -134,8 +141,8 @@ KW_ELSE: 'else';
 
 KW_LET: 'let';
 
-T_I64: 'int'; //TODO change to "long"
-T_BOOL: 'boolean'; //TODO change to "bool"
+T_I64: 'int'; //TODO parse this in TreeBuilder as actual "long"
+T_BOOL: 'bool';
 T_VOID: 'void';
 
 IDENT: ID_START ID_CHAR*;

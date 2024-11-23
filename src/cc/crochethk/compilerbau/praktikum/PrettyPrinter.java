@@ -5,7 +5,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.BooleanLit;
+import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
@@ -13,6 +13,7 @@ import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
 import cc.crochethk.compilerbau.praktikum.ast.IntLit;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
+import cc.crochethk.compilerbau.praktikum.ast.StatementList;
 import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
@@ -40,64 +41,9 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
-    public Writer visit(BooleanLit booleanLit) {
-        var lex = booleanLit.value ? BooleanLit.TRUE_LEX : BooleanLit.FALSE_LEX;
+    public Writer visit(BoolLit boolLit) {
+        var lex = boolLit.value ? BoolLit.TRUE_LEX : BoolLit.FALSE_LEX;
         return write(lex);
-    }
-
-    @Override
-    public Writer visit(BinOpExpr binOpExpr) {
-        write("(");
-        binOpExpr.lhs.accept(this);
-
-        if (binOpExpr.op != BinaryOp.pow)
-            write(" ");
-        write(binOpExpr.op.toLexeme());
-        if (binOpExpr.op != BinaryOp.pow)
-            write(" ");
-
-        binOpExpr.rhs.accept(this);
-        write(")");
-        return writer;
-    }
-
-    @Override
-    public Writer visit(FunDef funDef) {
-        // Signature
-        write(FunDef.KW_FUN_LEX);
-        write(" ");
-        write(funDef.name);
-        write("(");
-        for (int i = 0; i < funDef.params.size(); i++) {
-            var p = funDef.params.get(i);
-            write(p.name());
-            write(": ");
-            p.type().accept(this);
-            if (i < funDef.params.size() - 1)
-                write(", ");
-        }
-        write("): ");
-        funDef.returnType.accept(this);
-
-        // Body
-        write(" {");
-        indent_level++;
-        write_indent();
-        funDef.body.accept(this);
-        indent_level--;
-        write_indent();
-        write("}");
-        write_indent();
-        write_indent();
-        return writer;
-    }
-
-    @Override
-    public Writer visit(Prog prog) {
-        for (var def : prog.funDefs) {
-            def.accept(this);
-        }
-        return writer;
     }
 
     @Override
@@ -118,13 +64,19 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
-    public Writer visit(ReturnStat returnStat) {
-        write("return");
-        if (!returnStat.expr.isEmpty()) {
+    public Writer visit(BinOpExpr binOpExpr) {
+        write("(");
+        binOpExpr.lhs.accept(this);
+
+        if (binOpExpr.op != BinaryOp.pow)
             write(" ");
-            returnStat.expr.accept(this);
-        }
-        return write(";");
+        write(binOpExpr.op.toLexeme());
+        if (binOpExpr.op != BinaryOp.pow)
+            write(" ");
+
+        binOpExpr.rhs.accept(this);
+        write(")");
+        return writer;
     }
 
     @Override
@@ -152,14 +104,6 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
-    public Writer visit(VarAssignStat varAssignStat) {
-        write(varAssignStat.targetVarName);
-        write(" = ");
-        varAssignStat.expr.accept(this);
-        return write(";");
-    }
-
-    @Override
     public Writer visit(VarDeclareStat varDeclareStat) {
         write("let ");
         write(varDeclareStat.varName);
@@ -169,13 +113,11 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
-    public Writer visit(StatementListNode statementListNode) {
-        statementListNode.current.accept(this);
-        if (!statementListNode.next.isEmpty()) {
-            write_indent();
-            statementListNode.next.accept(this);
-        }
-        return writer;
+    public Writer visit(VarAssignStat varAssignStat) {
+        write(varAssignStat.targetVarName);
+        write(" = ");
+        varAssignStat.expr.accept(this);
+        return write(";");
     }
 
     @Override
@@ -183,21 +125,94 @@ public class PrettyPrinter implements Visitor<Writer> {
         write("if ");
         ifElseStat.condition.accept(this);
         write(" {");
-        indent_level++;
-        write_indent();
-        ifElseStat.then.accept(this);
-        indent_level--;
-        write_indent();
+        if (!ifElseStat.then.isEmpty()) {
+            indent_level++;
+            write_indent();
+            ifElseStat.then.accept(this);
+            indent_level--;
+            write_indent();
+        }
         write("}");
+        write(" else {");
 
         if (!ifElseStat.otherwise.isEmpty()) {
-            write(" else {");
             indent_level++;
             write_indent();
             ifElseStat.otherwise.accept(this);
             indent_level--;
             write_indent();
-            write("}");
+        }
+        write("}");
+        return writer;
+    }
+
+    @Override
+    public Writer visit(StatementListNode statementListNode) {
+        // TODO finally remove this from interface 
+        throw new UnsupportedOperationException("statementListNode SHOULD NOT BE IN USE ANYMORE...");
+    }
+
+    @Override
+    public Writer visit(StatementList statementList) {
+        var statList = statementList.statements;
+        for (int i = 0; i < statList.size(); i++) {
+            var s = statList.get(i);
+            s.accept(this);
+            if (!s.isEmpty() && i < statList.size() - 1)
+                write_indent();
+        }
+        return writer;
+    }
+
+    @Override
+    public Writer visit(ReturnStat returnStat) {
+        write("return");
+        if (!returnStat.isEmpty()) {
+            write(" ");
+        }
+        returnStat.expr.accept(this);
+        return write(";");
+    }
+
+    @Override
+    public Writer visit(TypeNode type) {
+        return write(type.typeToken);
+    }
+
+    @Override
+    public Writer visit(FunDef funDef) {
+        // Signature
+        write(FunDef.KW_FUN_LEX);
+        write(" ");
+        write(funDef.name);
+        write("(");
+
+        for (var p : funDef.params) {
+            write(p.name());
+            write(": ");
+            p.type().accept(this);
+            write(", ");
+        }
+        write("): ");
+        funDef.returnType.accept(this);
+
+        // Body
+        write(" {");
+        indent_level++;
+        write_indent();
+        funDef.body.accept(this);
+        indent_level--;
+        write_indent();
+        write("}");
+        write_indent();
+        write_indent();
+        return writer;
+    }
+
+    @Override
+    public Writer visit(Prog prog) {
+        for (var def : prog.funDefs) {
+            def.accept(this);
         }
         return writer;
     }
@@ -205,11 +220,6 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(EmptyNode emptyNode) {
         return writer;
-    }
-
-    @Override
-    public Writer visit(TypeNode type) {
-        return write(type.typeToken);
     }
 
     private void write_indent() {

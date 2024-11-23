@@ -1,0 +1,8 @@
+/**
+ * Tries out new grammar structure:
+ *      - function with params
+ *      - single statement
+ */
+fn foo(a: int, b: int): int {
+    return b;
+}

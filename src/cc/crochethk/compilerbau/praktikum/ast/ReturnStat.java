@@ -12,6 +12,11 @@ public class ReturnStat extends Node {
     }
 
     @Override
+    public boolean isEmpty() {
+        return expr.isEmpty();
+    }
+
+    @Override
     public <R> R accept(Visitor<R> visitor) {
         return visitor.visit(this);
     }
