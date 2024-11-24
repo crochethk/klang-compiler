@@ -1,19 +1,15 @@
 package cc.crochethk.compilerbau.praktikum.ast.literals;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
-import cc.crochethk.compilerbau.praktikum.ast.Node;
 import utils.SourcePos;
 
-public class BoolLit extends Node {
+public class BoolLit extends LiteralExpr<Boolean> {
+    // TODO hardcode these in prettyprinter, since it is and will only be used there
     public static final String TRUE_LEX = "true";
     public static final String FALSE_LEX = "false";
 
-    /// The value of the boolean literal
-    public boolean value;
-
     public BoolLit(SourcePos srcPos, boolean value) {
-        super(srcPos);
-        this.value = value;
+        super(srcPos, value);
     }
 
     // Boilerplate code for the Visitor pattern
