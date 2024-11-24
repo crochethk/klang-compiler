@@ -44,8 +44,10 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(F64Lit f64Lit) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        write(Double.toString(f64Lit.value));
+        if (f64Lit.hasExplicitTypeSuffix)
+            write("_f64");
+        return writer;
     }
 
     @Override

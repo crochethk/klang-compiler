@@ -52,30 +52,20 @@ public class TreeBuilder extends L1BaseListener {
 
     private NumberLiteralType inferNumberType(L1Parser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.LIT_INTEGER() != null) {
-            if (ctx.litTypeSuffix() != null) {
-                var suffix = ctx.litTypeSuffix();
-                if (suffix.T_I64() != null) {
-                    return NumberLiteralType.i64;
-                }
-                /* else if (suffix.T_I32() != null){...}  */
+        if (ctx.litTypeSuffix() != null) {
+            var suffix = ctx.litTypeSuffix();
+            if (suffix.T_F64() != null) {
+                return NumberLiteralType.f64;
+            } else if (suffix.T_I64() != null && ctx.LIT_INTEGER() != null) {
+                return NumberLiteralType.i64;
+            } else {
                 throw new IllegalLiteralTypeSuffixException(
                         srcPos, ctx.getText(), suffix.getText());
             }
+        } else if (ctx.LIT_INTEGER() != null) {
             return NumberLiteralType.i64; // default
-
         } else if (ctx.LIT_FLOAT() != null) {
-            if (ctx.litTypeSuffix() != null) {
-                var suffix = ctx.litTypeSuffix();
-                if (suffix.T_F64() != null) {
-                    return NumberLiteralType.f64;
-                }
-                /* else if (suffix.T_F32() != null){...}  */
-                throw new IllegalLiteralTypeSuffixException(
-                        srcPos, ctx.getText(), suffix.getText());
-
-            }
-            return NumberLiteralType.f64; //default
+            return NumberLiteralType.f64; // default
         }
         throw new UnhandledAlternativeException(srcPos, "number", ctx.getText());
     }
@@ -87,8 +77,8 @@ public class TreeBuilder extends L1BaseListener {
     Node buildNumberLiteral(L1Parser.NumberContext ctx, NumberLiteralType targetType) {
         var srcPos = getSourcePos(ctx);
         Node node = switch (targetType) {
-            case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
-            case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.LIT_FLOAT().getText()));
+            case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.num.getText()));
+            case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.num.getText()));
         };
         return node;
     }

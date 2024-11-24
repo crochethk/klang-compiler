@@ -19,7 +19,7 @@ funParam: name=IDENT COLON type;
 
 type
 	returns[TypeNode result]: primitiveType | refType;
-primitiveType: T_I64 | T_BOOL | T_VOID;
+primitiveType: T_I64 | T_F64 | T_BOOL | T_VOID;
 refType: IDENT;
 
 statementList
@@ -93,10 +93,10 @@ varOrFunCall
 
 number
 	returns[Node result]: //
-	LIT_FLOAT litTypeSuffix?
-	| LIT_INTEGER litTypeSuffix?
+	num=LIT_FLOAT litTypeSuffix?
+	| num=LIT_INTEGER litTypeSuffix?
 ;
-litTypeSuffix: USCORE? (T_I64 | T_F64);
+litTypeSuffix: USCORE? (T_F64 | T_I64);
 
 bool
 	returns[Node result]: TRUE | FALSE;

@@ -30,6 +30,7 @@ import cc.crochethk.compilerbau.praktikum.ast.StatementList;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
+import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
@@ -86,8 +87,8 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(F64Lit f64Lit) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        codeBuilder.ldc(f64Lit.value);
+        return null;
     }
 
     @Override
@@ -184,7 +185,8 @@ public class GenJBC implements Visitor<Void> {
             * alike javac seems to do it: dcmpg for "<"/"<=" and dcmpl otherwise.
             */
             case eq, neq, gt, gteq, lt, lteq -> {
-                error = genComparisonOpInstr(cb, operandType.jvmTypeKind(), op).isErr();
+                error = genCmpInstruction(cb, operandType.jvmTypeKind(), op).isErr();
+                genCmpInstructionEvaluation(cb, operandType.jvmTypeKind(), op);
             }
             /**
              * Boolean
@@ -201,30 +203,6 @@ public class GenJBC implements Visitor<Void> {
             throw new UnsupportedOperationException("Operation '"
                     + op + "' not supported for '" + operandType + ", " + operandType + "'");
         }
-    }
-
-    /**
-     * Generates instructions for one of the comparisons eq, neq, gt or gteq.
-     * @return Result.Ok on success, Result.Err otherwise
-     */
-    private Result<Void> genComparisonOpInstr(CodeBuilder cb, TypeKind jvmTypeKind, BinaryOp cmpOp) {
-        var status = genCmpInstruction(cb, jvmTypeKind, cmpOp);
-        if (status.isErr()) {
-            return status;
-        }
-        Label falseBranch = cb.newLabel();
-        switch (cmpOp) {
-            case eq -> cb.ifne(falseBranch);
-            case neq -> cb.ifeq(falseBranch);
-            case gt -> cb.ifle(falseBranch);
-            case gteq -> cb.iflt(falseBranch);
-            case lt -> cb.ifge(falseBranch);
-            case lteq -> cb.ifgt(falseBranch);
-            default -> throw new UnsupportedOperationException(
-                    "Invalid operator provided: Only comparison operators are allowed");
-        }
-        genComparisonBranches(cb, falseBranch);
-        return status;
     }
 
     /**
@@ -253,6 +231,26 @@ public class GenJBC implements Visitor<Void> {
     }
 
     /**
+     * Generates instructions for one of the comparisons eq, neq, gt or gteq.
+     * The method expects the result of a "cmp" instruction beeing present ontop
+     * of the operand stack.
+     */
+    private void genCmpInstructionEvaluation(CodeBuilder cb, TypeKind jvmTypeKind, BinaryOp cmpOp) {
+        Label falseBranch = cb.newLabel();
+        switch (cmpOp) {
+            case eq -> cb.ifne(falseBranch);
+            case neq -> cb.ifeq(falseBranch);
+            case gt -> cb.ifle(falseBranch);
+            case gteq -> cb.iflt(falseBranch);
+            case lt -> cb.ifge(falseBranch);
+            case lteq -> cb.ifgt(falseBranch);
+            default -> throw new UnsupportedOperationException(
+                    "Invalid operator provided: Only comparison operators are allowed");
+        }
+        genComparisonBranches(cb, falseBranch);
+    }
+
+    /**
      * Generates instructions that typically follow an "ifXX" instruction.
      * I.e. a jump is performed to the specified label ("falseBranch") if the
      * comparison evaluated true. This effectively skips the branch right after
@@ -273,19 +271,36 @@ public class GenJBC implements Visitor<Void> {
     public Void visit(UnaryOpExpr unaryOpExpr) {
         // load operand
         unaryOpExpr.operand.accept(this);
+        genOpInstruction(codeBuilder, unaryOpExpr.operand.theType, unaryOpExpr.op);
+        return null;
+    }
 
-        switch (unaryOpExpr.op) {
-            case neg -> codeBuilder.lneg();
+    private void genOpInstruction(CodeBuilder cb, Type operandType, UnaryOp op) {
+        boolean error = false;
+        switch (op) {
+            /** Arithmetics */
+            case neg -> {
+                switch (operandType.jvmTypeKind()) {
+                    case LongType -> cb.lneg();
+                    case DoubleType -> cb.dneg();
+                    default -> error = true;
+                }
+            }
+
+            /** Boolean */
             case not -> {
-                var falseBranch = codeBuilder.newLabel();
-                codeBuilder.ifne(falseBranch); // if not is 0 -> jump to "falseBranch"
-                genComparisonBranches(codeBuilder, falseBranch);
+                genCmpInstructionEvaluation(cb, operandType.jvmTypeKind(), BinaryOp.eq);
             }
             default -> {
-                throw new UnsupportedOperationException("Unary operation '" + unaryOpExpr.op + "' not supported.");
+                throw new UnsupportedOperationException("Operation '" + op
+                        + "' not implemented for '" + operandType + "'");
             }
         }
-        return null;
+
+        if (error) {
+            throw new UnsupportedOperationException("Operation '"
+                    + op + "' not supported for '" + operandType + "'");
+        }
     }
 
     @Override

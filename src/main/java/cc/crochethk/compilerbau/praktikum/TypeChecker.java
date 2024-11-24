@@ -40,8 +40,8 @@ public class TypeChecker implements Visitor<Type> {
 
     @Override
     public Type visit(F64Lit f64Lit) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        f64Lit.theType = Type.DOUBLE_T;
+        return f64Lit.theType;
     }
 
     @Override
@@ -108,7 +108,7 @@ public class TypeChecker implements Visitor<Type> {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else if (binOpExpr.op.isArithmetic()) {
-            exprType = Type.LONG_T;
+            exprType = binOpExpr.lhs.theType;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
