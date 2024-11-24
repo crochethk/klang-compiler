@@ -6,7 +6,7 @@ import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.IntLit;
+import cc.crochethk.compilerbau.praktikum.ast.I64Lit;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
@@ -30,7 +30,7 @@ public interface Visitor<R> {
     * A visitor encapsulates all the algorithmic logic for a procedure on the tree.
     */
     // void visit(Visitable element);
-    R visit(IntLit intLit);
+    R visit(I64Lit i64Lit);
 
     R visit(BoolLit boolLit);
 

@@ -10,7 +10,7 @@ import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.IntLit;
+import cc.crochethk.compilerbau.praktikum.ast.I64Lit;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
@@ -35,9 +35,9 @@ public class TypeChecker implements Visitor<Type> {
     }
 
     @Override
-    public Type visit(IntLit intLit) {
-        intLit.theType = Type.LONG_T;
-        return intLit.theType;
+    public Type visit(I64Lit i64Lit) {
+        i64Lit.theType = Type.LONG_T;
+        return i64Lit.theType;
     }
 
     @Override

@@ -46,16 +46,16 @@ public interface InterpretResult {
 
         InterpretResult applyOperator(UnaryOp op);
 
-        public record IntResult(Long value) implements NumericalResult {
+        public record I64Result(Long value) implements NumericalResult {
             @Override
             public InterpretResult applyOperator(NumericalResult rhs, BinaryOp op) {
-                if (rhs instanceof IntResult other) {
+                if (rhs instanceof I64Result other) {
                     return switch (op) {
-                        case add -> new IntResult(this.value() + other.value());
-                        case sub -> new IntResult(this.value() - other.value());
-                        case mult -> new IntResult(this.value() * other.value());
-                        case div -> new IntResult(this.value() / other.value());
-                        case pow -> new IntResult((long) Math.pow(this.value(), other.value()));
+                        case add -> new I64Result(this.value() + other.value());
+                        case sub -> new I64Result(this.value() - other.value());
+                        case mult -> new I64Result(this.value() * other.value());
+                        case div -> new I64Result(this.value() / other.value());
+                        case pow -> new I64Result((long) Math.pow(this.value(), other.value()));
                         // case mod -> new IntResult(this.value() % other.value());
 
                         // comparissons
@@ -80,7 +80,7 @@ public interface InterpretResult {
                     default -> throw new UnsupportedOperationException(
                             "Unsupported unary operator: " + op + "(" + op.toLexeme() + ")");
                 };
-                return new IntResult(result);
+                return new I64Result(result);
             }
         }
     }

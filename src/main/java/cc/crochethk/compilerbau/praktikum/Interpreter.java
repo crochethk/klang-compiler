@@ -7,13 +7,13 @@ import java.util.Stack;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.BoolResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NoResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult;
-import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult.IntResult;
+import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult.I64Result;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 
 public class Interpreter implements Visitor<InterpretResult> {
     @Override
-    public InterpretResult visit(IntLit intLit) {
-        return new IntResult(intLit.value);
+    public InterpretResult visit(I64Lit i64Lit) {
+        return new I64Result(i64Lit.value);
     }
 
     @Override

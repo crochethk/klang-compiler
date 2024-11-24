@@ -25,7 +25,7 @@ import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.IntLit;
+import cc.crochethk.compilerbau.praktikum.ast.I64Lit;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
@@ -81,8 +81,8 @@ public class GenJBC implements Visitor<Void> {
     }
 
     @Override
-    public Void visit(IntLit intLit) {
-        codeBuilder.ldc(intLit.value);
+    public Void visit(I64Lit i64Lit) {
+        codeBuilder.ldc(i64Lit.value);
         return null;
     }
 

@@ -10,7 +10,7 @@ import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef.Parameter;
-import cc.crochethk.compilerbau.praktikum.ast.IntLit;
+import cc.crochethk.compilerbau.praktikum.ast.I64Lit;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
@@ -29,7 +29,7 @@ public class TreeBuilder extends L1BaseListener {
     public void exitNumber(L1Parser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.LIT_INTEGER() != null) {
-            var node = new IntLit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
+            var node = new I64Lit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
             ctx.result = node;
         } else if (ctx.LIT_FLOAT() != null) {
             throw new UnsupportedOperationException("Floats are not supported, yet");

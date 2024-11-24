@@ -10,7 +10,7 @@ import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.IntLit;
+import cc.crochethk.compilerbau.praktikum.ast.I64Lit;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
@@ -36,8 +36,8 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
-    public Writer visit(IntLit intLit) {
-        return write(Long.toString(intLit.value));
+    public Writer visit(I64Lit i64Lit) {
+        return write(Long.toString(i64Lit.value));
     }
 
     @Override

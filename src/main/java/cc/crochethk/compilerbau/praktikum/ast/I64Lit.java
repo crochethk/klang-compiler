@@ -3,11 +3,11 @@ package cc.crochethk.compilerbau.praktikum.ast;
 import cc.crochethk.compilerbau.praktikum.Visitor;
 import utils.SourcePos;
 
-public class IntLit extends Node {
+public class I64Lit extends Node {
     /// The value of the integer literal
     public long value;
 
-    public IntLit(SourcePos srcPos, long value) {
+    public I64Lit(SourcePos srcPos, long value) {
         super(srcPos);
         this.value = value;
     }
