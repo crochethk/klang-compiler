@@ -144,6 +144,7 @@ KW_LET: 'let';
 T_I64: 'i64';
 T_BOOL: 'bool';
 T_VOID: 'void';
+T_F64: 'f64';
 
 IDENT: ID_START ID_CHAR*;
 fragment ID_START: [a-zA-Z_];
