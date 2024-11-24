@@ -1,6 +1,7 @@
-package cc.crochethk.compilerbau.praktikum.ast;
+package cc.crochethk.compilerbau.praktikum.ast.literals;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.ast.Node;
 import utils.SourcePos;
 
 public class I64Lit extends Node {

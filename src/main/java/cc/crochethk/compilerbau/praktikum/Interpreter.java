@@ -9,6 +9,7 @@ import cc.crochethk.compilerbau.praktikum.InterpretResult.NoResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult.I64Result;
 import cc.crochethk.compilerbau.praktikum.ast.*;
+import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 
 public class Interpreter implements Visitor<InterpretResult> {
     @Override
@@ -205,9 +206,9 @@ public class Interpreter implements Visitor<InterpretResult> {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
-	@Override
-	public InterpretResult visit(F64Lit f64Lit) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visit'");
-	}
+    @Override
+    public InterpretResult visit(F64Lit f64Lit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
 }
