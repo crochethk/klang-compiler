@@ -26,9 +26,8 @@ import utils.SourcePos;
 public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitNumber(L1Parser.NumberContext ctx) {
-        var srcPos = getSourcePos(ctx);
         /**
-         * There are two kinds of literal expressions:
+         * There are two kinds of literal number expressions:
          * 1) bare ("123") and
          * 2) annotated ("123i64" or "123_i64")
          * 
@@ -47,54 +46,51 @@ public class TreeBuilder extends L1BaseListener {
          * lead to ambiguity (e.g. "i64" and "i32" would be indistinguishable
          * in their common number space).
          */
-        NumberType targetType;
+        NumberLiteralType targetType = inferNumberType(ctx);
+        ctx.result = buildNumberLiteral(ctx, targetType);
+    }
+
+    private NumberLiteralType inferNumberType(L1Parser.NumberContext ctx) {
+        var srcPos = getSourcePos(ctx);
         if (ctx.LIT_INTEGER() != null) {
             if (ctx.litTypeSuffix() != null) {
                 var suffix = ctx.litTypeSuffix();
                 if (suffix.T_I64() != null) {
-                    targetType = NumberType.i64;
+                    return NumberLiteralType.i64;
                 }
                 /* else if (suffix.T_I32() != null){...}  */
-                else {
-                    throw new IllegalLiteralTypeSuffixException(
-                            srcPos, ctx.getText(), suffix.getText());
-                }
-            } else { /* infer default type */
-                targetType = NumberType.i64;
+                throw new IllegalLiteralTypeSuffixException(
+                        srcPos, ctx.getText(), suffix.getText());
             }
+            return NumberLiteralType.i64; // default
+
         } else if (ctx.LIT_FLOAT() != null) {
             if (ctx.litTypeSuffix() != null) {
                 var suffix = ctx.litTypeSuffix();
                 if (suffix.T_F64() != null) {
-                    targetType = NumberType.f64;
+                    return NumberLiteralType.f64;
                 }
                 /* else if (suffix.T_F32() != null){...}  */
-                else {
-                    throw new IllegalLiteralTypeSuffixException(
-                            srcPos, ctx.getText(), suffix.getText());
-                }
-            } else { /* infer default type */
-                targetType = NumberType.f64;
+                throw new IllegalLiteralTypeSuffixException(
+                        srcPos, ctx.getText(), suffix.getText());
+
             }
-        } else {
-            throw new UnhandledAlternativeException(srcPos, "number", ctx.getText());
+            return NumberLiteralType.f64; //default
         }
-        ctx.result = LitNumberBuilder.createLitNumber(ctx, targetType);
+        throw new UnhandledAlternativeException(srcPos, "number", ctx.getText());
     }
 
-    private enum NumberType {
+    private enum NumberLiteralType {
         i64, f64
     }
 
-    private class LitNumberBuilder {
-        static Node createLitNumber(L1Parser.NumberContext ctx, NumberType targetType) {
-            var srcPos = getSourcePos(ctx);
-            Node node = switch (targetType) {
-                case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
-                case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.LIT_FLOAT().getText()));
-            };
-            return node;
-        }
+    Node buildNumberLiteral(L1Parser.NumberContext ctx, NumberLiteralType targetType) {
+        var srcPos = getSourcePos(ctx);
+        Node node = switch (targetType) {
+            case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
+            case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.LIT_FLOAT().getText()));
+        };
+        return node;
     }
 
     @Override
@@ -310,7 +306,7 @@ public class TreeBuilder extends L1BaseListener {
     //
     // Helper methods and structs
     //
-    private static SourcePos getSourcePos(ParserRuleContext ctx) {
+    private SourcePos getSourcePos(ParserRuleContext ctx) {
         return new SourcePos(
                 ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
     }
