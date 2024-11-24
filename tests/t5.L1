@@ -4,7 +4,7 @@
  *     - declaration
  *     - assignment
  */
-fn sum_odd_from_to(acc: int, begin:int, end:int): int {
+fn sum_odd_from_to(acc: i64, begin:i64, end:i64): i64 {
     if begin > end {  // Base case: stop when current exceeds target
         return acc;
     } else {
@@ -17,14 +17,14 @@ fn sum_odd_from_to(acc: int, begin:int, end:int): int {
     }
 }
 
-fn is_odd(number: int): bool {
+fn is_odd(number: i64): bool {
     // return number % 2 != 0;
     return number - (number/2) * 2 != 0;
 }
 
-fn ___main___(): int {
-    let the_start :int;
-    let the_end :int;
+fn ___main___(): i64 {
+    let the_start :i64;
+    let the_end :i64;
     the_start = 1;
     the_end = 15;
     return sum_odd_from_to(0, the_start, the_end); // -> 64

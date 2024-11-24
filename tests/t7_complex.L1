@@ -2,14 +2,14 @@
  * Tries out:
  *      - new grammar structure
  */
-fn max(a: int, b: int): int {
+fn max(a: i64, b: i64): i64 {
     if a >= b {
         return a;
     }
     return b;
 }
 
-fn max3(a: int, b: int, c: int): int {
+fn max3(a: i64, b: i64, c: i64): i64 {
     if max(a,b) >= max(b,c) {
         return max(a,b);
     } else {
@@ -24,7 +24,7 @@ fn max3(a: int, b: int, c: int): int {
     return c;
 }
 
-fn ___main___(): int {
+fn ___main___(): i64 {
     /*
     return max3(50, 60, 71);
     return max3(50,72,60);

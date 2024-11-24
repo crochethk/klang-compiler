@@ -61,7 +61,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
     static Type of(String typeName, String packageName) {
         return switch (typeName) {
             case "String" -> STRING_T;
-            case "int" -> LONG_T;
+            case "i64" -> LONG_T;
             case "bool" -> BOOL_T;
             case "double" -> DOUBLE_T;
             case "void" -> VOID_T;

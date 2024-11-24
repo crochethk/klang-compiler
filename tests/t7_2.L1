@@ -4,7 +4,7 @@
  *      - empty function
  *      - block statements
  */
-fn foo(): int {
+fn foo(): i64 {
     return b;
     a= 123+45/678-1;
     {

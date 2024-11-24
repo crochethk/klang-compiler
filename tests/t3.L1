@@ -3,15 +3,15 @@
  *     - ternary
  *     - nested ternary
  */
-fn max(a: int, b: int): int {
+fn max(a: i64, b: i64): i64 {
     return a >=b ? a : b;
 }
 
-fn max3(a: int, b: int, c: int): int {
+fn max3(a: i64, b: i64, c: i64): i64 {
     return max(a,b) >= max(b,c) ?  max(a,b) : max(b,c);
 }
 
-fn ___main___(): int {
+fn ___main___(): i64 {
     /*
     return max3(50, 60, 71);
     return max3(50,72,60);

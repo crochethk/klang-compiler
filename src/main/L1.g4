@@ -141,7 +141,7 @@ KW_ELSE: 'else';
 
 KW_LET: 'let';
 
-T_I64: 'int'; //TODO parse this in TreeBuilder as actual "long"
+T_I64: 'i64';
 T_BOOL: 'bool';
 T_VOID: 'void';
 
