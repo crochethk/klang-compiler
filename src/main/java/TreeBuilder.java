@@ -27,14 +27,15 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitNumber(L1Parser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
+        Node node;
         if (ctx.LIT_INTEGER() != null) {
-            var node = new I64Lit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
-            ctx.result = node;
+            node = new I64Lit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
         } else if (ctx.LIT_FLOAT() != null) {
-            throw new UnsupportedOperationException("Floats are not supported, yet");
+            node = new F64Lit(srcPos, Double.parseDouble(ctx.LIT_FLOAT().getText()));
         } else {
-            throw new UnhandledAlternativeException(srcPos, "varOrFunCall", ctx.getText());
+            throw new UnhandledAlternativeException(srcPos, "number", ctx.getText());
         }
+        ctx.result = node;
     }
 
     @Override
