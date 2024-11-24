@@ -27,7 +27,6 @@ import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
@@ -335,14 +334,6 @@ public class GenJBC implements Visitor<Void> {
                     codeBuilder = cbBak;
                 });
         return null;
-    }
-
-    @Override
-    public Void visit(StatementListNode statementListNode) {
-        // // statementListNode.current.accept(this);
-        // // statementListNode.next.accept(this);
-        // TODO finally remove this from interface 
-        throw new UnsupportedOperationException("statementListNode SHOULD NOT BE IN USE ANYMORE...");
     }
 
     @Override

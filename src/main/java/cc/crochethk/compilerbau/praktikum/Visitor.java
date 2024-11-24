@@ -9,7 +9,6 @@ import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
@@ -52,8 +51,6 @@ public interface Visitor<R> {
     R visit(VarAssignStat varAssignStat);
 
     R visit(VarDeclareStat varDeclareStat);
-
-    R visit(StatementListNode statementListNode);
 
     R visit(IfElseStat ifElseStat);
 

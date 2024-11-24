@@ -12,7 +12,6 @@ import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
@@ -153,12 +152,6 @@ public class PrettyPrinter implements Visitor<Writer> {
         }
         write("}");
         return writer;
-    }
-
-    @Override
-    public Writer visit(StatementListNode statementListNode) {
-        // TODO finally remove this from interface 
-        throw new UnsupportedOperationException("statementListNode SHOULD NOT BE IN USE ANYMORE...");
     }
 
     @Override

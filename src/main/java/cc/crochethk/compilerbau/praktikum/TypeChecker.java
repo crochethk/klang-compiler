@@ -13,7 +13,6 @@ import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
@@ -209,12 +208,6 @@ public class TypeChecker implements Visitor<Type> {
 
         ifElseStat.theType = thenType;
         return ifElseStat.theType;
-    }
-
-    @Override
-    public Type visit(StatementListNode statementListNode) {
-        // TODO finally remove this from interface 
-        throw new UnsupportedOperationException("statementListNode SHOULD NOT BE IN USE ANYMORE...");
     }
 
     @Override

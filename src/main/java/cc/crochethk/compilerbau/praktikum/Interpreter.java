@@ -177,19 +177,6 @@ public class Interpreter implements Visitor<InterpretResult> {
     }
 
     @Override
-    public InterpretResult visit(StatementListNode statementListNode) {
-        var currentResult = statementListNode.current.accept(this);
-
-        if (currentResult.isNoResult()) {
-            // eval next node
-            return statementListNode.next.accept(this);
-        } else {
-            // stop evaluation and return concrete result
-            return currentResult;
-        }
-    }
-
-    @Override
     public InterpretResult visit(EmptyNode emptyNode) {
         return NoResult.instance();
     }
