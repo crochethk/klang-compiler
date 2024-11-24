@@ -22,6 +22,7 @@ import java.util.Map;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
+import cc.crochethk.compilerbau.praktikum.ast.F64Lit;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
@@ -84,6 +85,12 @@ public class GenJBC implements Visitor<Void> {
     public Void visit(I64Lit i64Lit) {
         codeBuilder.ldc(i64Lit.value);
         return null;
+    }
+
+    @Override
+    public Void visit(F64Lit f64Lit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override

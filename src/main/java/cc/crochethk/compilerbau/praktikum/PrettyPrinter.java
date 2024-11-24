@@ -7,6 +7,7 @@ import java.io.Writer;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
+import cc.crochethk.compilerbau.praktikum.ast.F64Lit;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
@@ -38,6 +39,12 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(I64Lit i64Lit) {
         return write(Long.toString(i64Lit.value));
+    }
+
+    @Override
+    public Writer visit(F64Lit f64Lit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override

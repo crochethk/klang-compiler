@@ -3,6 +3,7 @@ package cc.crochethk.compilerbau.praktikum;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
+import cc.crochethk.compilerbau.praktikum.ast.F64Lit;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
@@ -63,4 +64,6 @@ public interface Visitor<R> {
     R visit(TypeNode type);
 
     R visit(StatementList statementList);
+
+    R visit(F64Lit f64Lit);
 }

@@ -204,4 +204,10 @@ public class Interpreter implements Visitor<InterpretResult> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
+
+	@Override
+	public InterpretResult visit(F64Lit f64Lit) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'visit'");
+	}
 }

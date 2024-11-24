@@ -7,6 +7,7 @@ import java.util.Objects;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BoolLit;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
+import cc.crochethk.compilerbau.praktikum.ast.F64Lit;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
@@ -38,6 +39,12 @@ public class TypeChecker implements Visitor<Type> {
     public Type visit(I64Lit i64Lit) {
         i64Lit.theType = Type.LONG_T;
         return i64Lit.theType;
+    }
+
+    @Override
+    public Type visit(F64Lit f64Lit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override
