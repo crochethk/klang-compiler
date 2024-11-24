@@ -36,7 +36,11 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(I64Lit i64Lit) {
-        return write(Long.toString(i64Lit.value));
+        write(Long.toString(i64Lit.value));
+        // TODO this could go into NumberLiteral base class
+        if (i64Lit.hasExplicitTypeSuffix)
+            write("_i64");
+        return writer;
     }
 
     @Override

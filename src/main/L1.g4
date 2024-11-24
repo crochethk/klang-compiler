@@ -92,7 +92,11 @@ varOrFunCall
 ;
 
 number
-	returns[Node result]: LIT_FLOAT | LIT_INTEGER;
+	returns[Node result]: //
+	LIT_FLOAT litTypeSuffix?
+	| LIT_INTEGER litTypeSuffix?
+;
+litTypeSuffix: USCORE? (T_I64 | T_F64);
 
 bool
 	returns[Node result]: TRUE | FALSE;
@@ -132,6 +136,7 @@ COLON: ':';
 COMMA: ',';
 SEMI: ';';
 QM: '?';
+USCORE: '_';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';

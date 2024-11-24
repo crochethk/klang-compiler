@@ -27,15 +27,74 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitNumber(L1Parser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
-        Node node;
+        /**
+         * There are two kinds of literal expressions:
+         * 1) bare ("123") and
+         * 2) annotated ("123i64" or "123_i64")
+         * 
+         * In the former case, the literal type is inferred to a default type 
+         * according to the number class (integer or floating point). Then parsing
+         * to the interal value representation is done aaccordingly with said 
+         * default type.
+         * 
+         * The latter case allows specifying the type along the literal. This
+         * allows to convey which concrete literal type is meant, which will be
+         * useful as soon as there is more than one bit-width and/or distinction
+         * between signed and unsigned types in a given number class.
+         * The type annotation is done by suffixing the literal with the desired
+         * type, optionally separated by an underscore.
+         * This gives flexibility for later type extension that otherwise would
+         * lead to ambiguity (e.g. "i64" and "i32" would be indistinguishable
+         * in their common number space).
+         */
+        NumberType targetType;
         if (ctx.LIT_INTEGER() != null) {
-            node = new I64Lit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
+            if (ctx.litTypeSuffix() != null) {
+                var suffix = ctx.litTypeSuffix();
+                if (suffix.T_I64() != null) {
+                    targetType = NumberType.i64;
+                }
+                /* else if (suffix.T_I32() != null){...}  */
+                else {
+                    throw new IllegalLiteralTypeSuffixException(
+                            srcPos, ctx.getText(), suffix.getText());
+                }
+            } else { /* infer default type */
+                targetType = NumberType.i64;
+            }
         } else if (ctx.LIT_FLOAT() != null) {
-            node = new F64Lit(srcPos, Double.parseDouble(ctx.LIT_FLOAT().getText()));
+            if (ctx.litTypeSuffix() != null) {
+                var suffix = ctx.litTypeSuffix();
+                if (suffix.T_F64() != null) {
+                    targetType = NumberType.f64;
+                }
+                /* else if (suffix.T_F32() != null){...}  */
+                else {
+                    throw new IllegalLiteralTypeSuffixException(
+                            srcPos, ctx.getText(), suffix.getText());
+                }
+            } else { /* infer default type */
+                targetType = NumberType.f64;
+            }
         } else {
             throw new UnhandledAlternativeException(srcPos, "number", ctx.getText());
         }
-        ctx.result = node;
+        ctx.result = LitNumberBuilder.createLitNumber(ctx, targetType);
+    }
+
+    private enum NumberType {
+        i64, f64
+    }
+
+    private class LitNumberBuilder {
+        static Node createLitNumber(L1Parser.NumberContext ctx, NumberType targetType) {
+            var srcPos = getSourcePos(ctx);
+            Node node = switch (targetType) {
+                case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
+                case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.LIT_FLOAT().getText()));
+            };
+            return node;
+        }
     }
 
     @Override
@@ -251,7 +310,7 @@ public class TreeBuilder extends L1BaseListener {
     //
     // Helper methods and structs
     //
-    private SourcePos getSourcePos(ParserRuleContext ctx) {
+    private static SourcePos getSourcePos(ParserRuleContext ctx) {
         return new SourcePos(
                 ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
     }
@@ -270,6 +329,13 @@ public class TreeBuilder extends L1BaseListener {
     private class UnhandledAlternativeException extends UnsupportedOperationException {
         UnhandledAlternativeException(SourcePos srcPos, String alternativeName, String ctxText) {
             super("Unhandled `" + alternativeName + "` alternative '" + ctxText + "' at " + srcPos);
+        }
+    }
+
+    private class IllegalLiteralTypeSuffixException extends UnsupportedOperationException {
+        IllegalLiteralTypeSuffixException(SourcePos srcPos, String literalText, String suffixText) {
+            super("Illegal type suffix '" + suffixText + "' in literal '"
+                    + literalText + "'" + "at " + srcPos);
         }
     }
 }
