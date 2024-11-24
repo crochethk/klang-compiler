@@ -92,14 +92,14 @@ varOrFunCall
 ;
 
 number
-	returns[Node result]: FLOAT | INTEGER;
+	returns[Node result]: LIT_FLOAT | LIT_INTEGER;
 
 bool
 	returns[Node result]: TRUE | FALSE;
 
 // Lexer rules
-INTEGER: [0-9]+;
-FLOAT: (DIGIT+ '.' DIGIT*) | (DIGIT* '.' DIGIT+);
+LIT_INTEGER: DIGIT+;
+LIT_FLOAT: (DIGIT+ '.' DIGIT*) | (DIGIT* '.' DIGIT+);
 fragment DIGIT: [0-9];
 
 TRUE: 'true';

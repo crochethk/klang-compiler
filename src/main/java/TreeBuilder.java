@@ -28,10 +28,10 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitNumber(L1Parser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.INTEGER() != null) {
-            var node = new IntLit(srcPos, Long.parseLong(ctx.INTEGER().getText()));
+        if (ctx.LIT_INTEGER() != null) {
+            var node = new IntLit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
             ctx.result = node;
-        } else if (ctx.FLOAT() != null) {
+        } else if (ctx.LIT_FLOAT() != null) {
             throw new UnsupportedOperationException("Floats are not supported, yet");
         } else {
             throw new UnhandledAlternativeException(srcPos, "varOrFunCall", ctx.getText());
