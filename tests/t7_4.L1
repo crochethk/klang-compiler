@@ -2,7 +2,7 @@
  * Tries out new grammar structure:
  *      - basic statements
  */
-fn foo(): i64 {
+fn foo() -> i64 {
     let a : bool;
     a = true;
     return (a || true);

@@ -197,8 +197,11 @@ public class PrettyPrinter implements Visitor<Writer> {
             p.type().accept(this);
             write(", ");
         }
-        write("): ");
-        funDef.returnType.accept(this);
+        write(")");
+        if (!funDef.returnType.typeToken.equals("void")) {
+            write(" ->");
+            funDef.returnType.accept(this);
+        }
 
         // Body
         write(" {");

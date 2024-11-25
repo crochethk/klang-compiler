@@ -3,7 +3,7 @@
  *      - negation operator
  *      - floating point numbers
  */
-fn foo(): int {
+fn foo() -> int {
     return 1-2;
     return -1-2;
     return --1;

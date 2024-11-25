@@ -12,7 +12,7 @@ start
 definition
 	returns[FunDef result]:
 	KW_FUN funName=IDENT LPAR (funParam (COMMA funParam)* COMMA?)? RPAR //
-	COLON type LBRACE funBody=statementList RBRACE
+	(RARROW type)? LBRACE funBody=statementList RBRACE
 ;
 
 funParam: name=IDENT COLON type;
@@ -124,6 +124,8 @@ GT: '>';
 GTEQ: '>=';
 LT: '<';
 LTEQ: '<=';
+
+RARROW: '->';
 
 ASSIGN: '=';
 

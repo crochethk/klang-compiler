@@ -2,11 +2,11 @@
  * Tries out:
  *      - double support
  */
-fn max(a: f64, b: f64): f64 {
+fn max(a: f64, b: f64) -> f64 {
     return a>=b ? a : b;
 }
 
-fn max3(a: f64, b: f64, c: f64): f64 {
+fn max3(a: f64, b: f64, c: f64) -> f64 {
     if max(a,b) >= max(b,c) {
         return max(a,b);
     } 
@@ -23,7 +23,7 @@ fn max3(a: f64, b: f64, c: f64): f64 {
     return c;
 }
 
-fn ___main___(): f64 {
+fn ___main___() -> f64 {
     let MIN: f64 = 50.0;
     let MID: f64 = 60.0;
     let MAX: f64;

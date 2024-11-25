@@ -4,7 +4,7 @@
  *      - empty function
  *      - block statements
  */
-fn foo(): i64 {
+fn foo() -> i64 {
     return b;
     a= 123+45/678-1;
     {
@@ -23,4 +23,4 @@ fn foo(): i64 {
     }
 }
 
-fn bar():void{}
+fn bar() ->void{}

@@ -4,11 +4,11 @@
  *      - nested if-else + with empty blocks
  *      - basic ternary
  */
-fn max(a: i64, b: i64): i64 {
+fn max(a: i64, b: i64) -> i64 {
     return a>=b ? a : b;
 }
 
-fn max3(a: i64, b: i64, c: i64): i64 {
+fn max3(a: i64, b: i64, c: i64) -> i64 {
     if max(a,b) >= max(b,c) {
         return max(a,b);
     } 
@@ -25,7 +25,7 @@ fn max3(a: i64, b: i64, c: i64): i64 {
     return c;
 }
 
-fn ___main___(): i64 {
+fn ___main___() -> i64 {
     let MIN: i64 = 60;
     let MID: i64;
     MID = 50;
