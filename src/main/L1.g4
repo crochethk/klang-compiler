@@ -103,7 +103,7 @@ bool
 
 // Lexer rules
 LIT_INTEGER: DIGIT+;
-LIT_FLOAT: (DIGIT+ '.' DIGIT*) | (DIGIT* '.' DIGIT+);
+LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
 
 TRUE: 'true';
