@@ -40,11 +40,12 @@ public class TreeBuilder extends L1BaseListener {
          * allows to convey which concrete literal type is meant, which will be
          * useful as soon as there is more than one bit-width and/or distinction
          * between signed and unsigned types in a given number class.
-         * The type annotation is done by suffixing the literal with the desired
-         * type, optionally separated by an underscore.
+         * The type annotation is done by appending "as <targetType>" to the literal.
          * This gives flexibility for later type extension that otherwise would
          * lead to ambiguity (e.g. "i64" and "i32" would be indistinguishable
          * in their common number space).
+         * Also "as" could later be utilized to implement a cast expr, that 
+         * converts between primitive types.
          */
         NumberLiteralType targetType = inferNumberType(ctx);
         ctx.result = buildNumberLiteral(ctx, targetType);
@@ -52,20 +53,21 @@ public class TreeBuilder extends L1BaseListener {
 
     private NumberLiteralType inferNumberType(L1Parser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.litTypeSuffix() != null) {
-            var suffix = ctx.litTypeSuffix();
-            if (suffix.T_F64() != null) {
+        var typeAnnot = ctx.typeAnnot;
+        if (typeAnnot != null) {
+            if (typeAnnot.T_F64() != null) {
+                // converts int literals also to float
                 return NumberLiteralType.f64;
-            } else if (suffix.T_I64() != null && ctx.LIT_INTEGER() != null) {
+            } else if (typeAnnot.T_I64() != null && ctx.LIT_INTEGER() != null) {
                 return NumberLiteralType.i64;
             } else {
                 throw new IllegalLiteralTypeSuffixException(
-                        srcPos, ctx.getText(), suffix.getText());
+                        srcPos, ctx.getText(), typeAnnot.getText());
             }
         } else if (ctx.LIT_INTEGER() != null) {
-            return NumberLiteralType.i64; // default
+            return NumberLiteralType.i64; // default int type
         } else if (ctx.LIT_FLOAT() != null) {
-            return NumberLiteralType.f64; // default
+            return NumberLiteralType.f64; // default float type
         }
         throw new UnhandledAlternativeException(srcPos, "number", ctx.getText());
     }

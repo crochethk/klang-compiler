@@ -19,7 +19,7 @@ funParam: name=IDENT COLON type;
 
 type
 	returns[TypeNode result]: primitiveType | refType;
-primitiveType: T_I64 | T_F64 | T_BOOL | T_VOID;
+primitiveType: numericType | T_BOOL | T_VOID;
 refType: IDENT;
 
 statementList
@@ -90,14 +90,12 @@ varOrFunCall
 	| IDENT
 ;
 
+/* Number literals */
 number
 	returns[Node result]: //
-	num=LIT_FLOAT litTypeSuffix?
-	| num=LIT_INTEGER litTypeSuffix?
+	num=(LIT_FLOAT | LIT_INTEGER) (KW_AS typeAnnot=numericType)?
 ;
-litTypeSuffix: T_F64 | T_I64;
-// litTypeSuffix: USCORE? (T_F64 | T_I64);
-// litTypeSuffix: USCORE T_F64 | USCORE T_I64 | T_F64 | T_I64;
+numericType: T_I64 | T_F64;
 
 bool
 	returns[Node result]: TRUE | FALSE;
@@ -137,7 +135,6 @@ COLON: ':';
 COMMA: ',';
 SEMI: ';';
 QM: '?';
-USCORE: '_';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';
@@ -146,10 +143,11 @@ KW_IF: 'if';
 KW_ELSE: 'else';
 
 KW_LET: 'let';
+KW_AS: 'as';
 
-T_I64: 'i64';
 T_BOOL: 'bool';
 T_VOID: 'void';
+T_I64: 'i64';
 T_F64: 'f64';
 
 IDENT: ID_START ID_CHAR*;
