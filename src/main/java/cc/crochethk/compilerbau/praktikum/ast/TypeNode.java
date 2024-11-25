@@ -6,12 +6,10 @@ import utils.SourcePos;
 public class TypeNode extends Node {
     public String typeToken;
     // public String packageToken;
-    public boolean isPrimitive;
 
-    public TypeNode(SourcePos srcPos, String typeToken, boolean isPrimitiveType) {
+    public TypeNode(SourcePos srcPos, String typeToken) {
         super(srcPos);
         this.typeToken = typeToken;
-        this.isPrimitive = isPrimitiveType;
     }
 
     @Override
