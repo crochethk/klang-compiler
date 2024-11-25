@@ -284,7 +284,7 @@ public class TreeBuilder extends L1BaseListener {
         var returnType = ctx.type().result;
         List<Parameter> params = ctx.funParam().stream()
                 .map(p -> new Parameter(p.name.getText(), p.type().result)).toList();
-        Node body = ctx.funBody.result;
+        var body = ctx.funBody.result;
         ctx.result = new FunDef(srcPos, name, params, returnType, body);
     }
 
