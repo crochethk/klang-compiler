@@ -96,7 +96,9 @@ number
 	num=LIT_FLOAT litTypeSuffix?
 	| num=LIT_INTEGER litTypeSuffix?
 ;
-litTypeSuffix: USCORE? (T_F64 | T_I64);
+litTypeSuffix: T_F64 | T_I64;
+// litTypeSuffix: USCORE? (T_F64 | T_I64);
+// litTypeSuffix: USCORE T_F64 | USCORE T_I64 | T_F64 | T_I64;
 
 bool
 	returns[Node result]: TRUE | FALSE;
