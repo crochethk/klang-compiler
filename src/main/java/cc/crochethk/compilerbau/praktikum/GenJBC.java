@@ -398,11 +398,14 @@ public class GenJBC implements Visitor<Void> {
                 methFlags,
                 mb -> mb.withCode(cdb -> {
                     this.codeBuilder = cdb;
-                    if (funDef.body.isEmpty()) {
+                    funDef.body.accept(this);
+
+                    if (funDef.body.isEmpty()
+                            || !funDef.body.statements.getLast().returnsControlFlow()) {
                         cdb.return_();
-                    } else {
-                        funDef.body.accept(this);
                     }
+
+                    // if last statement is not a return and function is void return -> return_()
                 }));
         return null;
     }

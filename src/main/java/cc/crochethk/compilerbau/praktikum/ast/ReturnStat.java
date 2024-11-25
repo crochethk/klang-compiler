@@ -17,6 +17,11 @@ public class ReturnStat extends Node {
     }
 
     @Override
+    public boolean returnsControlFlow() {
+        return true;
+    }
+
+    @Override
     public <R> R accept(Visitor<R> visitor) {
         return visitor.visit(this);
     }

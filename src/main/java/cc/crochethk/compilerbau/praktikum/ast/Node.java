@@ -21,4 +21,8 @@ public abstract class Node implements Visitable {
     public boolean isEmpty() {
         return false;
     }
+
+    public boolean returnsControlFlow() {
+        return false;
+    }
 }
