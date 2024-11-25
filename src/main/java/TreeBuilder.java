@@ -78,9 +78,10 @@ public class TreeBuilder extends L1BaseListener {
 
     Node buildNumberLiteral(L1Parser.NumberContext ctx, NumberLiteralType targetType) {
         var srcPos = getSourcePos(ctx);
+        boolean hasTypeAnnot = ctx.typeAnnot != null;
         Node node = switch (targetType) {
-            case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.num.getText()));
-            case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.num.getText()));
+            case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.num.getText()), hasTypeAnnot);
+            case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.num.getText()), hasTypeAnnot);
         };
         return node;
     }

@@ -3,14 +3,10 @@ package cc.crochethk.compilerbau.praktikum.ast.literals;
 import utils.SourcePos;
 
 public abstract class NumberLiteral<T> extends LiteralExpr<T> {
-    public boolean hasExplicitTypeSuffix = false;
+    public boolean hasTypeAnnotation = false;
 
-    public NumberLiteral(SourcePos srcPos, T value) {
+    public NumberLiteral(SourcePos srcPos, T value, boolean hasTypeAnnotation) {
         super(srcPos, value);
-    }
-
-    public NumberLiteral<T> withTypeSuffix() {
-        hasExplicitTypeSuffix = true;
-        return this;
+        this.hasTypeAnnotation = hasTypeAnnotation;
     }
 }

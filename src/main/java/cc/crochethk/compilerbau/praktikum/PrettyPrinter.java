@@ -37,16 +37,16 @@ public class PrettyPrinter implements Visitor<Writer> {
     public Writer visit(I64Lit i64Lit) {
         write(Long.toString(i64Lit.value));
         // TODO this could go into NumberLiteral base class
-        if (i64Lit.hasExplicitTypeSuffix)
-            write("_i64");
+        if (i64Lit.hasTypeAnnotation)
+            write(" as i64");
         return writer;
     }
 
     @Override
     public Writer visit(F64Lit f64Lit) {
         write(Double.toString(f64Lit.value));
-        if (f64Lit.hasExplicitTypeSuffix)
-            write("_f64");
+        if (f64Lit.hasTypeAnnotation)
+            write(" as f64");
         return writer;
     }
 
@@ -205,21 +205,24 @@ public class PrettyPrinter implements Visitor<Writer> {
 
         // Body
         write(" {");
-        indent_level++;
-        write_indent();
-        funDef.body.accept(this);
-        indent_level--;
-        write_indent();
+        if (!funDef.body.isEmpty()) {
+            indent_level++;
+            write_indent();
+            funDef.body.accept(this);
+            indent_level--;
+            write_indent();
+        }
         write("}");
-        write_indent();
         write_indent();
         return writer;
     }
 
     @Override
     public Writer visit(Prog prog) {
-        for (var def : prog.funDefs) {
-            def.accept(this);
+        for (int i = 0; i < prog.funDefs.size(); i++) {
+            prog.funDefs.get(i).accept(this);
+            if (i < prog.funDefs.size() - 1)
+                write_indent();
         }
         return writer;
     }
