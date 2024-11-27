@@ -107,7 +107,9 @@ fragment DIGIT: [0-9];
 
 TRUE: 'true';
 FALSE: 'false';
+INCREMENT: '++';
 ADD: '+';
+DECREMENT: '--';
 SUB: '-';
 POW: '**';
 MULT: '*';
