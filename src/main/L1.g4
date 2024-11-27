@@ -46,10 +46,10 @@ ifElse
 
 varDeclarationOrAssignment
 	returns[Node result]:
-	KW_LET varName=IDENT COLON type ASSIGN expr SEMI
+	KW_LET varName=IDENT COLON type EQ expr SEMI
 	// KW_LET varName=IDENT (COLON type)? SEMI  // optional type annotation
 	| KW_LET varName=IDENT COLON type SEMI
-	| varName=IDENT ASSIGN expr SEMI
+	| varName=IDENT EQ expr SEMI
 ;
 
 expr
@@ -61,7 +61,7 @@ expr
 	| lhs=expr (ADD | SUB) rhs=expr
 	// comparison expr
 	| lhs=expr (LT | LTEQ | GT | GTEQ) rhs=expr
-	| lhs=expr (EQ | NEQ) rhs=expr
+	| lhs=expr (EQEQ | NEQ) rhs=expr
 	// boolean expr
 	| NOT expr
 	| lhs=expr AND rhs=expr
@@ -118,7 +118,7 @@ OR: '||';
 NOT: '!';
 
 // comparison
-EQ: '==';
+EQEQ: '==';
 NEQ: '!=';
 GT: '>';
 GTEQ: '>=';
@@ -127,7 +127,7 @@ LTEQ: '<=';
 
 RARROW: '->';
 
-ASSIGN: '=';
+EQ: '=';
 
 LPAR: '(';
 RPAR: ')';

@@ -151,7 +151,7 @@ public class TreeBuilder extends L1BaseListener {
         }
 
         // comparison
-        else if (ctx.EQ() != null) {
+        else if (ctx.EQEQ() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.eq);
         } else if (ctx.NEQ() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.neq);
@@ -194,12 +194,12 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitVarDeclarationOrAssignment(L1Parser.VarDeclarationOrAssignmentContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.KW_LET() != null && ctx.ASSIGN() != null) {
+        if (ctx.KW_LET() != null && ctx.EQ() != null) {
             ctx.result = new StatementList(srcPos, List.of(
                     buildVarDeclareNode(srcPos, ctx), buildVarAssignNode(srcPos, ctx)));
         } else if (ctx.KW_LET() != null) {
             ctx.result = buildVarDeclareNode(srcPos, ctx);
-        } else if (ctx.ASSIGN() != null) {
+        } else if (ctx.EQ() != null) {
             ctx.result = buildVarAssignNode(srcPos, ctx);
         } else {
             throw new UnhandledAlternativeException(
