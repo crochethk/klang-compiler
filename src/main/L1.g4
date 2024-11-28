@@ -149,6 +149,9 @@ KW_ELSE: 'else';
 KW_LET: 'let';
 KW_AS: 'as';
 
+KW_LOOP: 'loop';
+KW_BREAK: 'break';
+
 T_BOOL: 'bool';
 T_VOID: 'void';
 T_I64: 'i64';

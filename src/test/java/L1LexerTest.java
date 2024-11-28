@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 public class L1LexerTest {
     @Nested
     class SingleToken {
+        private static final List<Integer> ONLY_EOF_TOKEN = List.of(L1Lexer.EOF);
+
         @Test
         public void testLIT_INTEGER() {
             assertEquals(List.of(L1Lexer.LIT_INTEGER, L1Lexer.EOF), getTokenTypesFromText("123"));
@@ -196,6 +198,16 @@ public class L1LexerTest {
         }
 
         @Test
+        public void testKW_LOOP() {
+            assertEquals(List.of(L1Lexer.KW_LOOP, L1Lexer.EOF), getTokenTypesFromText("loop"));
+        }
+
+        @Test
+        public void testKW_BREAK() {
+            assertEquals(List.of(L1Lexer.KW_BREAK, L1Lexer.EOF), getTokenTypesFromText("break"));
+        }
+
+        @Test
         public void testT_BOOL() {
             assertEquals(List.of(L1Lexer.T_BOOL, L1Lexer.EOF), getTokenTypesFromText("bool"));
         }
@@ -224,25 +236,25 @@ public class L1LexerTest {
 
         @Test
         public void testLINE_COMMENT() {
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("//this is not a type token: f64\n"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("//this is not a type token: f64\n"));
         }
 
         @Test
         public void testBLOCK_COMMENT() {
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("/* first ln followed by emtpy\n\n last line*/"));
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("/*simple *** inline comment*/"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("/* first ln followed by emtpy\n\n last line*/"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("/*simple *** inline comment*/"));
         }
 
         @Test
         public void testWHITESPACE() {
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText(" "));
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("\t"));
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("\n"));
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("\r"));
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("  "));
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("\t\t"));
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("\n\n"));
-            assertEquals(List.of(L1Lexer.EOF), getTokenTypesFromText("\r\r"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText(" "));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("\t"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("\n"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("\r"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("  "));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("\t\t"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("\n\n"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("\r\r"));
         }
     }
 
