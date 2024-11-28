@@ -27,7 +27,7 @@ fn ___main___() -> f64 {
     let MIN: f64 = 50.0;
     let MID: f64 = 60.0;
     let MAX: f64;
-    MAX = 70.0+-42.1f64+42.1f64*13f64/13f64;
+    MAX = 70.0+-42.1+42.1 as f64*13 as f64/13 as f64;
     /*
     return max3(MID, MIN, MAX+1.0);
     return max3(MID,MAX+2.0,MIN);

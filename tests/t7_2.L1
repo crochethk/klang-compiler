@@ -4,14 +4,15 @@
  *      - empty function
  *      - block statements
  */
-fn foo() -> i64 {
-    return b;
-    a= 123+45/678-1;
-    {
-        varInsideExtraBlock = 0;
-    }
-    let a: bool;
-    return d;
+fn foo() -> bool {
+    // return b;
+    // a= 123+45/678-1;
+    // {
+    //     varInsideExtraBlock = 0;
+    // }
+    let a: bool = true;
+    let b: bool = false;
+    // return d;
     if a {
         return true;
     }
@@ -19,7 +20,7 @@ fn foo() -> i64 {
         return false;
     }
     else {
-        return true || false;
+        return !a && !b;
     }
 }
 

@@ -8,5 +8,9 @@ LoadEnvVariables -filePath $envFilePath
 # Compiles all "*.l1" files of "./tests" into "gen_jbc"
 $testsSourcesDir = $env:TESTS_DIR
 Get-ChildItem -Path $testsSourcesDir -Include "*.l1", "*.L1" -Recurse | ForEach-Object {
+    Write-Host "+-----------------------"
+    Write-Host "+ Source: '$_'"
+    Write-Host "+-----------------------"
     CompileFile -outDir $env:OUTDIR -sourceFilePath $_.FullName
+    Write-Host ""
 }
