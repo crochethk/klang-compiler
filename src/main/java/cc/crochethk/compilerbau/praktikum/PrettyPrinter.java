@@ -144,7 +144,16 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(LoopStat loopStat) {
-        return writer;
+        write("loop");
+        write(" {");
+        if (!loopStat.body.isEmpty()) {
+            indent_level++;
+            write_indent();
+            loopStat.body.accept(this);
+            indent_level--;
+            write_indent();
+        }
+        return write("}");
     }
 
     @Override
@@ -171,7 +180,8 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(BreakStat breakStat) {
-        return writer;
+        write("break");
+        return writeSemi();
     }
 
     @Override
