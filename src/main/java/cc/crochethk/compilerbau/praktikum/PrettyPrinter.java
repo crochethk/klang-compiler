@@ -78,17 +78,19 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(UnaryOpExpr unaryOpExpr) {
+        write("(");
         var op_lex = unaryOpExpr.op.toLexeme();
-        return switch (unaryOpExpr.op.side) {
+        switch (unaryOpExpr.op.side) {
             case left -> {
                 write(op_lex);
-                yield unaryOpExpr.operand.accept(this);
+                unaryOpExpr.operand.accept(this);
             }
             case right -> {
                 unaryOpExpr.operand.accept(this);
-                yield write(op_lex);
+                write(op_lex);
             }
-        };
+        }
+        return write(")");
     }
 
     @Override
