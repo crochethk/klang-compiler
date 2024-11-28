@@ -1,3 +1,4 @@
+import java.util.Collections;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -287,8 +288,17 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitStart(L1Parser.StartContext ctx) {
         var srcPos = getSourcePos(ctx);
-        List<FunDef> defs = ctx.definition().stream().map(d -> d.result).toList();
-        ctx.result = new Prog(srcPos, defs);
+        boolean[] hasEntryPoint = { false };
+        List<FunDef> defs = ctx.definition().stream().map(d -> {
+            if (!hasEntryPoint[0] && d.result.name.equals("___main___")) {
+                hasEntryPoint[0] = true;
+            }
+            return d.result;
+        }).toList();
+        var entryPoint = hasEntryPoint[0]
+                ? new FunCall(new SourcePos(-1, -1), "___main___", Collections.emptyList())
+                : null;
+        ctx.result = new Prog(srcPos, defs, entryPoint);
     }
 
     //
