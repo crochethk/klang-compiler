@@ -338,9 +338,21 @@ public class GenJBC implements Visitor<Void> {
         return null;
     }
 
+    private Label currentLoopEnd = null;
+
     @Override
     public Void visit(LoopStat loopStat) {
-        // TODO Auto-generated method stub
+        // backup current label (in case other scope is using it)
+        var previousEnd = currentLoopEnd;
+        currentLoopEnd = codeBuilder.newLabel();
+
+        var start = codeBuilder.newBoundLabel();
+        loopStat.body.accept(this);
+        codeBuilder.goto_(start);
+        codeBuilder.labelBinding(currentLoopEnd);
+
+        //restore previous label
+        currentLoopEnd = previousEnd;
         return null;
     }
 
@@ -359,7 +371,7 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(BreakStat breakStat) {
-        // TODO Auto-generated method stub
+        codeBuilder.goto_(currentLoopEnd);
         return null;
     }
 
