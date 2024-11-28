@@ -196,10 +196,20 @@ public class TypeChecker implements Visitor<Type> {
         return ifElseStat.theType;
     }
 
+    /** Indicates that the visitor is currently in a loop context */
+    private boolean isLoopContext = false;
+
     @Override
     public Type visit(LoopStat loopStat) {
-        // TODO Auto-generated method stub
-        return null;
+        var prevState = isLoopContext;
+
+        isLoopContext = true;
+        loopStat.body.accept(this);
+        isLoopContext = false;
+        loopStat.theType = Type.VOID_T;
+
+        isLoopContext = prevState;
+        return loopStat.theType;
     }
 
     @Override
@@ -227,8 +237,11 @@ public class TypeChecker implements Visitor<Type> {
 
     @Override
     public Type visit(BreakStat breakStat) {
-        // TODO Auto-generated method stub
-        return null;
+        if (!isLoopContext) {
+            reportError(breakStat, "'break' only allowed inside loop body");
+        }
+        breakStat.theType = Type.VOID_T;
+        return breakStat.theType;
     }
 
     @Override
