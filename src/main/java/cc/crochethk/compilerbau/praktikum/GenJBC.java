@@ -400,11 +400,10 @@ public class GenJBC implements Visitor<Void> {
                     funDef.body.accept(this);
 
                     if (funDef.body.isEmpty()
-                            || !funDef.body.statements.getLast().returnsControlFlow()) {
+                            || (!funDef.body.statements.getLast().returnsControlFlow()
+                                    && funDef.returnType.theType.equals(Type.VOID_T))) {
                         cdb.return_();
                     }
-
-                    // if last statement is not a return and function is void return -> return_()
                 }));
         return null;
     }
