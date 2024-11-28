@@ -30,19 +30,28 @@ statement
 	blockLikeStatement
 	| varDeclarationOrAssignment
 	| KW_RETURN expr? SEMI
+	| KW_BREAK SEMI
 ;
 
 blockLikeStatement
-	returns[Node result]: ifElse | block;
+	returns[Node result]: ifElse | loop | block;
 
 block
-	returns[Node result]: LBRACE statementList RBRACE;
+	returns[StatementList result]: LBRACE statementList RBRACE;
 
 ifElse
 	returns[Node result]:
 	KW_IF condition=expr then=block KW_ELSE otherwise=block
 	| KW_IF condition=expr then=block
 ;
+
+/**
+ * Simple, condition-free loop that can be escaped using "break".
+ * Break shall always only stop the loop it is called from, i.e. it
+ * shall not end any potential parent loops.
+ */
+loop
+	returns[Node result]: KW_LOOP block;
 
 varDeclarationOrAssignment
 	returns[Node result]:

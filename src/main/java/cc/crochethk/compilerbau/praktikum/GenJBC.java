@@ -19,23 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
-import cc.crochethk.compilerbau.praktikum.ast.FunCall;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef;
-import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.Prog;
-import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
-import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
-import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.Var;
-import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
-import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
+import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import utils.Result;
 
 /**
@@ -352,6 +339,12 @@ public class GenJBC implements Visitor<Void> {
     }
 
     @Override
+    public Void visit(LoopStat loopStat) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
     public Void visit(StatementList statementList) {
         statementList.statements.forEach(s -> s.accept(this));
         return null;
@@ -361,6 +354,12 @@ public class GenJBC implements Visitor<Void> {
     public Void visit(ReturnStat returnStat) {
         returnStat.expr.accept(this);
         codeBuilder.return_(returnStat.theType.jvmTypeKind());
+        return null;
+    }
+
+    @Override
+    public Void visit(BreakStat breakStat) {
+        // TODO Auto-generated method stub
         return null;
     }
 

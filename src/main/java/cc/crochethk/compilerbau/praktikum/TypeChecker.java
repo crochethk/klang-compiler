@@ -4,21 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
-import cc.crochethk.compilerbau.praktikum.ast.FunCall;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef;
-import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.Node;
-import cc.crochethk.compilerbau.praktikum.ast.Prog;
-import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
-import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
-import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.Var;
-import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
-import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 
 /** TypeChecker Visitor
@@ -211,6 +197,12 @@ public class TypeChecker implements Visitor<Type> {
     }
 
     @Override
+    public Type visit(LoopStat loopStat) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
     public Type visit(StatementList statementList) {
         statementList.statements.forEach(s -> s.accept(this));
         statementList.theType = statementList.isEmpty()
@@ -231,6 +223,12 @@ public class TypeChecker implements Visitor<Type> {
                     + "' but found incompatible '" + exprType + "'");
         }
         return returnStat.theType;
+    }
+
+    @Override
+    public Type visit(BreakStat breakStat) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override

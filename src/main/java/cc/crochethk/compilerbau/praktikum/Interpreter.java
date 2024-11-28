@@ -4,9 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import cc.crochethk.compilerbau.praktikum.InterpretResult.BoolResult;
-import cc.crochethk.compilerbau.praktikum.InterpretResult.NoResult;
-import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult;
+import cc.crochethk.compilerbau.praktikum.InterpretResult.*;
 import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult.I64Result;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
@@ -197,5 +195,17 @@ public class Interpreter implements Visitor<InterpretResult> {
     public InterpretResult visit(F64Lit f64Lit) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
+    public InterpretResult visit(LoopStat loopStat) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public InterpretResult visit(BreakStat breakStat) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

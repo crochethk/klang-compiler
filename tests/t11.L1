@@ -1,0 +1,17 @@
+/**
+ * Tries out:
+ *      - loop and
+ *      - break statement
+ */
+
+fn ___main___() -> i64 {
+    let counter: i64 = 0;
+    loop {
+        if counter < 42 {
+        counter = counter + 1;
+        } else {
+            break;
+        }
+    }
+    return counter;
+}

@@ -4,21 +4,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
-import cc.crochethk.compilerbau.praktikum.ast.FunCall;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef;
-import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.Prog;
-import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
-import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
-import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.Var;
-import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
-import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 
 public class PrettyPrinter implements Visitor<Writer> {
@@ -119,7 +106,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         write(varDeclareStat.varName);
         write(": ");
         varDeclareStat.declaredType.accept(this);
-        return write(";");
+        return writeSemi();
     }
 
     @Override
@@ -127,7 +114,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         write(varAssignStat.targetVarName);
         write(" = ");
         varAssignStat.expr.accept(this);
-        return write(";");
+        return writeSemi();
     }
 
     @Override
@@ -152,7 +139,11 @@ public class PrettyPrinter implements Visitor<Writer> {
             indent_level--;
             write_indent();
         }
-        write("}");
+        return write("}");
+    }
+
+    @Override
+    public Writer visit(LoopStat loopStat) {
         return writer;
     }
 
@@ -175,7 +166,12 @@ public class PrettyPrinter implements Visitor<Writer> {
             write(" ");
         }
         returnStat.expr.accept(this);
-        return write(";");
+        return writeSemi();
+    }
+
+    @Override
+    public Writer visit(BreakStat breakStat) {
+        return writer;
     }
 
     @Override
@@ -235,6 +231,10 @@ public class PrettyPrinter implements Visitor<Writer> {
     private void write_indent() {
         write("\n");
         write("  ".repeat(indent_level));
+    }
+
+    private Writer writeSemi() {
+        return write(";");
     }
 
     private Writer write(String s) {

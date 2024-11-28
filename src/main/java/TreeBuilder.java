@@ -2,25 +2,11 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
-import cc.crochethk.compilerbau.praktikum.ast.FunCall;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef;
-import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef.Parameter;
-import cc.crochethk.compilerbau.praktikum.ast.Node;
-import cc.crochethk.compilerbau.praktikum.ast.Prog;
-import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
-import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
-import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.Var;
-import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
-import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
+import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.FunDef.Parameter;
+import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import utils.SourcePos;
 
 public class TreeBuilder extends L1BaseListener {
@@ -228,6 +214,11 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitLoop(L1Parser.LoopContext ctx) {
+        ctx.result = new LoopStat(getSourcePos(ctx), ctx.block().result);
+    }
+
+    @Override
     public void exitBlock(L1Parser.BlockContext ctx) {
         ctx.result = ctx.statementList().result;
     }
@@ -245,6 +236,8 @@ public class TreeBuilder extends L1BaseListener {
             ctx.result = ctx.ifElse().result;
         } else if (ctx.block() != null) {
             ctx.result = ctx.block().result;
+        } else if (ctx.loop() != null) {
+            ctx.result = ctx.loop().result;
         } else {
             throw new UnhandledAlternativeException(srcPos, "blockLikeStatement", ctx.getText());
         }
@@ -262,6 +255,8 @@ public class TreeBuilder extends L1BaseListener {
                     ? ctx.expr().result
                     : new EmptyNode(srcPos);
             ctx.result = new ReturnStat(srcPos, expr);
+        } else if (ctx.KW_BREAK() != null) {
+            ctx.result = new BreakStat(srcPos);
         } else {
             throw new UnhandledAlternativeException(srcPos, "statement", ctx.getText());
         }
