@@ -236,6 +236,11 @@ public class L1LexerTest {
         }
 
         @Test
+        public void testT_STRING() {
+            assertEquals(List.of(L1Lexer.T_STRING, L1Lexer.EOF), getTokenTypesFromText("string"));
+        }
+
+        @Test
         public void testIDENT() {
             assertEquals(List.of(L1Lexer.IDENT, L1Lexer.EOF), getTokenTypesFromText("identifier"));
             assertEquals(List.of(L1Lexer.IDENT, L1Lexer.EOF), getTokenTypesFromText(

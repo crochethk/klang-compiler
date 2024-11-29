@@ -20,7 +20,7 @@ funParam: name=IDENT COLON type;
 type
 	returns[TypeNode result]: primitiveType | refType;
 primitiveType: numericType | T_BOOL | T_VOID;
-refType: IDENT;
+refType: T_STRING | IDENT;
 
 statementList
 	returns[StatementList result]: statement*;
@@ -171,6 +171,8 @@ T_BOOL: 'bool';
 T_VOID: 'void';
 T_I64: 'i64';
 T_F64: 'f64';
+
+T_STRING: 'string';
 
 IDENT: ID_START ID_CHAR*;
 fragment ID_START: [a-zA-Z_];

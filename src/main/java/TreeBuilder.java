@@ -278,6 +278,9 @@ public class TreeBuilder extends L1BaseListener {
         if (ctx.primitiveType() != null) {
             var ttext = ctx.primitiveType().getText();
             ctx.result = new TypeNode(srcPos, ttext);
+        } else if (ctx.refType() != null) {
+            var ttext = ctx.refType().getText();
+            ctx.result = new TypeNode(srcPos, ttext);
         } else {
             throw new UnhandledAlternativeException(srcPos, "type", ctx.getText());
         }
