@@ -91,7 +91,7 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(StringLit stringLit) {
-        // TODO Auto-generated method stub
+        codeBuilder.ldc(stringLit.value);
         return null;
     }
 
@@ -103,7 +103,7 @@ public class GenJBC implements Visitor<Void> {
             case LongType -> codeBuilder.lload(slot);
             case DoubleType -> codeBuilder.dload(slot);
             case BooleanType -> codeBuilder.iload(slot);
-            // case ReferenceType -> {}
+            case ReferenceType -> codeBuilder.aload(slot);
             case VoidType -> throw new UnsupportedOperationException(
                     "Loading the type '" + var.theType.jvmName() + "' is not supported");
             default -> throw new AssertionError(
