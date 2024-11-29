@@ -44,6 +44,12 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
+    public Writer visit(StringLit stringLit) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
     public Writer visit(Var var) {
         return write(var.name);
     }

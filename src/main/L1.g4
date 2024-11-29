@@ -80,6 +80,7 @@ expr
 	| LPAR exprInParens=expr RPAR
 	| number
 	| bool
+	| string
 	| varOrFunCall
 ;
 
@@ -101,7 +102,7 @@ varOrFunCall
 
 /* Number literals */
 number
-	returns[Node result]: //
+	returns[Node result]:
 	num=(LIT_FLOAT | LIT_INTEGER) (KW_AS typeAnnot=numericType)?
 ;
 numericType: T_I64 | T_F64;
@@ -109,12 +110,15 @@ numericType: T_I64 | T_F64;
 bool
 	returns[Node result]: TRUE | FALSE;
 
+string
+	returns[Node result]: LIT_STRING;
+
 // Lexer rules
 LIT_INTEGER: DIGIT+;
 LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
 
-LIT_STRING: '"'.*?'"';
+LIT_STRING: '"' .*? '"';
 
 TRUE: 'true';
 FALSE: 'false';

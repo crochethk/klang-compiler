@@ -208,4 +208,10 @@ public class Interpreter implements Visitor<InterpretResult> {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public InterpretResult visit(StringLit stringLit) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

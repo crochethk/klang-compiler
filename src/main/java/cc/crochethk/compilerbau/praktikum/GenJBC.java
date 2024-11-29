@@ -90,6 +90,12 @@ public class GenJBC implements Visitor<Void> {
     }
 
     @Override
+    public Void visit(StringLit stringLit) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
     public Void visit(Var var) {
         var slot = varsManager.getSlot(var.name);
 
