@@ -38,8 +38,8 @@ public class TypeChecker implements Visitor<Type> {
 
     @Override
     public Type visit(StringLit stringLit) {
-        // TODO Auto-generated method stub
-        return null;
+        stringLit.theType = Type.STRING_T;
+        return stringLit.theType;
     }
 
     @Override
