@@ -114,6 +114,8 @@ LIT_INTEGER: DIGIT+;
 LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
 
+LIT_STRING: '"'.*?'"';
+
 TRUE: 'true';
 FALSE: 'false';
 INCREMENT: '++';
