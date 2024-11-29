@@ -45,8 +45,9 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(StringLit stringLit) {
-        // TODO Auto-generated method stub
-        return null;
+        write("\"");
+        write(stringLit.value);
+        return write("\"");
     }
 
     @Override
@@ -213,7 +214,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         }
         write(")");
         if (!funDef.returnType.typeToken.equals("void")) {
-            write(" ->");
+            write(" -> ");
             funDef.returnType.accept(this);
         }
 
