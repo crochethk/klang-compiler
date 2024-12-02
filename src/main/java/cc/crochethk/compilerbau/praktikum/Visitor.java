@@ -32,41 +32,41 @@ public interface Visitor<R> {
     // void visit(Visitable element);
     R visit(I64Lit i64Lit);
 
+    R visit(F64Lit f64Lit);
+
     R visit(BoolLit boolLit);
 
-    R visit(BinOpExpr binOpExpr);
-
-    R visit(FunDef funDef);
-
-    R visit(Prog prog);
+    R visit(StringLit stringLit);
 
     R visit(Var var);
 
     R visit(FunCall funCall);
 
-    R visit(ReturnStat returnStat);
+    R visit(BinOpExpr binOpExpr);
 
     R visit(UnaryOpExpr unaryOpExpr);
 
     R visit(TernaryConditionalExpr ternaryConditionalExpr);
 
-    R visit(VarAssignStat varAssignStat);
-
     R visit(VarDeclareStat varDeclareStat);
+
+    R visit(VarAssignStat varAssignStat);
 
     R visit(IfElseStat ifElseStat);
 
-    R visit(EmptyNode emptyNode);
-
-    R visit(TypeNode type);
+    R visit(LoopStat loopStat);
 
     R visit(StatementList statementList);
 
-    R visit(F64Lit f64Lit);
-
-    R visit(LoopStat loopStat);
+    R visit(ReturnStat returnStat);
 
     R visit(BreakStat breakStat);
 
-    R visit(StringLit stringLit);
+    R visit(TypeNode type);
+
+    R visit(FunDef funDef);
+
+    R visit(Prog prog);
+
+    R visit(EmptyNode emptyNode);
 }
