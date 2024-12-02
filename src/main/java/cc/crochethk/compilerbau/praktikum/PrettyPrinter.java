@@ -44,6 +44,13 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
+    public Writer visit(StringLit stringLit) {
+        write("\"");
+        write(stringLit.value);
+        return write("\"");
+    }
+
+    @Override
     public Writer visit(Var var) {
         return write(var.name);
     }
@@ -207,7 +214,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         }
         write(")");
         if (!funDef.returnType.typeToken.equals("void")) {
-            write(" ->");
+            write(" -> ");
             funDef.returnType.accept(this);
         }
 

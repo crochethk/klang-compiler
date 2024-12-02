@@ -67,4 +67,6 @@ public interface Visitor<R> {
     R visit(LoopStat loopStat);
 
     R visit(BreakStat breakStat);
+
+    R visit(StringLit stringLit);
 }

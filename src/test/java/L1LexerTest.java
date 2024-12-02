@@ -28,6 +28,14 @@ public class L1LexerTest {
         }
 
         @Test
+        public void testLIT_STRING() {
+            assertEquals(List.of(L1Lexer.LIT_STRING, L1Lexer.EOF), getTokenTypesFromText("\"abc\""));
+            assertEquals("\"abc\"", getTokensFromText("\"abc\"").get(0).getText());
+            assertEquals(List.of(L1Lexer.LIT_STRING, L1Lexer.EOF), getTokenTypesFromText("\"\""));
+            assertEquals("\"\"", getTokensFromText("\"\"").get(0).getText());
+        }
+
+        @Test
         public void testTRUE() {
             assertEquals(List.of(L1Lexer.TRUE, L1Lexer.EOF), getTokenTypesFromText("true"));
         }
@@ -228,6 +236,11 @@ public class L1LexerTest {
         }
 
         @Test
+        public void testT_STRING() {
+            assertEquals(List.of(L1Lexer.T_STRING, L1Lexer.EOF), getTokenTypesFromText("string"));
+        }
+
+        @Test
         public void testIDENT() {
             assertEquals(List.of(L1Lexer.IDENT, L1Lexer.EOF), getTokenTypesFromText("identifier"));
             assertEquals(List.of(L1Lexer.IDENT, L1Lexer.EOF), getTokenTypesFromText(
@@ -260,6 +273,34 @@ public class L1LexerTest {
 
     @Nested
     class PotentialAmbiguities {
+        @Test
+        void testCommentSyntaxInsideStringLiteral_1() {
+            var litStrText = "\"/*this is NOT empty!*/\"";
+            var tokens = getTokensFromText(litStrText);
+            assertEquals(List.of(L1Lexer.LIT_STRING, L1Lexer.EOF), getTokenTypes(tokens));
+            assertEquals(litStrText, tokens.get(0).getText());
+        }
+
+        @Test
+        void testCommentSyntaxInsideStringLiteral_2() {
+            var litStrText = "\"//this is NOT empty!\"";
+            var tokens = getTokensFromText(litStrText);
+            assertEquals(List.of(L1Lexer.LIT_STRING, L1Lexer.EOF), getTokenTypes(tokens));
+            assertEquals(litStrText, tokens.get(0).getText());
+        }
+
+        @Test
+        void testStatementInStringLiteral() {
+            var litStrText = "\"let foo : bool = false;\"";
+            var expression = "let s = " + litStrText;
+            var tokens = getTokensFromText(expression);
+            assertEquals(List.of(
+                    L1Lexer.KW_LET, L1Lexer.IDENT, L1Lexer.EQ,
+                    L1Lexer.LIT_STRING, L1Lexer.EOF),
+                    getTokenTypes(tokens));
+            assertEquals(litStrText, tokens.get(3).getText());
+        }
+
         @Test
         void testAsterisks() {
             assertEquals(List.of(L1Lexer.MULT, L1Lexer.EOF),
@@ -414,8 +455,11 @@ public class L1LexerTest {
     private ANTLRErrorListener errorListener = new LexerErrorListener();
 
     private List<Integer> getTokenTypesFromText(String txt) {
-        return getTokensFromText(txt).stream()
-                .map(t -> t.getType()).toList();
+        return getTokenTypes(getTokensFromText(txt));
+    }
+
+    private List<Integer> getTokenTypes(List<Token> tokens) {
+        return tokens.stream().map(t -> t.getType()).toList();
     }
 
     private List<Token> getTokensFromText(String txt) {

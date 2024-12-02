@@ -20,7 +20,7 @@ funParam: name=IDENT COLON type;
 type
 	returns[TypeNode result]: primitiveType | refType;
 primitiveType: numericType | T_BOOL | T_VOID;
-refType: IDENT;
+refType: T_STRING | IDENT;
 
 statementList
 	returns[StatementList result]: statement*;
@@ -80,6 +80,7 @@ expr
 	| LPAR exprInParens=expr RPAR
 	| number
 	| bool
+	| string
 	| varOrFunCall
 ;
 
@@ -101,7 +102,7 @@ varOrFunCall
 
 /* Number literals */
 number
-	returns[Node result]: //
+	returns[Node result]:
 	num=(LIT_FLOAT | LIT_INTEGER) (KW_AS typeAnnot=numericType)?
 ;
 numericType: T_I64 | T_F64;
@@ -109,10 +110,15 @@ numericType: T_I64 | T_F64;
 bool
 	returns[Node result]: TRUE | FALSE;
 
+string
+	returns[Node result]: LIT_STRING;
+
 // Lexer rules
 LIT_INTEGER: DIGIT+;
 LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
+
+LIT_STRING: '"' .*? '"';
 
 TRUE: 'true';
 FALSE: 'false';
@@ -165,6 +171,8 @@ T_BOOL: 'bool';
 T_VOID: 'void';
 T_I64: 'i64';
 T_F64: 'f64';
+
+T_STRING: 'string';
 
 IDENT: ID_START ID_CHAR*;
 fragment ID_START: [a-zA-Z_];

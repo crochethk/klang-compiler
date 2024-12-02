@@ -37,6 +37,12 @@ public class TypeChecker implements Visitor<Type> {
     }
 
     @Override
+    public Type visit(StringLit stringLit) {
+        stringLit.theType = Type.STRING_T;
+        return stringLit.theType;
+    }
+
+    @Override
     public Type visit(Var var) {
         var varType = funDefVarTypes.get(var.name);
         if (varType == null) {

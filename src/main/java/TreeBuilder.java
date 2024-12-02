@@ -82,6 +82,14 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitString(L1Parser.StringContext ctx) {
+        var ttext = ctx.LIT_STRING().getText();
+        // store text without the surrounding '"'
+        ctx.result = new StringLit(getSourcePos(ctx),
+                ttext.substring(1, ttext.length() - 1));
+    }
+
+    @Override
     public void exitVarOrFunCall(L1Parser.VarOrFunCallContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.LPAR() != null) {
@@ -153,9 +161,10 @@ public class TreeBuilder extends L1BaseListener {
 
         } else if (ctx.varOrFunCall() != null) {
             ctx.result = ctx.varOrFunCall().result;
-
         } else if (ctx.ternaryElseBranch() != null) {
             ctx.result = buildTernaryConditionalNode(ctx, ctx.expr(), ctx.ternaryElseBranch());
+        } else if (ctx.string() != null) {
+            ctx.result = ctx.string().result;
         } else {
             throw new UnhandledAlternativeException(getSourcePos(ctx), "expr", ctx.getText());
         }
@@ -268,6 +277,9 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         if (ctx.primitiveType() != null) {
             var ttext = ctx.primitiveType().getText();
+            ctx.result = new TypeNode(srcPos, ttext);
+        } else if (ctx.refType() != null) {
+            var ttext = ctx.refType().getText();
             ctx.result = new TypeNode(srcPos, ttext);
         } else {
             throw new UnhandledAlternativeException(srcPos, "type", ctx.getText());
