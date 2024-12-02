@@ -16,11 +16,11 @@ public class TreeBuilder extends L1BaseListener {
         /**
          * There are two kinds of literal number expressions:
          * 1) bare ("123") and
-         * 2) annotated ("123i64" or "123_i64")
+         * 2) annotated ("123 as i64" )
          * 
          * In the former case, the literal type is inferred to a default type 
          * according to the number class (integer or floating point). Then parsing
-         * to the interal value representation is done aaccordingly with said 
+         * to the internal value representation is done accordingly with said 
          * default type.
          * 
          * The latter case allows specifying the type along the literal. This
@@ -31,8 +31,6 @@ public class TreeBuilder extends L1BaseListener {
          * This gives flexibility for later type extension that otherwise would
          * lead to ambiguity (e.g. "i64" and "i32" would be indistinguishable
          * in their common number space).
-         * Also "as" could later be utilized to implement a cast expr, that 
-         * converts between primitive types.
          */
         NumberLiteralType targetType = inferNumberType(ctx);
         ctx.result = buildNumberLiteral(ctx, targetType);

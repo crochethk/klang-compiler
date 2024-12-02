@@ -378,17 +378,6 @@ public class L1LexerTest {
 
     }
 
-    /*
-    @Test
-    void testXXX() {
-        var tokens = getTokenTypesFromText("");
-        List<Integer> expTokens = List.of(
-                L1Lexer.IDENT,
-                L1Lexer.EOF);
-        assertEquals(expTokens, tokens);
-    }
-    */
-
     @Test
     void testFunDef() {
         var tokens = getTokenTypesFromText("fn f(a:A,)-> f64{return 42 as f64;}");
