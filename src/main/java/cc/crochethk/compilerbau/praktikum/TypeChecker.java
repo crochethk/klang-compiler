@@ -4,22 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
-import cc.crochethk.compilerbau.praktikum.ast.FunCall;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef;
-import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.Node;
-import cc.crochethk.compilerbau.praktikum.ast.Prog;
-import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
-import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
-import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
-import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.Var;
-import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
-import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 
 /** TypeChecker Visitor
@@ -41,14 +26,20 @@ public class TypeChecker implements Visitor<Type> {
 
     @Override
     public Type visit(F64Lit f64Lit) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        f64Lit.theType = Type.DOUBLE_T;
+        return f64Lit.theType;
     }
 
     @Override
     public Type visit(BoolLit boolLit) {
         boolLit.theType = Type.BOOL_T;
         return boolLit.theType;
+    }
+
+    @Override
+    public Type visit(StringLit stringLit) {
+        stringLit.theType = Type.STRING_T;
+        return stringLit.theType;
     }
 
     @Override
@@ -109,7 +100,7 @@ public class TypeChecker implements Visitor<Type> {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
         } else if (binOpExpr.op.isArithmetic()) {
-            exprType = Type.LONG_T;
+            exprType = binOpExpr.lhs.theType;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
                 reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
             }
@@ -211,10 +202,20 @@ public class TypeChecker implements Visitor<Type> {
         return ifElseStat.theType;
     }
 
+    /** Indicates that the visitor is currently in a loop context */
+    private boolean isLoopContext = false;
+
     @Override
-    public Type visit(StatementListNode statementListNode) {
-        // TODO finally remove this from interface 
-        throw new UnsupportedOperationException("statementListNode SHOULD NOT BE IN USE ANYMORE...");
+    public Type visit(LoopStat loopStat) {
+        var prevState = isLoopContext;
+
+        isLoopContext = true;
+        loopStat.body.accept(this);
+        isLoopContext = false;
+        loopStat.theType = Type.VOID_T;
+
+        isLoopContext = prevState;
+        return loopStat.theType;
     }
 
     @Override
@@ -238,6 +239,15 @@ public class TypeChecker implements Visitor<Type> {
                     + "' but found incompatible '" + exprType + "'");
         }
         return returnStat.theType;
+    }
+
+    @Override
+    public Type visit(BreakStat breakStat) {
+        if (!isLoopContext) {
+            reportError(breakStat, "'break' only allowed inside loop body");
+        }
+        breakStat.theType = Type.VOID_T;
+        return breakStat.theType;
     }
 
     @Override

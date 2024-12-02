@@ -4,8 +4,8 @@ import cc.crochethk.compilerbau.praktikum.Visitor;
 import utils.SourcePos;
 
 public class F64Lit extends NumberLiteral<Double> {
-    public F64Lit(SourcePos srcPos, double value) {
-        super(srcPos, value);
+    public F64Lit(SourcePos srcPos, double value, boolean hasTypeAnnotation) {
+        super(srcPos, value, hasTypeAnnotation);
     }
 
     @Override

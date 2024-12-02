@@ -12,15 +12,15 @@ start
 definition
 	returns[FunDef result]:
 	KW_FUN funName=IDENT LPAR (funParam (COMMA funParam)* COMMA?)? RPAR //
-	COLON type LBRACE funBody=statementList RBRACE
+	(RARROW type)? LBRACE funBody=statementList RBRACE
 ;
 
 funParam: name=IDENT COLON type;
 
 type
 	returns[TypeNode result]: primitiveType | refType;
-primitiveType: T_I64 | T_BOOL | T_VOID;
-refType: IDENT;
+primitiveType: numericType | T_BOOL | T_VOID;
+refType: T_STRING | IDENT;
 
 statementList
 	returns[StatementList result]: statement*;
@@ -30,13 +30,14 @@ statement
 	blockLikeStatement
 	| varDeclarationOrAssignment
 	| KW_RETURN expr? SEMI
+	| KW_BREAK SEMI
 ;
 
 blockLikeStatement
-	returns[Node result]: ifElse | block;
+	returns[Node result]: ifElse | loop | block;
 
 block
-	returns[Node result]: LBRACE statementList RBRACE;
+	returns[StatementList result]: LBRACE statementList RBRACE;
 
 ifElse
 	returns[Node result]:
@@ -44,34 +45,42 @@ ifElse
 	| KW_IF condition=expr then=block
 ;
 
+/**
+ * Simple, condition-free loop that can be escaped using "break".
+ * Break shall always only stop the loop it is called from, i.e. it
+ * shall not end any potential parent loops.
+ */
+loop
+	returns[Node result]: KW_LOOP block;
+
 varDeclarationOrAssignment
 	returns[Node result]:
-	KW_LET varName=IDENT COLON type ASSIGN expr SEMI
+	KW_LET varName=IDENT COLON type EQ expr SEMI
 	// KW_LET varName=IDENT (COLON type)? SEMI  // optional type annotation
 	| KW_LET varName=IDENT COLON type SEMI
-	| varName=IDENT ASSIGN expr SEMI
+	| varName=IDENT EQ expr SEMI
 ;
 
 expr
 	returns[Node result]:
 	// arithmetic expr
-	negationOp=SUB expr // negation // TODO <------------ implement UnaryOpExpr.neg 
+	negationOp=SUB expr // negation
 	| lhs=expr POW rhs=expr
 	| lhs=expr (MULT | DIV) rhs=expr // hier + MOD
 	| lhs=expr (ADD | SUB) rhs=expr
 	// comparison expr
 	| lhs=expr (LT | LTEQ | GT | GTEQ) rhs=expr
-	| lhs=expr (EQ | NEQ) rhs=expr
+	| lhs=expr (EQEQ | NEQ) rhs=expr
 	// boolean expr
 	| NOT expr
 	| lhs=expr AND rhs=expr
 	| lhs=expr OR rhs=expr
 	// ternary conditional
 	| expr QM expr COLON ternaryElseBranch
-	// TODO <---- modified ternary
 	| LPAR exprInParens=expr RPAR
 	| number
 	| bool
+	| string
 	| varOrFunCall
 ;
 
@@ -91,24 +100,31 @@ varOrFunCall
 	| IDENT
 ;
 
+/* Number literals */
 number
-	returns[Node result]: //
-	LIT_FLOAT litTypeSuffix?
-	| LIT_INTEGER litTypeSuffix?
+	returns[Node result]:
+	num=(LIT_FLOAT | LIT_INTEGER) (KW_AS typeAnnot=numericType)?
 ;
-litTypeSuffix: USCORE? (T_I64 | T_F64);
+numericType: T_I64 | T_F64;
 
 bool
 	returns[Node result]: TRUE | FALSE;
 
+string
+	returns[Node result]: LIT_STRING;
+
 // Lexer rules
 LIT_INTEGER: DIGIT+;
-LIT_FLOAT: (DIGIT+ '.' DIGIT*) | (DIGIT* '.' DIGIT+);
+LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
+
+LIT_STRING: '"' .*? '"';
 
 TRUE: 'true';
 FALSE: 'false';
+INCREMENT: '++';
 ADD: '+';
+DECREMENT: '--';
 SUB: '-';
 POW: '**';
 MULT: '*';
@@ -119,14 +135,16 @@ OR: '||';
 NOT: '!';
 
 // comparison
-EQ: '==';
+EQEQ: '==';
 NEQ: '!=';
 GT: '>';
 GTEQ: '>=';
 LT: '<';
 LTEQ: '<=';
 
-ASSIGN: '=';
+RARROW: '->';
+
+EQ: '=';
 
 LPAR: '(';
 RPAR: ')';
@@ -136,7 +154,6 @@ COLON: ':';
 COMMA: ',';
 SEMI: ';';
 QM: '?';
-USCORE: '_';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';
@@ -145,18 +162,25 @@ KW_IF: 'if';
 KW_ELSE: 'else';
 
 KW_LET: 'let';
+KW_AS: 'as';
 
-T_I64: 'i64';
+KW_LOOP: 'loop';
+KW_BREAK: 'break';
+
 T_BOOL: 'bool';
 T_VOID: 'void';
+T_I64: 'i64';
 T_F64: 'f64';
+
+T_STRING: 'string';
 
 IDENT: ID_START ID_CHAR*;
 fragment ID_START: [a-zA-Z_];
 fragment ID_CHAR: ID_START | [0-9];
 
 // Ignored tokens
+// line comments MUST end with a newline symbol
 LINE_COMMENT: '//' .*? '\r'? '\n' -> skip;
-MULTILINE_COMMENT: '/*' .*? '*/' -> skip;
+BLOCK_COMMENT: '/*' .*? '*/' -> skip;
 WHITESPACE: [ \t\n\r]+ -> skip;
 ANY: .;

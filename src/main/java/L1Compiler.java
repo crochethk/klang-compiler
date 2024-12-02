@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import org.antlr.v4.gui.TreeViewer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -62,7 +63,7 @@ public class L1Compiler {
      * returns its root node.
      */
     private static Node buildAST(Reader inputCode) throws IOException {
-        var lexer = new L1Lexer(CharStreams.fromReader(inputCode));
+        var lexer = applyLexer(inputCode);
         var parser = new L1Parser(new CommonTokenStream(lexer));
         var antlrTree = parser.start();
         if (VISUALIZE_PARSETREE) {
@@ -75,6 +76,10 @@ public class L1Compiler {
             ParseTreeWalker.DEFAULT.walk(treeBuilder, antlrTree);
         }
         return antlrTree.result;
+    }
+
+    static Lexer applyLexer(Reader inputText) throws IOException {
+        return new L1Lexer(CharStreams.fromReader(inputText));
     }
 
     /**

@@ -15,10 +15,10 @@ public class FunDef extends Node {
     public String name;
     public TypeNode returnType;
     public List<Parameter> params;
-    public Node body;
+    public StatementList body;
 
     public FunDef(SourcePos srcPos, String name, List<Parameter> params,
-            TypeNode returnType, Node body) {
+            TypeNode returnType, StatementList body) {
         super(srcPos);
         this.name = name;
         this.params = params != null ? params : Collections.emptyList();

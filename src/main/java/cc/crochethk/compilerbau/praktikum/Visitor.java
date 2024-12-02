@@ -1,15 +1,16 @@
 package cc.crochethk.compilerbau.praktikum;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
+import cc.crochethk.compilerbau.praktikum.ast.BreakStat;
 import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
 import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
+import cc.crochethk.compilerbau.praktikum.ast.LoopStat;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
@@ -53,8 +54,6 @@ public interface Visitor<R> {
 
     R visit(VarDeclareStat varDeclareStat);
 
-    R visit(StatementListNode statementListNode);
-
     R visit(IfElseStat ifElseStat);
 
     R visit(EmptyNode emptyNode);
@@ -64,4 +63,10 @@ public interface Visitor<R> {
     R visit(StatementList statementList);
 
     R visit(F64Lit f64Lit);
+
+    R visit(LoopStat loopStat);
+
+    R visit(BreakStat breakStat);
+
+    R visit(StringLit stringLit);
 }

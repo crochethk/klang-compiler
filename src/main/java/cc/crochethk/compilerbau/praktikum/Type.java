@@ -54,16 +54,16 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
     Type UNKNOWN_T = new RefType("UNKNOWN", "");
 
     /**
-     * Convert given source type to a corresponding JVM type representation.
+     * Convert given source type token to a corresponding JVM type representation.
      * @param typeName The type name as defined in the source / by grammar.
      * @param packageName The package containing the specified typeName
      */
     static Type of(String typeName, String packageName) {
         return switch (typeName) {
-            case "String" -> STRING_T;
+            case "string" -> STRING_T;
             case "i64" -> LONG_T;
             case "bool" -> BOOL_T;
-            case "double" -> DOUBLE_T;
+            case "f64" -> DOUBLE_T;
             case "void" -> VOID_T;
             default -> new RefType(typeName, packageName);
         };

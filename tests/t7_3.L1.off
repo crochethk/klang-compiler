@@ -3,7 +3,7 @@
  *      - reworked ternary
  *      - nested ternary (right and left branch)
  */
-fn foo(): i64 {
+fn foo() -> i64 {
     return 123>b+1 ? 123 : 456;
     return 15*678>b*17 ? nestedTernary() ? nested_then : nester_otherwise : 1011;
     return 15*678>b*17 ? 1011 : nestedTernary()+1 ? nested_then : nester_otherwise+1 ? nested_nested_then+2 : nested_nested_otherwise+2;

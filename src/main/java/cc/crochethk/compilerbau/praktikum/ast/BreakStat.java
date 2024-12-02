@@ -3,13 +3,9 @@ package cc.crochethk.compilerbau.praktikum.ast;
 import cc.crochethk.compilerbau.praktikum.Visitor;
 import utils.SourcePos;
 
-public class TypeNode extends Node {
-    public String typeToken;
-    // public String packageToken;
-
-    public TypeNode(SourcePos srcPos, String typeToken) {
+public class BreakStat extends Node {
+    public BreakStat(SourcePos srcPos) {
         super(srcPos);
-        this.typeToken = typeToken;
     }
 
     @Override

@@ -4,22 +4,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
-import cc.crochethk.compilerbau.praktikum.ast.FunCall;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef;
-import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.Prog;
-import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
-import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.StatementListNode;
-import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
-import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.Var;
-import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
-import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 
 public class PrettyPrinter implements Visitor<Writer> {
@@ -38,21 +24,30 @@ public class PrettyPrinter implements Visitor<Writer> {
     public Writer visit(I64Lit i64Lit) {
         write(Long.toString(i64Lit.value));
         // TODO this could go into NumberLiteral base class
-        if (i64Lit.hasExplicitTypeSuffix)
-            write("_i64");
+        if (i64Lit.hasTypeAnnotation)
+            write(" as i64");
         return writer;
     }
 
     @Override
     public Writer visit(F64Lit f64Lit) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        write(Double.toString(f64Lit.value));
+        if (f64Lit.hasTypeAnnotation)
+            write(" as f64");
+        return writer;
     }
 
     @Override
     public Writer visit(BoolLit boolLit) {
         var lex = boolLit.value ? BoolLit.TRUE_LEX : BoolLit.FALSE_LEX;
         return write(lex);
+    }
+
+    @Override
+    public Writer visit(StringLit stringLit) {
+        write("\"");
+        write(stringLit.value);
+        return write("\"");
     }
 
     @Override
@@ -90,17 +85,19 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(UnaryOpExpr unaryOpExpr) {
+        write("(");
         var op_lex = unaryOpExpr.op.toLexeme();
-        return switch (unaryOpExpr.op.side) {
+        switch (unaryOpExpr.op.side) {
             case left -> {
                 write(op_lex);
-                yield unaryOpExpr.operand.accept(this);
+                unaryOpExpr.operand.accept(this);
             }
             case right -> {
                 unaryOpExpr.operand.accept(this);
-                yield write(op_lex);
+                write(op_lex);
             }
-        };
+        }
+        return write(")");
     }
 
     @Override
@@ -118,7 +115,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         write(varDeclareStat.varName);
         write(": ");
         varDeclareStat.declaredType.accept(this);
-        return write(";");
+        return writeSemi();
     }
 
     @Override
@@ -126,7 +123,7 @@ public class PrettyPrinter implements Visitor<Writer> {
         write(varAssignStat.targetVarName);
         write(" = ");
         varAssignStat.expr.accept(this);
-        return write(";");
+        return writeSemi();
     }
 
     @Override
@@ -151,14 +148,21 @@ public class PrettyPrinter implements Visitor<Writer> {
             indent_level--;
             write_indent();
         }
-        write("}");
-        return writer;
+        return write("}");
     }
 
     @Override
-    public Writer visit(StatementListNode statementListNode) {
-        // TODO finally remove this from interface 
-        throw new UnsupportedOperationException("statementListNode SHOULD NOT BE IN USE ANYMORE...");
+    public Writer visit(LoopStat loopStat) {
+        write("loop");
+        write(" {");
+        if (!loopStat.body.isEmpty()) {
+            indent_level++;
+            write_indent();
+            loopStat.body.accept(this);
+            indent_level--;
+            write_indent();
+        }
+        return write("}");
     }
 
     @Override
@@ -180,7 +184,13 @@ public class PrettyPrinter implements Visitor<Writer> {
             write(" ");
         }
         returnStat.expr.accept(this);
-        return write(";");
+        return writeSemi();
+    }
+
+    @Override
+    public Writer visit(BreakStat breakStat) {
+        write("break");
+        return writeSemi();
     }
 
     @Override
@@ -202,26 +212,32 @@ public class PrettyPrinter implements Visitor<Writer> {
             p.type().accept(this);
             write(", ");
         }
-        write("): ");
-        funDef.returnType.accept(this);
+        write(")");
+        if (!funDef.returnType.typeToken.equals("void")) {
+            write(" -> ");
+            funDef.returnType.accept(this);
+        }
 
         // Body
         write(" {");
-        indent_level++;
-        write_indent();
-        funDef.body.accept(this);
-        indent_level--;
-        write_indent();
+        if (!funDef.body.isEmpty()) {
+            indent_level++;
+            write_indent();
+            funDef.body.accept(this);
+            indent_level--;
+            write_indent();
+        }
         write("}");
-        write_indent();
         write_indent();
         return writer;
     }
 
     @Override
     public Writer visit(Prog prog) {
-        for (var def : prog.funDefs) {
-            def.accept(this);
+        for (int i = 0; i < prog.funDefs.size(); i++) {
+            prog.funDefs.get(i).accept(this);
+            if (i < prog.funDefs.size() - 1)
+                write_indent();
         }
         return writer;
     }
@@ -234,6 +250,10 @@ public class PrettyPrinter implements Visitor<Writer> {
     private void write_indent() {
         write("\n");
         write("  ".repeat(indent_level));
+    }
+
+    private Writer writeSemi() {
+        return write(";");
     }
 
     private Writer write(String s) {

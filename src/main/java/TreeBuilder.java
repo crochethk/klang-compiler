@@ -1,26 +1,13 @@
+import java.util.Collections;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
-import cc.crochethk.compilerbau.praktikum.ast.FunCall;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef;
-import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef.Parameter;
-import cc.crochethk.compilerbau.praktikum.ast.Node;
-import cc.crochethk.compilerbau.praktikum.ast.Prog;
-import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
-import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
-import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.Var;
-import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
-import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
+import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.FunDef.Parameter;
+import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import utils.SourcePos;
 
 public class TreeBuilder extends L1BaseListener {
@@ -29,19 +16,18 @@ public class TreeBuilder extends L1BaseListener {
         /**
          * There are two kinds of literal number expressions:
          * 1) bare ("123") and
-         * 2) annotated ("123i64" or "123_i64")
+         * 2) annotated ("123 as i64" )
          * 
          * In the former case, the literal type is inferred to a default type 
          * according to the number class (integer or floating point). Then parsing
-         * to the interal value representation is done aaccordingly with said 
+         * to the internal value representation is done accordingly with said 
          * default type.
          * 
          * The latter case allows specifying the type along the literal. This
          * allows to convey which concrete literal type is meant, which will be
          * useful as soon as there is more than one bit-width and/or distinction
          * between signed and unsigned types in a given number class.
-         * The type annotation is done by suffixing the literal with the desired
-         * type, optionally separated by an underscore.
+         * The type annotation is done by appending "as <targetType>" to the literal.
          * This gives flexibility for later type extension that otherwise would
          * lead to ambiguity (e.g. "i64" and "i32" would be indistinguishable
          * in their common number space).
@@ -52,30 +38,21 @@ public class TreeBuilder extends L1BaseListener {
 
     private NumberLiteralType inferNumberType(L1Parser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.LIT_INTEGER() != null) {
-            if (ctx.litTypeSuffix() != null) {
-                var suffix = ctx.litTypeSuffix();
-                if (suffix.T_I64() != null) {
-                    return NumberLiteralType.i64;
-                }
-                /* else if (suffix.T_I32() != null){...}  */
+        var typeAnnot = ctx.typeAnnot;
+        if (typeAnnot != null) {
+            if (typeAnnot.T_F64() != null) {
+                // converts int literals also to float
+                return NumberLiteralType.f64;
+            } else if (typeAnnot.T_I64() != null && ctx.LIT_INTEGER() != null) {
+                return NumberLiteralType.i64;
+            } else {
                 throw new IllegalLiteralTypeSuffixException(
-                        srcPos, ctx.getText(), suffix.getText());
+                        srcPos, ctx.getText(), typeAnnot.getText());
             }
-            return NumberLiteralType.i64; // default
-
+        } else if (ctx.LIT_INTEGER() != null) {
+            return NumberLiteralType.i64; // default int type
         } else if (ctx.LIT_FLOAT() != null) {
-            if (ctx.litTypeSuffix() != null) {
-                var suffix = ctx.litTypeSuffix();
-                if (suffix.T_F64() != null) {
-                    return NumberLiteralType.f64;
-                }
-                /* else if (suffix.T_F32() != null){...}  */
-                throw new IllegalLiteralTypeSuffixException(
-                        srcPos, ctx.getText(), suffix.getText());
-
-            }
-            return NumberLiteralType.f64; //default
+            return NumberLiteralType.f64; // default float type
         }
         throw new UnhandledAlternativeException(srcPos, "number", ctx.getText());
     }
@@ -86,9 +63,10 @@ public class TreeBuilder extends L1BaseListener {
 
     Node buildNumberLiteral(L1Parser.NumberContext ctx, NumberLiteralType targetType) {
         var srcPos = getSourcePos(ctx);
+        boolean hasTypeAnnot = ctx.typeAnnot != null;
         Node node = switch (targetType) {
-            case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.LIT_INTEGER().getText()));
-            case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.LIT_FLOAT().getText()));
+            case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.num.getText()), hasTypeAnnot);
+            case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.num.getText()), hasTypeAnnot);
         };
         return node;
     }
@@ -99,6 +77,14 @@ public class TreeBuilder extends L1BaseListener {
         boolean value = ctx.TRUE() != null;
         var node = new BoolLit(srcPos, value);
         ctx.result = node;
+    }
+
+    @Override
+    public void exitString(L1Parser.StringContext ctx) {
+        var ttext = ctx.LIT_STRING().getText();
+        // store text without the surrounding '"'
+        ctx.result = new StringLit(getSourcePos(ctx),
+                ttext.substring(1, ttext.length() - 1));
     }
 
     @Override
@@ -158,7 +144,7 @@ public class TreeBuilder extends L1BaseListener {
         }
 
         // comparison
-        else if (ctx.EQ() != null) {
+        else if (ctx.EQEQ() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.eq);
         } else if (ctx.NEQ() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.neq);
@@ -173,9 +159,10 @@ public class TreeBuilder extends L1BaseListener {
 
         } else if (ctx.varOrFunCall() != null) {
             ctx.result = ctx.varOrFunCall().result;
-
         } else if (ctx.ternaryElseBranch() != null) {
             ctx.result = buildTernaryConditionalNode(ctx, ctx.expr(), ctx.ternaryElseBranch());
+        } else if (ctx.string() != null) {
+            ctx.result = ctx.string().result;
         } else {
             throw new UnhandledAlternativeException(getSourcePos(ctx), "expr", ctx.getText());
         }
@@ -201,12 +188,12 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitVarDeclarationOrAssignment(L1Parser.VarDeclarationOrAssignmentContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.KW_LET() != null && ctx.ASSIGN() != null) {
+        if (ctx.KW_LET() != null && ctx.EQ() != null) {
             ctx.result = new StatementList(srcPos, List.of(
                     buildVarDeclareNode(srcPos, ctx), buildVarAssignNode(srcPos, ctx)));
         } else if (ctx.KW_LET() != null) {
             ctx.result = buildVarDeclareNode(srcPos, ctx);
-        } else if (ctx.ASSIGN() != null) {
+        } else if (ctx.EQ() != null) {
             ctx.result = buildVarAssignNode(srcPos, ctx);
         } else {
             throw new UnhandledAlternativeException(
@@ -235,6 +222,11 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
+    public void exitLoop(L1Parser.LoopContext ctx) {
+        ctx.result = new LoopStat(getSourcePos(ctx), ctx.block().result);
+    }
+
+    @Override
     public void exitBlock(L1Parser.BlockContext ctx) {
         ctx.result = ctx.statementList().result;
     }
@@ -252,6 +244,8 @@ public class TreeBuilder extends L1BaseListener {
             ctx.result = ctx.ifElse().result;
         } else if (ctx.block() != null) {
             ctx.result = ctx.block().result;
+        } else if (ctx.loop() != null) {
+            ctx.result = ctx.loop().result;
         } else {
             throw new UnhandledAlternativeException(srcPos, "blockLikeStatement", ctx.getText());
         }
@@ -269,6 +263,8 @@ public class TreeBuilder extends L1BaseListener {
                     ? ctx.expr().result
                     : new EmptyNode(srcPos);
             ctx.result = new ReturnStat(srcPos, expr);
+        } else if (ctx.KW_BREAK() != null) {
+            ctx.result = new BreakStat(srcPos);
         } else {
             throw new UnhandledAlternativeException(srcPos, "statement", ctx.getText());
         }
@@ -279,7 +275,10 @@ public class TreeBuilder extends L1BaseListener {
         var srcPos = getSourcePos(ctx);
         if (ctx.primitiveType() != null) {
             var ttext = ctx.primitiveType().getText();
-            ctx.result = new TypeNode(srcPos, ttext, true);
+            ctx.result = new TypeNode(srcPos, ttext);
+        } else if (ctx.refType() != null) {
+            var ttext = ctx.refType().getText();
+            ctx.result = new TypeNode(srcPos, ttext);
         } else {
             throw new UnhandledAlternativeException(srcPos, "type", ctx.getText());
         }
@@ -289,18 +288,27 @@ public class TreeBuilder extends L1BaseListener {
     public void exitDefinition(L1Parser.DefinitionContext ctx) {
         var srcPos = getSourcePos(ctx);
         var name = ctx.funName.getText();
-        var returnType = ctx.type().result;
+        var returnType = ctx.type() != null ? ctx.type().result : new TypeNode(srcPos, "void");
         List<Parameter> params = ctx.funParam().stream()
                 .map(p -> new Parameter(p.name.getText(), p.type().result)).toList();
-        Node body = ctx.funBody.result;
+        var body = ctx.funBody.result;
         ctx.result = new FunDef(srcPos, name, params, returnType, body);
     }
 
     @Override
     public void exitStart(L1Parser.StartContext ctx) {
         var srcPos = getSourcePos(ctx);
-        List<FunDef> defs = ctx.definition().stream().map(d -> d.result).toList();
-        ctx.result = new Prog(srcPos, defs);
+        boolean[] hasEntryPoint = { false };
+        List<FunDef> defs = ctx.definition().stream().map(d -> {
+            if (!hasEntryPoint[0] && d.result.name.equals("___main___")) {
+                hasEntryPoint[0] = true;
+            }
+            return d.result;
+        }).toList();
+        var entryPoint = hasEntryPoint[0]
+                ? new FunCall(new SourcePos(-1, -1), "___main___", Collections.emptyList())
+                : null;
+        ctx.result = new Prog(srcPos, defs, entryPoint);
     }
 
     //
