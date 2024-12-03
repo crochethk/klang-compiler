@@ -176,6 +176,7 @@ public class L1Compiler {
             } else {
                 System.out.println("Errors occured while processing compilation tasks.");
             }
+            reader.close();
         }
     }
 
