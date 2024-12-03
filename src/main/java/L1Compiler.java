@@ -38,6 +38,7 @@ public class L1Compiler {
 
     public static Result<Void> compile(Reader inputCode, String outputDir, String packageName, String className)
             throws IOException {
+        var indent = "    ";
         var compileStatus = Result.Ok;
         var ast = buildAST(inputCode);
 
@@ -53,38 +54,40 @@ public class L1Compiler {
         }
 
         // Java Byte Code generation
-        System.out.println("\n--- Java Byte Code ---");
+        System.out.println("Java Byte Code:");
         if (GENERATE_JBC) {
             var codeGenerator = new GenJBC(outputDir, packageName, className);
-            System.out.println("Generating '" + codeGenerator.outFilePath() + "'...");
+            System.out.println(indent + "Generating '" + codeGenerator.outFilePath() + "'...");
             ast.accept(codeGenerator);
 
             if (codeGenerator.exitStatus.isOk()) {
-                System.out.println("Success!");
+                System.out.println(indent + "Success!");
             } else {
-                System.out.println("Failed!");
+                System.out.println(indent + "Failed!");
             }
             compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
         } else {
-            System.out.println("No JBC generated (disabled).");
+            System.out.println(indent + "No JBC generated (disabled).");
         }
+        System.out.println();
 
         // GNU Assembly generation
-        System.out.println("\n--- GNU Assembly Code ---");
+        System.out.println("GNU Assembly Code:");
         if (GENERATE_ASM) {
             var codeGenerator = new GenAsm(outputDir, packageName, className);
-            System.out.println("Generating '" + codeGenerator.outFilePath() + "'...");
+            System.out.println(indent + "Generating '" + codeGenerator.outFilePath() + "'...");
             ast.accept(codeGenerator);
 
             if (codeGenerator.exitStatus.isOk()) {
-                System.out.println("Success!");
+                System.out.println(indent + "Success!");
             } else {
-                System.out.println("Failed!");
+                System.out.println(indent + "Failed!");
             }
             compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
         } else {
-            System.out.println("No assembly generated (disabled).");
+            System.out.println(indent + "No assembly generated (disabled).");
         }
+        System.out.println();
 
         return compileStatus;
     }
@@ -168,7 +171,7 @@ public class L1Compiler {
 
             var status = compile(reader, outputDir, packageName, className);
             if (status.isOk()) {
-                System.out.println("All compilation tasks finished successfully.");
+                System.out.println("All tasks finished successfully.");
             } else {
                 System.out.println("Errors occured while processing compilation tasks.");
             }
