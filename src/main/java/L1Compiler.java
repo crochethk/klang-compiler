@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
@@ -16,6 +17,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cc.crochethk.compilerbau.praktikum.GenAsm;
 import cc.crochethk.compilerbau.praktikum.GenJBC;
 import cc.crochethk.compilerbau.praktikum.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.TypeChecker;
@@ -33,9 +35,10 @@ public class L1Compiler {
     static boolean PRETTY_PRINT_AST = false;
     static boolean TYPECHECK = true;
     static boolean GENERATE_JBC = true;
+    static boolean GENERATE_ASM = true;
 
     public static Result<Void> compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
-        var exitStatus = Result.Ok;
+        var compileStatus = Result.Ok;
         var ast = buildAST(inputCode);
 
         // PrettyPrint
@@ -49,13 +52,43 @@ public class L1Compiler {
             ast.accept(new TypeChecker());
         }
 
-        // Code generation
+        // Java Byte Code generation
         if (GENERATE_JBC) {
+            System.out.println("\n--- Generating Java Byte Code ---");
             var codeGenerator = new GenJBC(outputDir, fullClassName);
             ast.accept(codeGenerator);
-            exitStatus = codeGenerator.exitStatus;
+
+            if (codeGenerator.exitStatus.isOk()) {
+                System.out.println("Success: generated '" + Path.of(outputDir).toString()
+                        + fullClassName + ".class'");
+            } else {
+                System.out.println("Failed: '" + fullClassName + "'");
+            }
+            compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
+        } else {
+            System.out.println("No JBC generated (disabled).");
         }
-        return exitStatus;
+
+        // GNU Assembly generation
+        if (GENERATE_ASM) {
+            System.out.println("\n--- Generating GNU Assembly Code ---");
+            Files.createDirectories(Path.of(outputDir));
+            var fileBaseName = fullClassName + ".s";
+            var fullFileName = Path.of(outputDir, fileBaseName).toString();
+            var codeGenerator = new GenAsm(fullFileName);
+            ast.accept(codeGenerator);
+
+            if (codeGenerator.exitStatus.isOk()) {
+                System.out.println("Success: generated '" + fullFileName + "'");
+            } else {
+                System.out.println("Failed: '" + fullClassName + "'");
+            }
+            compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
+        } else {
+            System.out.println("No assembly generated (disabled).");
+        }
+
+        return compileStatus;
     }
 
     /**
@@ -108,6 +141,8 @@ public class L1Compiler {
                 dotEnv.getProperty("TYPECHECK", String.valueOf(TYPECHECK)));
         GENERATE_JBC = Boolean.parseBoolean(
                 dotEnv.getProperty("GENERATE_JBC", String.valueOf(GENERATE_JBC)));
+        GENERATE_ASM = Boolean.parseBoolean(
+                dotEnv.getProperty("GENERATE_ASM", String.valueOf(GENERATE_ASM)));
 
         switch (args.length) {
             case 0 -> args = new String[] { dotEnv.getProperty("OUTDIR"), dotEnv.getProperty("SOURCEFILE") };
@@ -136,18 +171,11 @@ public class L1Compiler {
                     .toString()
                     .replace(File.separator, ".");
             var status = compile(reader, outputDir, fullClassName);
-
-            String msg;
-            if (GENERATE_JBC && status.isOk()) {
-                msg = "Success: '"
-                        + Path.of(outputDir, fpBase.toString(), fileNameNoExt).toString()
-                        + ".class'";
-            } else if (status.isErr()) {
-                msg = "Failed: '" + fp.toString() + "'";
+            if (status.isOk()) {
+                System.out.println("All compilation tasks finished successfully.");
             } else {
-                msg = "No JBC generated (disabled).";
+                System.out.println("Errors occured while processing compilation tasks.");
             }
-            System.out.println(msg);
         }
     }
 
