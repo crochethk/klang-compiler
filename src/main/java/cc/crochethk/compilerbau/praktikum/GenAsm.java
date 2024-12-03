@@ -51,7 +51,6 @@ public class GenAsm extends CodeGenVisitor<Writer> {
     @Override
     public Writer visit(I64Lit i64Lit) {
         return writeIndented("movq\t$" + i64Lit.value + ", %rax");
-        // TODO Auto-generated method stub
     }
 
     @Override
@@ -128,14 +127,13 @@ public class GenAsm extends CodeGenVisitor<Writer> {
 
     @Override
     public Writer visit(StatementList statementList) {
-        // TODO Auto-generated method stub
-        return null;
+        statementList.statements.forEach(s -> s.accept(this));
+        return writer;
     }
 
     @Override
     public Writer visit(ReturnStat returnStat) {
-        // TODO Auto-generated method stub
-        return null;
+        return returnStat.expr.accept(this);
     }
 
     @Override
@@ -160,6 +158,9 @@ public class GenAsm extends CodeGenVisitor<Writer> {
         writeIndented("pushq\t%rbp");
         // set callee's context
         writeIndented("movq\t%rsp, %rbp");
+
+        // Generate body instructions
+        funDef.body.accept(this);
 
         // Restore caller's context:
         // -> Copy %rbp to %rsp and then replace %rbp with the stored value
@@ -186,8 +187,7 @@ public class GenAsm extends CodeGenVisitor<Writer> {
 
     @Override
     public Writer visit(EmptyNode emptyNode) {
-        // TODO Auto-generated method stub
-        return null;
+        return writer;
     }
 
 }

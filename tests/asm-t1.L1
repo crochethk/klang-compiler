@@ -1,2 +1,7 @@
 /* Empty function */
-fn f() {}
+fn f1() {}
+
+/* Return integer */
+fn f42() -> i64 {
+    return 42 as i64;
+}
