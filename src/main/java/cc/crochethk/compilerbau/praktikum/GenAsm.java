@@ -3,20 +3,48 @@ package cc.crochethk.compilerbau.praktikum;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 import utils.Result;
 
 public class GenAsm implements Visitor<Writer> {
+    private static final String FILE_EXT = ".s";
+    /**
+     * The status after code generation finished.
+     * For this field to have any meaning GenAsm must start with a Prog Node.
+     */
     public Result<Void> exitStatus = null;
+
+    private String outDir;
+    private String packageName;
+    private String className;
+
+    /**
+     * Returns the path of the generated file. Note that this does _not_ imply
+     * whether the file actually exists or the compilation succeeded.
+     */
+    public String outFilePath() {
+        return Path.of(outDir, packageName + "." + className + FILE_EXT).toString();
+    }
+
     Writer writer;
 
     /** Function argument registers (x86_64, Linux System V ABI) */
     String[] rs = { "%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9" };
 
-    public GenAsm(String outputFileName) throws IOException {
-        this.writer = new FileWriter(outputFileName);
+    public GenAsm(String outputDir, String packageName, String className) throws IOException {
+        this.outDir = outputDir;
+        this.packageName = packageName;
+        this.className = className;
+
+        var filePath = outFilePath();
+        var parentDir = Path.of(filePath).getParent();
+        parentDir = parentDir != null ? parentDir : Path.of("");
+        Files.createDirectories(parentDir);
+        this.writer = new FileWriter(filePath);
     }
 
     private Writer writeIndented(String s) {
@@ -167,7 +195,6 @@ public class GenAsm implements Visitor<Writer> {
             System.err.println(e);
             exitStatus = Result.Err;
         }
-
         return writer;
     }
 

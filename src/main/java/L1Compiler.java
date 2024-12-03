@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
@@ -37,7 +36,8 @@ public class L1Compiler {
     static boolean GENERATE_JBC = true;
     static boolean GENERATE_ASM = true;
 
-    public static Result<Void> compile(Reader inputCode, String outputDir, String fullClassName) throws IOException {
+    public static Result<Void> compile(Reader inputCode, String outputDir, String packageName, String className)
+            throws IOException {
         var compileStatus = Result.Ok;
         var ast = buildAST(inputCode);
 
@@ -53,16 +53,16 @@ public class L1Compiler {
         }
 
         // Java Byte Code generation
+        System.out.println("\n--- Java Byte Code ---");
         if (GENERATE_JBC) {
-            System.out.println("\n--- Generating Java Byte Code ---");
-            var codeGenerator = new GenJBC(outputDir, fullClassName);
+            var codeGenerator = new GenJBC(outputDir, packageName, className);
+            System.out.println("Generating '" + codeGenerator.outFilePath() + "'...");
             ast.accept(codeGenerator);
 
             if (codeGenerator.exitStatus.isOk()) {
-                System.out.println("Success: generated '" + Path.of(outputDir).toString()
-                        + fullClassName + ".class'");
+                System.out.println("Success!");
             } else {
-                System.out.println("Failed: '" + fullClassName + "'");
+                System.out.println("Failed!");
             }
             compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
         } else {
@@ -70,18 +70,16 @@ public class L1Compiler {
         }
 
         // GNU Assembly generation
+        System.out.println("\n--- GNU Assembly Code ---");
         if (GENERATE_ASM) {
-            System.out.println("\n--- Generating GNU Assembly Code ---");
-            Files.createDirectories(Path.of(outputDir));
-            var fileBaseName = fullClassName + ".s";
-            var fullFileName = Path.of(outputDir, fileBaseName).toString();
-            var codeGenerator = new GenAsm(fullFileName);
+            var codeGenerator = new GenAsm(outputDir, packageName, className);
+            System.out.println("Generating '" + codeGenerator.outFilePath() + "'...");
             ast.accept(codeGenerator);
 
             if (codeGenerator.exitStatus.isOk()) {
-                System.out.println("Success: generated '" + fullFileName + "'");
+                System.out.println("Success!");
             } else {
-                System.out.println("Failed: '" + fullClassName + "'");
+                System.out.println("Failed!");
             }
             compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
         } else {
@@ -116,9 +114,8 @@ public class L1Compiler {
     }
 
     /**
-     * - we assume, the invoker is in the project root folder.
-     *      - so fullClassName is inferred from the file's path
-     *          (which therefore should be relative)
+     * - we assume, the invoker is in the source root folder.
+     *      - so fullClassName is inferred from the file's relative path
      * 
      * - either args must be specified as follows 
      *      or a L1Compiler.env must exist containing values for at least
@@ -160,17 +157,16 @@ public class L1Compiler {
             var file = fp.toFile();
             var reader = new FileReader(file);
 
-            var fileNameNoExt = fp.getFileName().toString();
-            var extIdx = fileNameNoExt.lastIndexOf('.');
-            fileNameNoExt = fileNameNoExt.substring(0, extIdx > 0 ? extIdx : 0);
             var fpBase = fp.getParent();
             fpBase = fpBase != null ? fpBase : Path.of("");
+            var packageName = fpBase.toString().replace(File.separator, ".");
 
-            String fullClassName = fpBase
-                    .resolve(fileNameNoExt)
-                    .toString()
-                    .replace(File.separator, ".");
-            var status = compile(reader, outputDir, fullClassName);
+            var fileName = fp.getFileName().toString();
+            var extIdx = fileName.lastIndexOf('.');
+            // remove file extension
+            var className = fileName.substring(0, extIdx > 0 ? extIdx : 0);
+
+            var status = compile(reader, outputDir, packageName, className);
             if (status.isOk()) {
                 System.out.println("All compilation tasks finished successfully.");
             } else {
