@@ -31,18 +31,10 @@ import utils.Result;
  * qualified name and then written into a '.class' file, ready to be executed
  * by the JVM.
  */
-public class GenJBC implements Visitor<Void> {
+public class GenJBC extends CodeGenVisitor<Void> {
     private static final String FILE_EXT = ".class";
-    public Result<Void> exitStatus = null;
 
-    private String outDir;
-    private String packageName;
-    private String className;
-
-    /**
-    * Returns the path of the generated file. Note that this does _not_ imply
-    * whether the file actually exists or the compilation succeeded.
-    */
+    @Override
     public String outFilePath() {
         return Path.of(
                 outDir, packageName.replace('.', '/'), className).toString() + FILE_EXT;
@@ -59,16 +51,8 @@ public class GenJBC implements Visitor<Void> {
      */
     private VariableSlotManager varsManager = new VariableSlotManager();
 
-    /**
-     * @param outputDir The path to the directory generated files will be written to.
-     * @param packageName The package the generated class should be member of,
-     *      for example {@code com.example}. Might be the empty String.
-     * @param className The name of the generated class, for example '{@code MyClass}'.
-     */
     public GenJBC(String outputDir, String packageName, String className) {
-        this.outDir = outputDir;
-        this.packageName = packageName;
-        this.className = className;
+        super(outputDir, packageName, className);
     }
 
     @Override

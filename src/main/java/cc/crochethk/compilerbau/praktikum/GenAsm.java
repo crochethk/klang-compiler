@@ -10,22 +10,10 @@ import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 import utils.Result;
 
-public class GenAsm implements Visitor<Writer> {
+public class GenAsm extends CodeGenVisitor<Writer> {
     private static final String FILE_EXT = ".s";
-    /**
-     * The status after code generation finished.
-     * For this field to have any meaning GenAsm must start with a Prog Node.
-     */
-    public Result<Void> exitStatus = null;
 
-    private String outDir;
-    private String packageName;
-    private String className;
-
-    /**
-     * Returns the path of the generated file. Note that this does _not_ imply
-     * whether the file actually exists or the compilation succeeded.
-     */
+    @Override
     public String outFilePath() {
         return Path.of(outDir, packageName + "." + className + FILE_EXT).toString();
     }
@@ -36,9 +24,7 @@ public class GenAsm implements Visitor<Writer> {
     String[] rs = { "%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9" };
 
     public GenAsm(String outputDir, String packageName, String className) throws IOException {
-        this.outDir = outputDir;
-        this.packageName = packageName;
-        this.className = className;
+        super(outputDir, packageName, className);
 
         var filePath = outFilePath();
         var parentDir = Path.of(filePath).getParent();
