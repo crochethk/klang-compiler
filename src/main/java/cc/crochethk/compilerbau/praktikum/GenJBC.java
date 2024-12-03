@@ -428,6 +428,7 @@ public class GenJBC implements Visitor<Void> {
 
     @Override
     public Void visit(Prog prog) {
+        exitStatus = Result.Ok;
         var classDesc = ClassDesc.of(packageName, className);
         var bytes = ClassFile.of().build(classDesc, cb -> {
             this.classBuilder = cb;
@@ -451,7 +452,6 @@ public class GenJBC implements Visitor<Void> {
             exitStatus = Result.Err;
         }
 
-        exitStatus = Result.Ok;
         return null;
     }
 
