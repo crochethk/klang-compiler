@@ -42,7 +42,7 @@
             "mike-lischke.vscode-antlr4",
             "vscjava.vscode-java-pack",
             "aaron-bond.better-comments",
-            "madhavd1.javadoc-tools"
+            "mikestead.dotenv"
         ]
     },
 }
