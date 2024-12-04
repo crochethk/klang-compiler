@@ -68,8 +68,23 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
     @Override
     public AsmCodeWriter visit(FunCall funCall) {
-        // TODO Auto-generated method stub
-        return null;
+        var regArgsCount = Math.min(funCall.args.size(), regs.length);
+        var stackArgsOffset = Math.max(funCall.args.size() - regs.length, 0) * 8;
+        for (int i = regArgsCount; i < funCall.args.size(); i++) {
+            funCall.args.get(i).accept(this);
+            acw.pushq(rax);
+        }
+
+        for (int i = 0; i < regArgsCount; i++) {
+            funCall.args.get(i).accept(this);
+            acw.movq(rax, regs[i]);
+        }
+        acw.call(funCall.name);
+        //release stack args if necessary
+        if (stackArgsOffset > 0) {
+            acw.addq("$" + stackArgsOffset, rsp);
+        }
+        return acw;
     }
 
     @Override
@@ -79,7 +94,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         binOpExpr.lhs.accept(this);
         acw.movq(rax, rdx);
         binOpExpr.rhs.accept(this);
-        return acw.writeIndented("addq", "\t", rdx, ", ", rax);
+        return acw.addq(rdx, rax);
     }
 
     @Override
@@ -131,8 +146,8 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         // Restore caller's context:
         // -> Copy %rbp to %rsp and then replace %rbp with the stored value
         // -> Can be reduced to "popq" part in certain cases.
-        acw.writeIndented("leave");
-        return acw.writeIndented("ret");
+        acw.leave();
+        return acw.ret();
     }
 
     @Override
@@ -164,11 +179,11 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
         /* Prologue */
         // Backup caller's and set callee's context
-        acw.writeIndented("pushq", "\t", rbp);
+        acw.pushq(rbp);
         acw.movq(rsp, rbp);
-        var regParamsCount = Math.min(funDef.params.size(), regs.length);
+        var regArgsCount = Math.min(funDef.params.size(), regs.length);
         var baseoffset = 0;
-        for (int i = 0; i < regParamsCount; i++) {
+        for (int i = 0; i < regArgsCount; i++) {
             baseoffset -= 8;
             ctx.put(funDef.params.get(i).name(), baseoffset);
             acw.movq(regs[i], baseoffset + "(" + rbp + ")");
@@ -176,7 +191,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
         // when >6 params: get offsets of caller-saved params
         baseoffset = 16; //skip rbp backup and return addr
-        for (int i = regParamsCount; i < funDef.params.size(); i++) {
+        for (int i = regArgsCount; i < funDef.params.size(); i++) {
             ctx.put(funDef.params.get(i).name(), baseoffset);
             baseoffset += 8;
         }
@@ -189,8 +204,8 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         if (funDef.body.isEmpty()
                 || (!funDef.body.statements.getLast().returnsControlFlow()
                         && funDef.returnType.theType.equals(Type.VOID_T))) {
-            acw.writeIndented("leave");
-            acw.writeIndented("ret");
+            acw.leave();
+            acw.ret();
         }
 
         ctx = oldCtx;
@@ -204,7 +219,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         prog.funDefs.forEach(f -> f.accept(this));
         acw.writeIndented(".section\t.note.GNU-stack,\"\",@progbits", "\n");
         try {
-            acw.close();
+            acw.closeWriter();
         } catch (IOException e) {
             System.err.println(e);
             exitStatus = Result.Err;
@@ -226,6 +241,26 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
         AsmCodeWriter movq(Object source, Object target) {
             return writeIndented("movq", "\t", source.toString(), ", ", target.toString());
+        }
+
+        AsmCodeWriter pushq(Object source) {
+            return writeIndented("pushq", "\t", source.toString());
+        }
+
+        AsmCodeWriter call(Object name) {
+            return writeIndented("call", "\t", name.toString());
+        }
+
+        AsmCodeWriter addq(Object lhs, Object rhs) {
+            return writeIndented("addq", "\t", lhs.toString(), ", ", rhs.toString());
+        }
+
+        AsmCodeWriter leave() {
+            return writeIndented("leave");
+        }
+
+        AsmCodeWriter ret() {
+            return writeIndented("ret");
         }
 
         /** Write multiple strings into new indented line */
@@ -257,7 +292,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             return this;
         }
 
-        void close() throws IOException {
+        void closeWriter() throws IOException {
             writer.close();
         }
     }
