@@ -5,3 +5,8 @@ fn f1() {}
 fn f42() -> i64 {
     return 42 as i64;
 }
+
+/* More than 6 params */
+fn soManyParams(x1:i64, x2:i64, x3:i64, x4:i64, x5:i64, x6:i64, x7:i64) -> i64 {
+    return x1+x2+x3+x4+x5+x6+x7;
+}

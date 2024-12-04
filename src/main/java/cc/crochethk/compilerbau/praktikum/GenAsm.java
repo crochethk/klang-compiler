@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
@@ -33,9 +35,23 @@ public class GenAsm extends CodeGenVisitor<Writer> {
         this.writer = new FileWriter(filePath);
     }
 
-    private Writer writeIndented(String s) {
+    /** Write multiple strings into new indented line */
+    private Writer writeIndented(String... ss) {
         write("\n\t");
-        return write(s);
+        for (var s : ss)
+            write(s);
+        return writer;
+    }
+
+    /** Write the string into new indented line */
+    private Writer writeIndented(String s) {
+        return write("\n\t", s);
+    }
+
+    private Writer write(String... ss) {
+        for (var s : ss)
+            write(s);
+        return writer;
     }
 
     private Writer write(String s) {
@@ -50,7 +66,7 @@ public class GenAsm extends CodeGenVisitor<Writer> {
 
     @Override
     public Writer visit(I64Lit i64Lit) {
-        return writeIndented("movq\t$" + i64Lit.value + ", %rax");
+        return writeIndented("movq", "\t", "$" + i64Lit.value, ", ", "%rax");
     }
 
     @Override
@@ -73,8 +89,8 @@ public class GenAsm extends CodeGenVisitor<Writer> {
 
     @Override
     public Writer visit(Var var) {
-        // TODO Auto-generated method stub
-        return null;
+        return writeIndented(
+                "movq", "\t", ctx.get(var.name).toString() + "(%rbp)", ", ", "%rax");
     }
 
     @Override
@@ -85,8 +101,12 @@ public class GenAsm extends CodeGenVisitor<Writer> {
 
     @Override
     public Writer visit(BinOpExpr binOpExpr) {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO use actual operators
+        // TODO hardcoded ADD for now!
+        binOpExpr.lhs.accept(this);
+        writeIndented("movq", "\t", "%rax", ", ", "%rdx");
+        binOpExpr.rhs.accept(this);
+        return writeIndented("addq", "\t", "%rdx", ", ", "%rax");
     }
 
     @Override
@@ -133,7 +153,13 @@ public class GenAsm extends CodeGenVisitor<Writer> {
 
     @Override
     public Writer visit(ReturnStat returnStat) {
-        return returnStat.expr.accept(this);
+        returnStat.expr.accept(this);
+        /* Epilogue */
+        // Restore caller's context:
+        // -> Copy %rbp to %rsp and then replace %rbp with the stored value
+        // -> Can be reduced to "popq" part in certain cases.
+        writeIndented("leave");
+        return writeIndented("ret");
     }
 
     @Override
@@ -148,25 +174,53 @@ public class GenAsm extends CodeGenVisitor<Writer> {
         return null;
     }
 
+    /**
+     * Serves as lookup for basepointer offsets of variables stored on the stack
+     * in the current context.
+     */
+    Map<String, Integer> ctx = null;
+
     @Override
     public Writer visit(FunDef funDef) {
-        writeIndented(".globl\t" + funDef.name);
-        writeIndented(".type\t" + funDef.name + ", @function");
-        write("\n" + funDef.name + ":");
+        var oldCtx = ctx;
+        ctx = new HashMap<>();
 
-        // Store caller's context
-        writeIndented("pushq\t%rbp");
-        // set callee's context
-        writeIndented("movq\t%rsp, %rbp");
+        writeIndented(".globl\t", funDef.name);
+        writeIndented(".type\t", funDef.name, ", @function");
+        write("\n", funDef.name, ":");
+
+        /* Prologue */
+        // Backup caller's and set callee's context
+        writeIndented("pushq", "\t", "%rbp");
+        writeIndented("movq", "\t", "%rsp, %rbp");
+        var regParamsCount = Math.min(funDef.params.size(), rs.length);
+        var baseoffset = 0;
+        for (int i = 0; i < regParamsCount; i++) {
+            baseoffset -= 8;
+            ctx.put(funDef.params.get(i).name(), baseoffset);
+            writeIndented("movq", "\t", rs[i], ", ", baseoffset + "(%rbp)");
+        }
+
+        // when >6 params: get offsets of caller-saved params
+        baseoffset = 16; //skip rbp backup and return addr
+        for (int i = regParamsCount; i < funDef.params.size(); i++) {
+            ctx.put(funDef.params.get(i).name(), baseoffset);
+            baseoffset += 8;
+        }
 
         // Generate body instructions
         funDef.body.accept(this);
 
-        // Restore caller's context:
-        // -> Copy %rbp to %rsp and then replace %rbp with the stored value
-        // -> Can be reduced to "popq" part in certain cases.
-        writeIndented("leave");
-        return writeIndented("ret");
+        // Append epilogue in case of implicit return
+        if (funDef.body.isEmpty()
+                || (!funDef.body.statements.getLast().returnsControlFlow()
+                        && funDef.returnType.theType.equals(Type.VOID_T))) {
+            writeIndented("leave");
+            writeIndented("ret");
+        }
+
+        ctx = oldCtx;
+        return writer;
     }
 
     @Override
