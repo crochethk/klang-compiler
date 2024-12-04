@@ -19,6 +19,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
     private static final String FILE_EXT = ".s";
 
     AsmCodeWriter acw;
+    StackManager stack = null;
 
     /** Function argument registers */
     private final Register[] regs = { rdi, rsi, rdx, rcx, r8, r9 };
@@ -63,7 +64,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
     @Override
     public AsmCodeWriter visit(Var var) {
-        return acw.movq(ctx.get(var.name).toString() + "(" + rbp + ")", rax);
+        return acw.movq(stack.get(var.name), rax);
     }
 
     @Override
@@ -162,16 +163,10 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         return null;
     }
 
-    /**
-     * Serves as lookup for basepointer offsets of variables stored on the stack
-     * in the current context.
-     */
-    Map<String, Integer> ctx = null;
-
     @Override
     public AsmCodeWriter visit(FunDef funDef) {
-        var oldCtx = ctx;
-        ctx = new HashMap<>();
+        var oldCtx = stack;
+        stack = new StackManager(acw);
 
         acw.writeIndented(".globl\t", funDef.name);
         acw.writeIndented(".type\t", funDef.name, ", @function");
@@ -181,61 +176,30 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         // Backup caller's and set callee's context
         acw.pushq(rbp);
         acw.movq(rsp, rbp);
+
+        // Adjust %rsp as necessary
         var regArgsCount = Math.min(funDef.params.size(), regs.length);
+        stack.alloc(regArgsCount * 8); // Convention: 8 byte per fun arg
 
-        /**
-         * TODO:
-         * var stackSize = regArgsCount * 8;
-         * 
-         * foreach s in bodyStatementList:
-         *      if s instanceof VarDeclareStat:
-         *          stackSize += s.type.theType.byteSize
-         * 
-         * stackSize = ctx.align16(stackSize) // -> pad as necessary for 16Byte alignment
-         * if stackSize > 0:
-         *      acw.subq(stackSize, rsp)
-        */
+        for (var stat : funDef.body.statements) {
+            if (stat instanceof VarDeclareStat decl) {
+                stack.alloc(decl.theType.byteSize());
+            }
+        }
+        stack.alignRspToStackSize();
 
-        var baseoffset = 0;
+        // Store register args on stack
         for (int i = 0; i < regArgsCount; i++) {
-            baseoffset -= 8;
-            ctx.put(funDef.params.get(i).name(), baseoffset);
-            acw.movq(regs[i], baseoffset + "(" + rbp + ")");
+            var arg = funDef.params.get(i);
+            // Convention: 8 byte per fun arg
+            stack.store(arg.name(), 8, regs[i].toString());
         }
 
-        /*
-         * StackManager 
-         *      -> manages local stack frame and generates code accordingly
-         *      -> replacement for the "raw" Map<String, Integer>
-         *  - currentBpOffset: int
-         *  - stackSize: int
-         *  - varOffsets: Map<str, int>
-         *
-         *  + applyOffsetToRsp(): void
-         *      -> decrements %rsp by currentBpOffset (such that is points to stack "bottom")
-         *      -> no need to reset rsp again, since it is done in function epilogue
-         * 
-         *  - getAlignedSize(): int 
-         *      -> returns currentBpOffset aligned to 16 Bytes
-         *      -> useful for modifying "%rsp" such that it is properly prepared for "call" instructions
-         * 
-         *  + alloc(varType: Type): void 
-         *      -> increments stackSize by varType.byteSize
-         * 
-         *  + store(varName: str, varType: Type, srcMem: str): void
-         *      -> write the value of srcMem (register, literal, ...) to stack
-         *           and save the bpOffset for later lookup
-         * 
-         *  + read(varName: str): void
-         *      -> lookup offset of var with varName and write the pointedto value to rax
-         * 
-         */
-
-        // when >6 params: get offsets of caller-saved params
-        baseoffset = 16; //skip rbp backup and return addr
+        // Get offsets for caller-saved args (when >6 params)
+        var baseOffset = 16; //skip rbp backup and return addr
         for (int i = regArgsCount; i < funDef.params.size(); i++) {
-            ctx.put(funDef.params.get(i).name(), baseoffset);
-            baseoffset += 8;
+            stack.put(funDef.params.get(i).name(), baseOffset);
+            baseOffset += 8;
         }
 
         /* Actual work */
@@ -250,7 +214,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             acw.ret();
         }
 
-        ctx = oldCtx;
+        stack = oldCtx;
         return acw;
     }
 
@@ -274,6 +238,83 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         return acw;
     }
 
+    class StackManager {
+        private AsmCodeWriter acw;
+
+        /**
+         * Lookup for basepointer offsets of variables stored on stack in the current context.
+         */
+        private Map<String, Integer> ctx;
+
+        /** Current basepointer (%rbp) offset. It's the most recently stored element's offset. */
+        private int baseOffset = 0;
+
+        /** Unaligned byte size reserved in the current stack frame (e.g. by local vars). */
+        private int allocSize = 0;
+
+        public StackManager(AsmCodeWriter asmCodeWriter) {
+            this.acw = asmCodeWriter;
+            this.ctx = new HashMap<>();
+        }
+
+        /**
+         * Decrements %rsp such that it is offset by the 16-byte-aligned stacksize that
+         * was reserved using "alloc" method until this point.
+         */
+        public void alignRspToStackSize() {
+            var size = getAlignedSize();
+            if (size > 0)
+                acw.subq("$" + size, rsp);
+        }
+
+        /** Returns allocSize aligned such that it's multiple of 16 Bytes. */
+        private int getAlignedSize() {
+            return (allocSize + 0xF) & ~0xF;
+        }
+
+        /**
+         * Increases the number of bytes the manager will use to determine the 
+         * %rsp address for the current stack frame.
+         * This operation does not actually allocate resources. Rather its purpose
+         * is to help computing the required stack size in the prologue of the current
+         * function (i.e. before actually changing %rsp or storing elements on stack),
+         * such that %rsp can be set accordingly in advance for potential "call" instructions
+         * (without repeatedly doing "subq/addq").
+         */
+        public void alloc(int bytes) {
+            allocSize += bytes;
+        }
+
+        /**
+         * Writes the value of given size from source to stack and stores it using
+         * varName for later lookup.
+         * @param name The value's name for later referencing.
+         * @param size How many bytes the value should occupy.
+         * @param source The value's location (register, memoryaddress, constant)
+         */
+        public void store(String name, int size, String source) {
+            baseOffset -= size;
+            ctx.put(name, baseOffset);
+            acw.movq(source, baseOffset + "(" + rbp + ")");
+        }
+
+        /**
+         * Adds stack element reference to this manager. The element's location
+         * can later be retrieved using the "get" method.
+         * @param name The name for later lookup.
+         * @param baseOffset The offset relative to &rbp.
+         * @see #get(String)
+        */
+        public void put(String name, int baseOffset) {
+            ctx.put(name, baseOffset);
+        }
+
+        /** Returns the ready to use memory location of the element referenced by varName. */
+        public String get(String varName) {
+            return ctx.get(varName) + "(" + rbp + ")";
+        }
+    }
+
     class AsmCodeWriter {
         private Writer writer;
 
@@ -281,8 +322,8 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             this.writer = writer;
         }
 
-        AsmCodeWriter movq(Object source, Object target) {
-            return writeIndented("movq", "\t", source.toString(), ", ", target.toString());
+        AsmCodeWriter movq(Object source, Object destination) {
+            return writeIndented("movq", "\t", source.toString(), ", ", destination.toString());
         }
 
         AsmCodeWriter pushq(Object source) {
@@ -295,6 +336,10 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
         AsmCodeWriter addq(Object lhs, Object rhs) {
             return writeIndented("addq", "\t", lhs.toString(), ", ", rhs.toString());
+        }
+
+        AsmCodeWriter subq(Object lhs, Object rhs) {
+            return writeIndented("subq", "\t", lhs.toString(), ", ", rhs.toString());
         }
 
         AsmCodeWriter leave() {
