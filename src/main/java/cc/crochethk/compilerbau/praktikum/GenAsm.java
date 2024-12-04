@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum;
 
+import static cc.crochethk.compilerbau.praktikum.Register.*;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -22,8 +24,8 @@ public class GenAsm extends CodeGenVisitor<Writer> {
 
     Writer writer;
 
-    /** Function argument registers (x86_64, Linux System V ABI) */
-    String[] rs = { "%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9" };
+    /** Function argument registers */
+    private final Register[] regs = { rdi, rsi, rdx, rcx, r8, r9 };
 
     public GenAsm(String outputDir, String packageName, String className) throws IOException {
         super(outputDir, packageName, className);
@@ -36,7 +38,7 @@ public class GenAsm extends CodeGenVisitor<Writer> {
     }
 
     /** Write multiple strings into new indented line */
-    private Writer writeIndented(String... ss) {
+    private Writer writeIndented(Object... ss) {
         write("\n\t");
         for (var s : ss)
             write(s);
@@ -44,19 +46,19 @@ public class GenAsm extends CodeGenVisitor<Writer> {
     }
 
     /** Write the string into new indented line */
-    private Writer writeIndented(String s) {
+    private Writer writeIndented(Object s) {
         return write("\n\t", s);
     }
 
-    private Writer write(String... ss) {
+    private Writer write(Object... ss) {
         for (var s : ss)
-            write(s);
+            write(s.toString());
         return writer;
     }
 
-    private Writer write(String s) {
+    private Writer write(Object s) {
         try {
-            writer.write(s);
+            writer.write(s.toString());
         } catch (IOException e) {
             exitStatus = Result.Err;
             throw new RuntimeException(e);
@@ -66,7 +68,7 @@ public class GenAsm extends CodeGenVisitor<Writer> {
 
     @Override
     public Writer visit(I64Lit i64Lit) {
-        return writeIndented("movq", "\t", "$" + i64Lit.value, ", ", "%rax");
+        return writeIndented("movq", "\t", "$" + i64Lit.value, ", ", rax);
     }
 
     @Override
@@ -90,7 +92,7 @@ public class GenAsm extends CodeGenVisitor<Writer> {
     @Override
     public Writer visit(Var var) {
         return writeIndented(
-                "movq", "\t", ctx.get(var.name).toString() + "(%rbp)", ", ", "%rax");
+                "movq", "\t", ctx.get(var.name).toString() + "(" + rbp + "), ", rax);
     }
 
     @Override
@@ -104,9 +106,9 @@ public class GenAsm extends CodeGenVisitor<Writer> {
         // TODO use actual operators
         // TODO hardcoded ADD for now!
         binOpExpr.lhs.accept(this);
-        writeIndented("movq", "\t", "%rax", ", ", "%rdx");
+        writeIndented("movq", "\t", rax, ", ", rdx);
         binOpExpr.rhs.accept(this);
-        return writeIndented("addq", "\t", "%rdx", ", ", "%rax");
+        return writeIndented("addq", "\t", rdx, ", ", rax);
     }
 
     @Override
@@ -191,14 +193,15 @@ public class GenAsm extends CodeGenVisitor<Writer> {
 
         /* Prologue */
         // Backup caller's and set callee's context
-        writeIndented("pushq", "\t", "%rbp");
-        writeIndented("movq", "\t", "%rsp, %rbp");
-        var regParamsCount = Math.min(funDef.params.size(), rs.length);
+        writeIndented("pushq", "\t", rbp);
+        writeIndented("movq", "\t", rsp + ", " + rbp);
+
+        var regParamsCount = Math.min(funDef.params.size(), regs.length);
         var baseoffset = 0;
         for (int i = 0; i < regParamsCount; i++) {
             baseoffset -= 8;
             ctx.put(funDef.params.get(i).name(), baseoffset);
-            writeIndented("movq", "\t", rs[i], ", ", baseoffset + "(%rbp)");
+            writeIndented("movq", "\t", regs[i], ", ", baseoffset + "(" + rbp + ")");
         }
 
         // when >6 params: get offsets of caller-saved params
@@ -208,6 +211,7 @@ public class GenAsm extends CodeGenVisitor<Writer> {
             baseoffset += 8;
         }
 
+        /* Actual work */
         // Generate body instructions
         funDef.body.accept(this);
 
@@ -243,5 +247,4 @@ public class GenAsm extends CodeGenVisitor<Writer> {
     public Writer visit(EmptyNode emptyNode) {
         return writer;
     }
-
 }
