@@ -182,12 +182,54 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         acw.pushq(rbp);
         acw.movq(rsp, rbp);
         var regArgsCount = Math.min(funDef.params.size(), regs.length);
+
+        /**
+         * TODO:
+         * var stackSize = regArgsCount * 8;
+         * 
+         * foreach s in bodyStatementList:
+         *      if s instanceof VarDeclareStat:
+         *          stackSize += s.type.theType.byteSize
+         * 
+         * stackSize = ctx.align16(stackSize) // -> pad as necessary for 16Byte alignment
+         * if stackSize > 0:
+         *      acw.subq(stackSize, rsp)
+        */
+
         var baseoffset = 0;
         for (int i = 0; i < regArgsCount; i++) {
             baseoffset -= 8;
             ctx.put(funDef.params.get(i).name(), baseoffset);
             acw.movq(regs[i], baseoffset + "(" + rbp + ")");
         }
+
+        /*
+         * StackManager 
+         *      -> manages local stack frame and generates code accordingly
+         *      -> replacement for the "raw" Map<String, Integer>
+         *  - currentBpOffset: int
+         *  - stackSize: int
+         *  - varOffsets: Map<str, int>
+         *
+         *  + applyOffsetToRsp(): void
+         *      -> decrements %rsp by currentBpOffset (such that is points to stack "bottom")
+         *      -> no need to reset rsp again, since it is done in function epilogue
+         * 
+         *  - getAlignedSize(): int 
+         *      -> returns currentBpOffset aligned to 16 Bytes
+         *      -> useful for modifying "%rsp" such that it is properly prepared for "call" instructions
+         * 
+         *  + alloc(varType: Type): void 
+         *      -> increments stackSize by varType.byteSize
+         * 
+         *  + store(varName: str, varType: Type, srcMem: str): void
+         *      -> write the value of srcMem (register, literal, ...) to stack
+         *           and save the bpOffset for later lookup
+         * 
+         *  + read(varName: str): void
+         *      -> lookup offset of var with varName and write the pointedto value to rax
+         * 
+         */
 
         // when >6 params: get offsets of caller-saved params
         baseoffset = 16; //skip rbp backup and return addr

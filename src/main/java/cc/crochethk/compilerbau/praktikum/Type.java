@@ -41,11 +41,8 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         return this.equals(LONG_T) || this.equals(DOUBLE_T);
     }
 
-    Type STRING_T = new RefType("String", "java.lang");
-    Type LONG_T = new PrimType(TypeKind.LongType);
-    Type BOOL_T = new PrimType(TypeKind.BooleanType);
-    Type DOUBLE_T = new PrimType(TypeKind.DoubleType);
-    Type VOID_T = new PrimType(TypeKind.VoidType);
+    // TODO add "byteSize" field and set it in Type constructors. pass matching hardcoded sizes for the Type constants below
+
 
     /**
      * Not a real jvm type. Just placeholder to avoid null, where the type
