@@ -112,13 +112,14 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
     @Override
     public AsmCodeWriter visit(VarDeclareStat varDeclareStat) {
-        // TODO Auto-generated method stub
-        return null;
+        stack.store(varDeclareStat.varName, varDeclareStat.theType.byteSize());
+        return acw;
     }
 
     @Override
     public AsmCodeWriter visit(VarAssignStat varAssignStat) {
-        // TODO Auto-generated method stub
+        varAssignStat.expr.accept(this);
+        acw.movq(rax, stack.get(varAssignStat.targetVarName));
         return null;
     }
 
@@ -295,7 +296,16 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         public void store(String name, int size, String source) {
             baseOffset -= size;
             ctx.put(name, baseOffset);
-            acw.movq(source, baseOffset + "(" + rbp + ")");
+            acw.movq(source, this.get(name));
+        }
+
+        /**
+         * Stores an uninitialized element.
+         * @see #store(String, int, String)
+         */
+        public void store(String name, int size) {
+            baseOffset -= size;
+            ctx.put(name, baseOffset);
         }
 
         /**
