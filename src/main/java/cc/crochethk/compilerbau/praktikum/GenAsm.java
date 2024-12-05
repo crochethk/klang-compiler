@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
+import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 import cc.crochethk.compilerbau.praktikum.GenAsm.AsmCodeWriter;
 import utils.Result;
@@ -90,12 +91,80 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
     @Override
     public AsmCodeWriter visit(BinOpExpr binOpExpr) {
-        // TODO use actual operators
-        // TODO hardcoded ADD for now!
         binOpExpr.lhs.accept(this);
         acw.movq(rax, rdx);
         binOpExpr.rhs.accept(this);
-        return acw.addq(rdx, rax);
+        // now operands in rdx (lhs), rax (rhs)
+
+        genOpInstruction(acw, binOpExpr.lhs.theType, binOpExpr.op);
+        return acw;
+    }
+
+    /**
+     * Generates instruction(s) for the  given operand type and operation.
+     * Integer operands are expected in registers: lhs -> %rax, rhs -> %rdx
+     */
+    private void genOpInstruction(AsmCodeWriter acw, Type operandType, BinaryOp op) {
+        boolean error = false;
+        switch (op) {
+            // Arithmetic
+            case add -> {
+                if (operandType == Type.LONG_T) {
+                    acw.addq(rdx, rax);
+                    // TODO
+                } else {
+                    // TODO implement case "operandType == Type.DOUBLE_T"
+                    error = true;
+                }
+            }
+            case sub -> {
+                if (operandType == Type.LONG_T) {
+                    acw.subq(rdx, rax);
+                } else {
+                    // TODO implement case "operandType == Type.DOUBLE_T"
+                    error = true;
+                }
+            }
+            case mult -> {
+                if (operandType == Type.LONG_T) {
+                    // TODO
+                } else {
+                    // TODO implement case "operandType == Type.DOUBLE_T"
+                    error = true;
+                }
+            }
+            case div -> {
+                if (operandType == Type.LONG_T) {
+                    // TODO
+                } else {
+                    // TODO implement case "operandType == Type.DOUBLE_T"
+                    error = true;
+                }
+            }
+            // TODO
+            // case mod -> {}
+            // case pow -> {}
+
+            // Comparison
+            case eq, neq, gt, gteq, lt, lteq -> {
+                if (operandType == Type.LONG_T) {
+                    // TODO
+                } else {
+                    // TODO implement case "operandType == Type.DOUBLE_T"
+                    error = true;
+                }
+            }
+
+            // Boolean
+            case and -> error = true;//TODO
+            case or -> error = true; //TODO
+            default -> error = true;
+        }
+
+        if (error) {
+            throw new UnsupportedOperationException("Operation '"
+                    + op + "' not supported for '" + operandType + ", " + operandType + "'");
+        }
     }
 
     @Override
@@ -325,6 +394,12 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         }
     }
 
+    /**
+     * Class providing interface for writing assembly instructions.
+     * 
+     * Object arguments must override toString() such that it returns a valid
+     * Register, Immediate or Memoryaddress string.
+     */
     class AsmCodeWriter {
         private Writer writer;
 
@@ -344,20 +419,27 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             return writeIndented("call", "\t", name.toString());
         }
 
-        AsmCodeWriter addq(Object lhs, Object rhs) {
-            return writeIndented("addq", "\t", lhs.toString(), ", ", rhs.toString());
-        }
-
-        AsmCodeWriter subq(Object lhs, Object rhs) {
-            return writeIndented("subq", "\t", lhs.toString(), ", ", rhs.toString());
-        }
-
         AsmCodeWriter leave() {
             return writeIndented("leave");
         }
 
         AsmCodeWriter ret() {
             return writeIndented("ret");
+        }
+
+        /** Add source to destination */
+        AsmCodeWriter addq(Object src, Object dst) {
+            return writeIndented("addq", "\t", src.toString(), ", ", dst.toString());
+        }
+
+        /** Subtract source from destination */
+        AsmCodeWriter subq(Object src, Object dst) {
+            return writeIndented("subq", "\t", src.toString(), ", ", dst.toString());
+        }
+
+        /** Multiply destination by source */
+        AsmCodeWriter imulq(Object src, Object dst) {
+            return writeIndented("imulq", "\t", src.toString(), ", ", dst.toString());
         }
 
         /** Write multiple strings into new indented line */
