@@ -21,6 +21,7 @@ import cc.crochethk.compilerbau.praktikum.GenJBC;
 import cc.crochethk.compilerbau.praktikum.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
+import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import utils.Result;
 
 public class L1Compiler {
@@ -84,6 +85,12 @@ public class L1Compiler {
                 System.out.println(indent + "Failed!");
             }
             compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
+
+            // ---- quick n dirty header gen for easier inclusion of the assembly in C code
+            var prog = (Prog) ast;
+            var outFilePath = codeGenerator.outFilePath();
+            GenCHeader.generateHeaderFile(prog.funDefs, outFilePath.substring(0, outFilePath.lastIndexOf(".s")) + ".h");
+            // -----------------------------
         } else {
             System.out.println(indent + "No assembly generated (disabled).");
         }
