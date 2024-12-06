@@ -52,3 +52,18 @@ fn longSubWithFunCall_1(rhs: i64) -> i64 {
 fn longSubWithFunCall_2(lhs: i64) -> i64 {
     return lhs-f42() ;
 }
+
+/* Mul */
+fn longMul(lhs:i64, rhs: i64) -> i64 {
+    return lhs*rhs ;
+}
+/* Mul, Add */
+fn longMulAdd_1(lhs:i64, rhs: i64) -> i64 {
+    return lhs*rhs+84;
+}
+
+/* Mul, Add */
+fn longMulAdd_2(lhs:i64, rhs: i64) -> i64 {
+    return 84+lhs*rhs;
+}
+
