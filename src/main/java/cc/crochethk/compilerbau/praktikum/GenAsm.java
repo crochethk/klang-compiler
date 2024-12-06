@@ -73,6 +73,8 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
     @Override
     public AsmCodeWriter visit(FunCall funCall) {
+        stack.alignRspToStackSize();
+
         var regArgsCount = Math.min(funCall.args.size(), regs.length);
         var stackArgsOffset = Math.max(funCall.args.size() - regs.length, 0) * 8;
         for (int i = regArgsCount; i < funCall.args.size(); i++) {
@@ -274,7 +276,6 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
                 stack.alloc(decl.theType.byteSize());
             }
         }
-        stack.alignRspToStackSize();
 
         // Store register args on stack
         for (int i = 0; i < regArgsCount; i++) {
@@ -344,11 +345,17 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
          */
         private Map<String, Integer> ctx;
 
-        /** Current basepointer (%rbp) offset. It's the most recently stored element's offset. */
-        private int baseOffset = 0;
+        /** Basepointer (%rbp) offset used to determine where the next element will be stored */
+        private int writeOffset = 0;
 
-        /** Unaligned byte size reserved in the current stack frame (e.g. by local vars). */
-        private int allocSize = 0;
+        /**
+         * Unaligned byte size that will be allocated in the current stack frame (e.g. for local vars)
+         * on next {@link #alignRspToStackSize()} call.
+         */
+        private int pendingAllocSize = 0;
+
+        /** Currently allocated stack frame size including any alignment padding */
+        private int alignedStackSize = 0;
 
         public StackManager(AsmCodeWriter asmCodeWriter) {
             this.acw = asmCodeWriter;
@@ -356,18 +363,22 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         }
 
         /**
-         * Decrements %rsp such that it is offset by the 16-byte-aligned stacksize that
-         * was reserved using "alloc" method until this point.
+         * Increases current frame's stacksize by decrementing %rsp by the
+         * 16-byte-aligned {@link #pendingAllocSize}.
          */
         public void alignRspToStackSize() {
             var size = getAlignedSize();
-            if (size > 0)
+            if (size > 0) {
                 acw.subq($(size), rsp);
+                alignedStackSize += size;
+                writeOffset = alignedStackSize; // synchronize write head
+            }
+            pendingAllocSize = 0;
         }
 
         /** Returns allocSize aligned such that it's multiple of 16 Bytes. */
         private int getAlignedSize() {
-            return (allocSize + 0xF) & ~0xF;
+            return (pendingAllocSize + 0xF) & ~0xF;
         }
 
         /**
@@ -375,12 +386,11 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
          * %rsp address for the current stack frame.
          * This operation does not actually allocate resources. Rather its purpose
          * is to help computing the required stack size in the prologue of the current
-         * function (i.e. before actually changing %rsp or storing elements on stack),
-         * such that %rsp can be set accordingly in advance for potential "call" instructions
-         * (without repeatedly doing "subq/addq").
+         * function (i.e. before actually changing %rsp or storing elements on stack).
+         * %rsp must be aligned before any "call" instructions using {@link #alignRspToStackSize()}.
          */
         public void alloc(int bytes) {
-            allocSize += bytes;
+            pendingAllocSize += bytes;
         }
 
         /**
@@ -391,8 +401,8 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
          * @param source The value's source location (register, memoryaddress, constant)
          */
         public void store(String name, int size, OperandSpecifier source) {
-            baseOffset -= size;
-            ctx.put(name, baseOffset);
+            writeOffset -= size;
+            ctx.put(name, writeOffset);
             acw.movq(source, this.get(name));
         }
 
@@ -401,8 +411,8 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
          * @see #store(String, int, OperandSpecifier)
          */
         public void store(String name, int size) {
-            baseOffset -= size;
-            ctx.put(name, baseOffset);
+            writeOffset -= size;
+            ctx.put(name, writeOffset);
         }
 
         /**
