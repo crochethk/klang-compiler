@@ -110,25 +110,26 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             binOpExpr.rhs.accept(this);
             // now operands in rax (lhs), rdx (rhs)
 
-            resultDest = rax;
-            genOpInstruction(acw, binOpExpr.lhs.theType, binOpExpr.op);
+            genOpInstruction(acw, binOpExpr.lhs.theType, binOpExpr.op, rdx, rax);
         });
         return acw;
     }
 
     /**
-     * Generates instruction(s) for the  given operand type and operation.
-     * Integer operands are expected in following locations: 
-     *      lhs -> currentDestinationSpec, rhs -> %rdx
+     * Generates instruction(s) for the given operand type, operator and
+     * source/destination operand specifiers.
+     *
+     * @param src The source. It's the operation's RHS.
+     * @param dst The destination. It's the operation's LHS.
      */
-    private void genOpInstruction(AsmCodeWriter acw, Type operandType, BinaryOp op) {
+    private void genOpInstruction(AsmCodeWriter acw, Type operandType,
+            BinaryOp op, OperandSpecifier src, OperandSpecifier dst) {
         boolean error = false;
         switch (op) {
             // Arithmetic
             case add -> {
                 if (operandType == Type.LONG_T) {
-                    acw.addq(rdx, resultDest);
-                    // TODO
+                    acw.addq(src, dst);
                 } else {
                     // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
@@ -136,7 +137,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             }
             case sub -> {
                 if (operandType == Type.LONG_T) {
-                    acw.subq(rdx, resultDest);
+                    acw.subq(src, dst);
                 } else {
                     // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
@@ -144,7 +145,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             }
             case mult -> {
                 if (operandType == Type.LONG_T) {
-                    // TODO
+                    acw.imulq(src, dst);
                 } else {
                     // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
