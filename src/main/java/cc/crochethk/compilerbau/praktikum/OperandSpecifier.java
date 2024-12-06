@@ -54,7 +54,7 @@ public interface OperandSpecifier {
 
             final int factor;
 
-            Scale(int f) {
+            private Scale(int f) {
                 this.factor = f;
             }
         }
