@@ -45,7 +45,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
     @Override
     public AsmCodeWriter visit(I64Lit i64Lit) {
-        return acw.movq($(i64Lit.value), resultDest.get());
+        return acw.movq($(i64Lit.value), resultDest);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
     @Override
     public AsmCodeWriter visit(Var var) {
-        return acw.movq(stack.get(var.name), resultDest.get());
+        return acw.movq(stack.get(var.name), resultDest);
     }
 
     @Override
@@ -97,21 +97,20 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
      * intermediate visit/accept methods (i.e. called inside other visits)
      * should be placed (and thus the caller can expect to find).
      */
-    private StateSaver<OperandSpecifier> resultDest = new StateSaver<>(rax);
+    private OperandSpecifier resultDest = rax;
 
     @Override
     public AsmCodeWriter visit(BinOpExpr binOpExpr) {
-        resultDest.backup().set(rax);
+        withResultDestBackup(() -> {
+            resultDest = rax;
+            binOpExpr.lhs.accept(this);
+            resultDest = rdx;
+            binOpExpr.rhs.accept(this);
+            // now operands in rax (lhs), rdx (rhs)
 
-        binOpExpr.lhs.accept(this);
-        resultDest.set(rdx);
-        binOpExpr.rhs.accept(this);
-        // now operands in rax (lhs), rdx (rhs)
-
-        resultDest.set(rax);
-        genOpInstruction(acw, binOpExpr.lhs.theType, binOpExpr.op);
-
-        resultDest.restore();
+            resultDest = rax;
+            genOpInstruction(acw, binOpExpr.lhs.theType, binOpExpr.op);
+        });
         return acw;
     }
 
@@ -126,7 +125,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             // Arithmetic
             case add -> {
                 if (operandType == Type.LONG_T) {
-                    acw.addq(rdx, resultDest.get());
+                    acw.addq(rdx, resultDest);
                     // TODO
                 } else {
                     // TODO implement case "operandType == Type.DOUBLE_T"
@@ -135,7 +134,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             }
             case sub -> {
                 if (operandType == Type.LONG_T) {
-                    acw.subq(rdx, resultDest.get());
+                    acw.subq(rdx, resultDest);
                 } else {
                     // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
@@ -203,13 +202,12 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
     @Override
     public AsmCodeWriter visit(VarAssignStat varAssignStat) {
-        resultDest.backup().set(rax);
-
-        varAssignStat.expr.accept(this);
-        acw.movq(resultDest.get(), stack.get(varAssignStat.targetVarName));
-
-        resultDest.restore();
-        return null;
+        withResultDestBackup(() -> {
+            resultDest = rax;
+            varAssignStat.expr.accept(this);
+            acw.movq(resultDest, stack.get(varAssignStat.targetVarName));
+        });
+        return acw;
     }
 
     @Override
@@ -326,6 +324,16 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
     @Override
     public AsmCodeWriter visit(EmptyNode emptyNode) {
         return acw;
+    }
+
+    /**
+     * Runs given action while making sure the resultDest field is restored to the
+     * value when the action was called.
+     */
+    private void withResultDestBackup(Runnable action) {
+        OperandSpecifier backup = resultDest;
+        action.run();
+        resultDest = backup;
     }
 
     class StackManager {
@@ -496,36 +504,6 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
 
         void closeWriter() throws IOException {
             writer.close();
-        }
-    }
-
-    class StateSaver<T> {
-        private T old = null;
-        private T current;
-
-        public StateSaver(T state) {
-            current = state;
-        }
-
-        /** Restores the state backup. */
-        public void restore() {
-            current = old;
-        }
-
-        /** Gets the current state. */
-        public T get() {
-            return current;
-        }
-
-        /** Set state without storing the old. */
-        public void set(T state) {
-            current = state;
-        }
-
-        /** Creates backup of current state. */
-        public StateSaver<T> backup() {
-            old = current;
-            return this;
         }
     }
 }
