@@ -460,6 +460,15 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             return writeIndented("pushq", "\t", source.operandSpec());
         }
 
+        /**
+         * Move scalar double-precision floating-point value from soruce to destination.
+         * @param source
+         * @param destination The destination XmmRegister or MemAddress
+         */
+        AsmCodeWriter movsd(OperandSpecifier source, OperandSpecifier destination) {
+            return writeIndented("movsd", "\t", source.operandSpec(), ", ", destination.operandSpec());
+        }
+
         AsmCodeWriter call(String name) {
             return writeIndented("call", "\t", name);
         }
