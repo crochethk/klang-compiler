@@ -1,6 +1,7 @@
 package cc.crochethk.compilerbau.praktikum;
 
 import static cc.crochethk.compilerbau.praktikum.OperandSpecifier.Register.*;
+import static cc.crochethk.compilerbau.praktikum.OperandSpecifier.XmmRegister.*;
 import static cc.crochethk.compilerbau.praktikum.OperandSpecifier.Const.$;
 
 import java.io.FileWriter;
