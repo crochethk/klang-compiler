@@ -48,16 +48,24 @@ public interface OperandSpecifier {
 
     /** Memory Address using the "<offset>(<base>, <index>, <scale>)" operand syntax */
     public class MemAddr implements OperandSpecifier {
-        private int offset;
+        private String offset;
         private Register base, index;
         private Scale s;
 
         public MemAddr(int offset, Register base) {
+            this(offset + "", base);
+        }
+
+        public MemAddr(String offset, Register base) {
             this(offset, base, null, null);
         }
 
         public MemAddr(int offset, Register base, Register index, Scale s) {
-            this.offset = offset;
+            this(offset + "", base, index, s);
+        }
+
+        public MemAddr(String offset, Register base, Register index, Scale s) {
+            this.offset = offset + "";
             this.base = base;
             this.index = index;
             this.s = s;
