@@ -6,7 +6,6 @@ import static cc.crochethk.compilerbau.praktikum.OperandSpecifier.Const.$;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -33,15 +32,15 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         super(outputDir, packageName, className);
 
         var filePath = outFilePath();
-        var parentDir = Path.of(filePath).getParent();
+        var parentDir = filePath.getParent();
         parentDir = parentDir != null ? parentDir : Path.of("");
         Files.createDirectories(parentDir);
-        this.acw = new AsmCodeWriter(new FileWriter(filePath));
+        this.acw = new AsmCodeWriter(new FileWriter(filePath.toFile()));
     }
 
     @Override
-    public String outFilePath() {
-        return Path.of(outDir, packageName + "." + className + FILE_EXT).toString();
+    public Path outFilePath() {
+        return Path.of(outDir, packageName + "." + className + FILE_EXT);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum;
 
+import java.nio.file.Path;
+
 import utils.Result;
 
 public abstract class CodeGenVisitor<T> implements Visitor<T> {
@@ -29,5 +31,5 @@ public abstract class CodeGenVisitor<T> implements Visitor<T> {
     * Returns the path of the generated file. Note that this does _not_ imply
     * whether the file actually exists or generating code succeeded.
     */
-    public abstract String outFilePath();
+    public abstract Path outFilePath();
 }

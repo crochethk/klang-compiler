@@ -88,7 +88,7 @@ public class L1Compiler {
 
             // ---- quick n dirty header gen for easier inclusion of the assembly in C code
             var prog = (Prog) ast;
-            var outFilePath = codeGenerator.outFilePath();
+            var outFilePath = codeGenerator.outFilePath().toString();
             GenCHeader.generateHeaderFile(prog.funDefs, outFilePath.substring(0, outFilePath.lastIndexOf(".s")) + ".h");
             // -----------------------------
         } else {
