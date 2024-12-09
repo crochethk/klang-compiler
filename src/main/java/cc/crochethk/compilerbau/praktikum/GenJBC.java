@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import utils.Result;
 

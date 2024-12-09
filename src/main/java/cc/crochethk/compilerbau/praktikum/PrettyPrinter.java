@@ -5,8 +5,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 
 public class PrettyPrinter implements Visitor<Writer> {
     Writer writer;

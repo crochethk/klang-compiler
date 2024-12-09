@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.literals.I64Lit;
+import cc.crochethk.compilerbau.praktikum.ast.literal.I64Lit;
 import utils.SourcePos;
 
 import org.junit.jupiter.api.Nested;

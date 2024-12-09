@@ -13,7 +13,7 @@ import java.util.Map;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.literals.*;
+import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.GenAsm.AsmCodeBuilder;
 import cc.crochethk.compilerbau.praktikum.OperandSpecifier.MemAddr;
 import cc.crochethk.compilerbau.praktikum.OperandSpecifier.Register;

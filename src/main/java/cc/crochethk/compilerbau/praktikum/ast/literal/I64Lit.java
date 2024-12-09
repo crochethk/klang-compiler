@@ -1,10 +1,10 @@
-package cc.crochethk.compilerbau.praktikum.ast.literals;
+package cc.crochethk.compilerbau.praktikum.ast.literal;
 
 import cc.crochethk.compilerbau.praktikum.Visitor;
 import utils.SourcePos;
 
-public class F64Lit extends NumberLiteral<Double> {
-    public F64Lit(SourcePos srcPos, double value, boolean hasTypeAnnotation) {
+public class I64Lit extends NumberLiteral<Long> {
+    public I64Lit(SourcePos srcPos, long value, boolean hasTypeAnnotation) {
         super(srcPos, value, hasTypeAnnotation);
     }
 
