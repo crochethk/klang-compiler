@@ -16,12 +16,12 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import cc.crochethk.compilerbau.praktikum.GenAsm;
-import cc.crochethk.compilerbau.praktikum.GenJBC;
-import cc.crochethk.compilerbau.praktikum.PrettyPrinter;
-import cc.crochethk.compilerbau.praktikum.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
+import cc.crochethk.compilerbau.praktikum.visitor.PrettyPrinter;
+import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
 import utils.Result;
 
 public class L1Compiler {

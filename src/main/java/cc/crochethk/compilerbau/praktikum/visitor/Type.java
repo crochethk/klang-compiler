@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor;
 
 import java.lang.classfile.TypeKind;
 import java.lang.constant.ClassDesc;

@@ -1,8 +1,8 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor.codegen;
 
-import static cc.crochethk.compilerbau.praktikum.OperandSpecifier.Register.*;
-import static cc.crochethk.compilerbau.praktikum.OperandSpecifier.XmmRegister.*;
-import static cc.crochethk.compilerbau.praktikum.OperandSpecifier.Const.$;
+import static cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.Const.$;
+import static cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.Register.*;
+import static cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.XmmRegister.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,9 +14,10 @@ import java.util.Map;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
-import cc.crochethk.compilerbau.praktikum.GenAsm.AsmCodeBuilder;
-import cc.crochethk.compilerbau.praktikum.OperandSpecifier.MemAddr;
-import cc.crochethk.compilerbau.praktikum.OperandSpecifier.Register;
+import cc.crochethk.compilerbau.praktikum.visitor.Type;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm.AsmCodeBuilder;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.MemAddr;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.Register;
 import utils.Result;
 
 public class GenAsm extends CodeGenVisitor<AsmCodeBuilder> {

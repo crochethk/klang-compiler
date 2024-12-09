@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor;
 
 import java.util.HashMap;
 import java.util.Map;

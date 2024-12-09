@@ -1,7 +1,8 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor.codegen;
 
 import java.nio.file.Path;
 
+import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.Result;
 
 public abstract class CodeGenVisitor<T> implements Visitor<T> {

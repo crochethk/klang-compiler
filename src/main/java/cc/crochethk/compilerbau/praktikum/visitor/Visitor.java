@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BreakStat;

@@ -1,6 +1,6 @@
 package cc.crochethk.compilerbau.praktikum.ast.literal;
 
-import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
 
 public class I64Lit extends NumberLiteral<Long> {

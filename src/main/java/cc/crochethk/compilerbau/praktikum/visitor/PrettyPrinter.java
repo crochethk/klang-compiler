@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor;
 
 import java.io.IOException;
 import java.io.StringWriter;

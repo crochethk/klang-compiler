@@ -2,7 +2,7 @@ package cc.crochethk.compilerbau.praktikum.ast;
 
 import java.util.List;
 
-import cc.crochethk.compilerbau.praktikum.Visitor;
+import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
 
 public class Prog extends Node {

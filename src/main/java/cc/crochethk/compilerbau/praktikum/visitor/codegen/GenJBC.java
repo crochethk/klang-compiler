@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor.codegen;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,6 +22,7 @@ import java.util.Map;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
+import cc.crochethk.compilerbau.praktikum.visitor.Type;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import utils.Result;
 
