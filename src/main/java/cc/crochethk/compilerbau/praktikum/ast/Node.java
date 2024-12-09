@@ -1,6 +1,5 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
-import cc.crochethk.compilerbau.praktikum.Visitable;
 import utils.SourcePos;
 import cc.crochethk.compilerbau.praktikum.Type;
 

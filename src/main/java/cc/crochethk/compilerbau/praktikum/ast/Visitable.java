@@ -1,4 +1,6 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.ast;
+
+import cc.crochethk.compilerbau.praktikum.Visitor;
 
 public interface Visitable {
     <R> R accept(Visitor<R> visitor);
