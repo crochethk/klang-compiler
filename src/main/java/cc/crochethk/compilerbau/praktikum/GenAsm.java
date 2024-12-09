@@ -57,6 +57,18 @@ public class GenAsm extends CodeGenVisitor<AsmCodeBuilder> {
 
     @Override
     public AsmCodeBuilder visit(F64Lit f64Lit) {
+        // Create constant definition
+        long allBits = Double.doubleToRawLongBits(f64Lit.value);
+        int lowBits = (int) allBits;
+        int highBits = (int) (allBits >> 32);
+        rodataSec.write("\n.LC" + localConstantCounter + ":");
+        rodataSec.writeIndented(".long\t" + lowBits);
+        rodataSec.writeIndented(".long\t" + highBits);
+
+        exe.movsd(new MemAddr(".LC" + localConstantCounter, rip), xmm0);
+        exe.movq(xmm0, rax);
+
+        localConstantCounter += 1;
         return null;
     }
 

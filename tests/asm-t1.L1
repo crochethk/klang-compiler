@@ -67,3 +67,7 @@ fn longMulAdd_2(lhs:i64, rhs: i64) -> i64 {
     return 84+lhs*rhs;
 }
 
+/* return double constant */
+fn doubleConst() -> f64 {
+    return 42.0;
+}
