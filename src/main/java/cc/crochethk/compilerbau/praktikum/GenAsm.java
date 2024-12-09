@@ -14,15 +14,21 @@ import java.util.Map;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literals.*;
-import cc.crochethk.compilerbau.praktikum.GenAsm.AsmCodeWriter;
+import cc.crochethk.compilerbau.praktikum.GenAsm.AsmCodeBuilder;
 import cc.crochethk.compilerbau.praktikum.OperandSpecifier.MemAddr;
 import cc.crochethk.compilerbau.praktikum.OperandSpecifier.Register;
 import utils.Result;
 
-public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
+public class GenAsm extends CodeGenVisitor<AsmCodeBuilder> {
     private static final String FILE_EXT = ".s";
 
-    AsmCodeWriter acw;
+    /** Readonly data section (".rodata") */
+    AsmCodeBuilder rodataSec = new AsmCodeBuilder();
+    /** Mutable data section (".data") */
+    AsmCodeBuilder dataSec = new AsmCodeBuilder();
+    /** Programm code section (".text") */
+    AsmCodeBuilder exe = new AsmCodeBuilder();
+
     StackManager stack = null;
 
     /** Function argument registers */
@@ -35,7 +41,6 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         var parentDir = filePath.getParent();
         parentDir = parentDir != null ? parentDir : Path.of("");
         Files.createDirectories(parentDir);
-        this.acw = new AsmCodeWriter(new FileWriter(filePath.toFile()));
     }
 
     @Override
@@ -44,69 +49,70 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
     }
 
     @Override
-    public AsmCodeWriter visit(I64Lit i64Lit) {
-        return acw.movq($(i64Lit.value), rax);
+    public AsmCodeBuilder visit(I64Lit i64Lit) {
+        return exe.movq($(i64Lit.value), rax);
+    }
+
+    private int localConstantCounter = 0;
+
+    @Override
+    public AsmCodeBuilder visit(F64Lit f64Lit) {
+        return null;
     }
 
     @Override
-    public AsmCodeWriter visit(F64Lit f64Lit) {
+    public AsmCodeBuilder visit(BoolLit boolLit) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public AsmCodeWriter visit(BoolLit boolLit) {
+    public AsmCodeBuilder visit(StringLit stringLit) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public AsmCodeWriter visit(StringLit stringLit) {
-        // TODO Auto-generated method stub
-        return null;
+    public AsmCodeBuilder visit(Var var) {
+        return exe.movq(stack.get(var.name), rax);
     }
 
     @Override
-    public AsmCodeWriter visit(Var var) {
-        return acw.movq(stack.get(var.name), rax);
-    }
-
-    @Override
-    public AsmCodeWriter visit(FunCall funCall) {
+    public AsmCodeBuilder visit(FunCall funCall) {
         stack.alignRspToStackSize();
 
         var regArgsCount = Math.min(funCall.args.size(), regs.length);
         var stackArgsOffset = Math.max(funCall.args.size() - regs.length, 0) * 8;
         for (int i = regArgsCount; i < funCall.args.size(); i++) {
             funCall.args.get(i).accept(this);
-            acw.pushq(rax);
+            exe.pushq(rax);
         }
 
         for (int i = 0; i < regArgsCount; i++) {
             funCall.args.get(i).accept(this);
-            acw.movq(rax, regs[i]);
+            exe.movq(rax, regs[i]);
         }
-        acw.call(funCall.name);
+        exe.call(funCall.name);
         //release stack args if necessary
         if (stackArgsOffset > 0) {
-            acw.addq($(stackArgsOffset), rsp);
+            exe.addq($(stackArgsOffset), rsp);
         }
-        return acw;
+        return exe;
     }
 
     @Override
-    public AsmCodeWriter visit(BinOpExpr binOpExpr) {
+    public AsmCodeBuilder visit(BinOpExpr binOpExpr) {
         binOpExpr.rhs.accept(this);
         var lhsNotComplex = binOpExpr.lhs instanceof LiteralExpr || binOpExpr.lhs instanceof Var;
         // Put rdx on stack, if rdx might be overwritten when evaluating lhs
         OperandSpecifier rhsResLoc = lhsNotComplex ? rdx : stack.reserveSlot(8);
-        acw.movq(rax, rhsResLoc);
+        exe.movq(rax, rhsResLoc);
 
         binOpExpr.lhs.accept(this);
         // now operands in %rax (lhs), "rhsResLoc" (rhs)
 
-        genOpInstruction(acw, binOpExpr.lhs.theType, binOpExpr.op, rhsResLoc, rax);
-        return acw;
+        genOpInstruction(exe, binOpExpr.lhs.theType, binOpExpr.op, rhsResLoc, rax);
+        return exe;
     }
 
     /**
@@ -116,7 +122,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
      * @param src The source. It's the operation's RHS.
      * @param dst The destination. It's the operation's LHS.
      */
-    private void genOpInstruction(AsmCodeWriter acw, Type operandType,
+    private void genOpInstruction(AsmCodeBuilder acw, Type operandType,
             BinaryOp op, OperandSpecifier src, OperandSpecifier dst) {
         boolean error = false;
         switch (op) {
@@ -180,84 +186,84 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
     }
 
     @Override
-    public AsmCodeWriter visit(UnaryOpExpr unaryOpExpr) {
+    public AsmCodeBuilder visit(UnaryOpExpr unaryOpExpr) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public AsmCodeWriter visit(TernaryConditionalExpr ternaryConditionalExpr) {
+    public AsmCodeBuilder visit(TernaryConditionalExpr ternaryConditionalExpr) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public AsmCodeWriter visit(VarDeclareStat varDeclareStat) {
+    public AsmCodeBuilder visit(VarDeclareStat varDeclareStat) {
         stack.store(varDeclareStat.varName, varDeclareStat.theType.byteSize());
-        return acw;
+        return exe;
     }
 
     @Override
-    public AsmCodeWriter visit(VarAssignStat varAssignStat) {
+    public AsmCodeBuilder visit(VarAssignStat varAssignStat) {
         varAssignStat.expr.accept(this);
-        acw.movq(rax, stack.get(varAssignStat.targetVarName));
-        return acw;
+        exe.movq(rax, stack.get(varAssignStat.targetVarName));
+        return exe;
     }
 
     @Override
-    public AsmCodeWriter visit(IfElseStat ifElseStat) {
+    public AsmCodeBuilder visit(IfElseStat ifElseStat) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public AsmCodeWriter visit(LoopStat loopStat) {
+    public AsmCodeBuilder visit(LoopStat loopStat) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public AsmCodeWriter visit(StatementList statementList) {
+    public AsmCodeBuilder visit(StatementList statementList) {
         statementList.statements.forEach(s -> s.accept(this));
-        return acw;
+        return exe;
     }
 
     @Override
-    public AsmCodeWriter visit(ReturnStat returnStat) {
+    public AsmCodeBuilder visit(ReturnStat returnStat) {
         returnStat.expr.accept(this);
         /* Epilogue */
         // Restore caller's context:
         // -> Copy %rbp to %rsp and then replace %rbp with the stored value
         // -> Can be reduced to "popq" part in certain cases.
-        acw.leave();
-        return acw.ret();
+        exe.leave();
+        return exe.ret();
     }
 
     @Override
-    public AsmCodeWriter visit(BreakStat breakStat) {
+    public AsmCodeBuilder visit(BreakStat breakStat) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public AsmCodeWriter visit(TypeNode type) {
+    public AsmCodeBuilder visit(TypeNode type) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public AsmCodeWriter visit(FunDef funDef) {
+    public AsmCodeBuilder visit(FunDef funDef) {
         var oldCtx = stack;
-        stack = new StackManager(acw);
+        stack = new StackManager(exe);
 
-        acw.writeIndented(".globl\t", funDef.name);
-        acw.writeIndented(".type\t", funDef.name, ", @function");
-        acw.write("\n", funDef.name, ":");
+        exe.writeIndented(".globl\t", funDef.name);
+        exe.writeIndented(".type\t", funDef.name, ", @function");
+        exe.write("\n", funDef.name, ":");
 
         /* Prologue */
         // Backup caller's and set callee's context
-        acw.pushq(rbp);
-        acw.movq(rsp, rbp);
+        exe.pushq(rbp);
+        exe.movq(rsp, rbp);
 
         // Adjust %rsp as necessary
         var regArgsCount = Math.min(funDef.params.size(), regs.length);
@@ -291,36 +297,51 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
         if (funDef.body.isEmpty()
                 || (!funDef.body.statements.getLast().returnsControlFlow()
                         && funDef.returnType.theType.equals(Type.VOID_T))) {
-            acw.leave();
-            acw.ret();
+            exe.leave();
+            exe.ret();
         }
 
         stack = oldCtx;
-        return acw;
+        return exe;
     }
 
     @Override
-    public AsmCodeWriter visit(Prog prog) {
+    public AsmCodeBuilder visit(Prog prog) {
         exitStatus = Result.Ok;
 
         prog.funDefs.forEach(f -> f.accept(this));
-        acw.writeIndented(".section\t.note.GNU-stack,\"\",@progbits", "\n");
-        try {
-            acw.closeWriter();
+
+        var filePath = outFilePath();
+        try (var w = new FileWriter(filePath.toFile())) {
+            w.write("\t.file\t\"" + filePath.getFileName().toString() + "\"");
+            if (!rodataSec.isEmpty()) {
+                w.write("\n\t.section\t.rodata");
+                w.write(rodataSec.toString());
+                w.write("\n");
+            }
+            if (!dataSec.isEmpty()) {
+                w.write("\n\t.section\t.data");
+                w.write(dataSec.toString());
+                w.write("\n");
+            }
+
+            w.write("\n\t.text");
+            w.write(exe.toString());
+            w.write("\n\t.section\t.note.GNU-stack,\"\",@progbits\n");
         } catch (IOException e) {
             System.err.println(e);
             exitStatus = Result.Err;
         }
-        return acw;
+        return exe;
     }
 
     @Override
-    public AsmCodeWriter visit(EmptyNode emptyNode) {
-        return acw;
+    public AsmCodeBuilder visit(EmptyNode emptyNode) {
+        return exe;
     }
 
     class StackManager {
-        private AsmCodeWriter acw;
+        private AsmCodeBuilder acw;
 
         /** Lookup for basepointer offsets of variables stored on stack in the current context. */
         private Map<String, Integer> ctx;
@@ -341,7 +362,7 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
             return alignedStackSize + pendingAllocSize;
         }
 
-        public StackManager(AsmCodeWriter asmCodeWriter) {
+        public StackManager(AsmCodeBuilder asmCodeWriter) {
             this.acw = asmCodeWriter;
             this.ctx = new HashMap<>();
         }
@@ -440,23 +461,20 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
     }
 
     /**
-     * Class providing interface for writing assembly instructions.
+     * Class providing interface for building assembly instructions. The current
+     * state can be exported using "toString()".
      * 
      * Arguments for most instructions must implement the OperandSpecifier interface,
      * providing a valid Register, Immediate or Memoryaddress string.
      */
-    class AsmCodeWriter {
-        private Writer writer;
+    class AsmCodeBuilder {
+        private StringBuilder buffer = new StringBuilder();
 
-        AsmCodeWriter(Writer writer) {
-            this.writer = writer;
-        }
-
-        AsmCodeWriter movq(OperandSpecifier source, OperandSpecifier destination) {
+        AsmCodeBuilder movq(OperandSpecifier source, OperandSpecifier destination) {
             return writeIndented("movq", "\t", source.operandSpec(), ", ", destination.operandSpec());
         }
 
-        AsmCodeWriter pushq(OperandSpecifier source) {
+        AsmCodeBuilder pushq(OperandSpecifier source) {
             return writeIndented("pushq", "\t", source.operandSpec());
         }
 
@@ -465,68 +483,69 @@ public class GenAsm extends CodeGenVisitor<AsmCodeWriter> {
          * @param source
          * @param destination The destination XmmRegister or MemAddress
          */
-        AsmCodeWriter movsd(OperandSpecifier source, OperandSpecifier destination) {
+        AsmCodeBuilder movsd(OperandSpecifier source, OperandSpecifier destination) {
             return writeIndented("movsd", "\t", source.operandSpec(), ", ", destination.operandSpec());
         }
 
-        AsmCodeWriter call(String name) {
+        AsmCodeBuilder call(String name) {
             return writeIndented("call", "\t", name);
         }
 
-        AsmCodeWriter leave() {
+        AsmCodeBuilder leave() {
             return writeIndented("leave");
         }
 
-        AsmCodeWriter ret() {
+        AsmCodeBuilder ret() {
             return writeIndented("ret");
         }
 
         /** Add source to destination */
-        AsmCodeWriter addq(OperandSpecifier src, OperandSpecifier dst) {
+        AsmCodeBuilder addq(OperandSpecifier src, OperandSpecifier dst) {
             return writeIndented("addq", "\t", src.operandSpec(), ", ", dst.operandSpec());
         }
 
         /** Subtract source from destination */
-        AsmCodeWriter subq(OperandSpecifier src, OperandSpecifier dst) {
+        AsmCodeBuilder subq(OperandSpecifier src, OperandSpecifier dst) {
             return writeIndented("subq", "\t", src.operandSpec(), ", ", dst.operandSpec());
         }
 
         /** Multiply destination by source */
-        AsmCodeWriter imulq(OperandSpecifier src, OperandSpecifier dst) {
+        AsmCodeBuilder imulq(OperandSpecifier src, OperandSpecifier dst) {
             return writeIndented("imulq", "\t", src.operandSpec(), ", ", dst.operandSpec());
         }
 
-        /** Write multiple strings into new indented line */
-        AsmCodeWriter writeIndented(String... ss) {
+        /** Writes multiple instruction strings, each into a indented line */
+        AsmCodeBuilder writeIndented(String... ss) {
             write("\n\t");
             for (var s : ss)
                 write(s);
             return this;
         }
 
-        /** Write the string into new indented line */
-        AsmCodeWriter writeIndented(String s) {
+        /** Writes the instruction string in a new indented line. */
+        AsmCodeBuilder writeIndented(String s) {
             return write("\n\t", s);
         }
 
-        AsmCodeWriter write(String... ss) {
+        /** Writes the given instruction strings. */
+        AsmCodeBuilder write(String... ss) {
             for (var s : ss)
                 write(s);
             return this;
         }
 
-        AsmCodeWriter write(String s) {
-            try {
-                writer.write(s);
-            } catch (IOException e) {
-                exitStatus = Result.Err;
-                throw new RuntimeException(e);
-            }
+        AsmCodeBuilder write(String s) {
+            buffer.append(s);
             return this;
         }
 
-        void closeWriter() throws IOException {
-            writer.close();
+        public boolean isEmpty() {
+            return buffer.isEmpty();
+        }
+
+        @Override
+        public String toString() {
+            return buffer.toString();
         }
     }
 }
