@@ -1,13 +1,13 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import cc.crochethk.compilerbau.praktikum.InterpretResult.*;
-import cc.crochethk.compilerbau.praktikum.InterpretResult.NumericalResult.I64Result;
 import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.literals.*;
+import cc.crochethk.compilerbau.praktikum.ast.literal.*;
+import cc.crochethk.compilerbau.praktikum.visitor.InterpretResult.*;
+import cc.crochethk.compilerbau.praktikum.visitor.InterpretResult.NumericalResult.I64Result;
 
 public class Interpreter implements Visitor<InterpretResult> {
     @Override

@@ -4,10 +4,10 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.literals.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef.Parameter;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import utils.SourcePos;
 
 public class TreeBuilder extends L1BaseListener {

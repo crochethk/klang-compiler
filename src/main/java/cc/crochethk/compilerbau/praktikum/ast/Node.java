@@ -1,8 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
-import cc.crochethk.compilerbau.praktikum.Visitable;
+import cc.crochethk.compilerbau.praktikum.visitor.Type;
 import utils.SourcePos;
-import cc.crochethk.compilerbau.praktikum.Type;
 
 public abstract class Node implements Visitable {
     /// The line where the node's token begins in the source file.

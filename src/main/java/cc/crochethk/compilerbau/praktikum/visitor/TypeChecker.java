@@ -1,11 +1,11 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.literals.*;
+import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 
 /** TypeChecker Visitor
  * The main task of this Visitor is to semantically check typing of the visited AST.

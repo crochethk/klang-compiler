@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor;
 
 import java.lang.classfile.TypeKind;
 import java.lang.constant.ClassDesc;
@@ -31,6 +31,8 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         return jvmTypeKind().slotSize();
     }
 
+    int byteSize();
+
     boolean isPrimitive();
 
     default boolean isReference() {
@@ -41,11 +43,11 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         return this.equals(LONG_T) || this.equals(DOUBLE_T);
     }
 
-    Type STRING_T = new RefType("String", "java.lang");
-    Type LONG_T = new PrimType(TypeKind.LongType);
-    Type BOOL_T = new PrimType(TypeKind.BooleanType);
-    Type DOUBLE_T = new PrimType(TypeKind.DoubleType);
-    Type VOID_T = new PrimType(TypeKind.VoidType);
+    final Type STRING_T = new RefType("String", "java.lang");
+    final Type LONG_T = new PrimType(TypeKind.LongType, 8);
+    final Type BOOL_T = new PrimType(TypeKind.BooleanType, 1);
+    final Type DOUBLE_T = new PrimType(TypeKind.DoubleType, 4);
+    final Type VOID_T = new PrimType(TypeKind.VoidType, 0);
 
     /**
      * Not a real jvm type. Just placeholder to avoid null, where the type
@@ -69,7 +71,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         };
     }
 
-    record PrimType(TypeKind jvmTypeKind) implements Type {
+    record PrimType(TypeKind jvmTypeKind, int byteSize) implements Type {
         @Override
         public boolean isPrimitive() {
             return true;
@@ -105,6 +107,11 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         @Override
         public String jvmDescriptor() {
             return jvmTypeKind().descriptor() + packageName().replace('.', '/') + "/" + className() + ";";
+        }
+
+        @Override
+        public int byteSize() {
+            return 8;
         }
     }
 }

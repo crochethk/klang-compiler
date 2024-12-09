@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum.ast.literals;
+package cc.crochethk.compilerbau.praktikum.ast.literal;
 
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import utils.SourcePos;

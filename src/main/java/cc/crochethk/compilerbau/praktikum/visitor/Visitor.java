@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.compilerbau.praktikum.visitor;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.BreakStat;
@@ -17,7 +17,7 @@ import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
 import cc.crochethk.compilerbau.praktikum.ast.Var;
 import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
 import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
-import cc.crochethk.compilerbau.praktikum.ast.literals.*;
+import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 
 public interface Visitor<R> {
     default void reportError(Node node, String s) {
@@ -32,41 +32,41 @@ public interface Visitor<R> {
     // void visit(Visitable element);
     R visit(I64Lit i64Lit);
 
+    R visit(F64Lit f64Lit);
+
     R visit(BoolLit boolLit);
 
-    R visit(BinOpExpr binOpExpr);
-
-    R visit(FunDef funDef);
-
-    R visit(Prog prog);
+    R visit(StringLit stringLit);
 
     R visit(Var var);
 
     R visit(FunCall funCall);
 
-    R visit(ReturnStat returnStat);
+    R visit(BinOpExpr binOpExpr);
 
     R visit(UnaryOpExpr unaryOpExpr);
 
     R visit(TernaryConditionalExpr ternaryConditionalExpr);
 
-    R visit(VarAssignStat varAssignStat);
-
     R visit(VarDeclareStat varDeclareStat);
+
+    R visit(VarAssignStat varAssignStat);
 
     R visit(IfElseStat ifElseStat);
 
-    R visit(EmptyNode emptyNode);
-
-    R visit(TypeNode type);
+    R visit(LoopStat loopStat);
 
     R visit(StatementList statementList);
 
-    R visit(F64Lit f64Lit);
-
-    R visit(LoopStat loopStat);
+    R visit(ReturnStat returnStat);
 
     R visit(BreakStat breakStat);
 
-    R visit(StringLit stringLit);
+    R visit(TypeNode type);
+
+    R visit(FunDef funDef);
+
+    R visit(Prog prog);
+
+    R visit(EmptyNode emptyNode);
 }
