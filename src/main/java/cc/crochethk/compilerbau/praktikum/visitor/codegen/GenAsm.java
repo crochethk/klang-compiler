@@ -1,8 +1,8 @@
 package cc.crochethk.compilerbau.praktikum.visitor.codegen;
 
-import static cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.Const.$;
-import static cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.Register.*;
-import static cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.XmmRegister.*;
+import static cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Const.$;
+import static cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register.*;
+import static cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.XmmRegister.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,9 +17,10 @@ import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.visitor.Type;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.CodeSection;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.DataSection;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.MemAddr;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.OperandSpecifier.Register;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.SectionBuilder;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
 import utils.Result;
 
 public class GenAsm extends CodeGenVisitor<Void> {
