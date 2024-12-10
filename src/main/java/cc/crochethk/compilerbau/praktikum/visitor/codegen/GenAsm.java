@@ -333,17 +333,16 @@ public class GenAsm extends CodeGenVisitor<Void> {
         var filePath = outFilePath();
         try (var w = new FileWriter(filePath.toFile())) {
             w.write("\t.file\t\"" + filePath.getFileName().toString() + "\"");
-            if (!rodataSec.isEmpty()) {
-                w.write(rodataSec.toString());
-                w.write("\n");
-            }
-            if (!dataSec.isEmpty()) {
-                w.write(dataSec.toString());
-                w.write("\n");
+
+            SectionBuilder[] sections = { rodataSec, dataSec, code };
+            for (var s : sections) {
+                if (!s.isEmpty()) {
+                    w.write(s.toString());
+                    w.write("\n");
+                }
             }
 
-            w.write(code.toString());
-            w.write("\n\t.section\t.note.GNU-stack,\"\",@progbits\n");
+            w.write("\t.section\t.note.GNU-stack,\"\",@progbits\n");
         } catch (IOException e) {
             System.err.println(e);
             exitStatus = Result.Err;
