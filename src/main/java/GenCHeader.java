@@ -17,12 +17,12 @@ public class GenCHeader {
      * @param outputDir           Directory to put the generated header file.
      * @param outputFileName      Name of the header file to generate.
      */
-    public static void generateHeaderFile(List<FunDef> functionDefinitions, String outputDir, String outputFileName) {//String outputFileName) {
+    public static void generateHeaderFile(List<FunDef> functionDefinitions, String outputDir, String outputFileName) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(Path.of(outputDir, outputFileName).toFile()))) {
+            var guardName = outputFileName.replace('.', '_').toUpperCase();
             writer.write("// Auto-generated C header file\n");
-            writer.write("#ifndef GENERATED_HEADER_H\n");
-            writer.write("#define GENERATED_HEADER_H\n\n");
-
+            writer.write("#ifndef " + guardName + "\n");
+            writer.write("#define " + guardName + "\n\n");
             writer.write("#include <stdint.h>\n");
             writer.write("#include <stdbool.h>\n\n");
 
@@ -56,7 +56,7 @@ public class GenCHeader {
                 writer.write("\n");
             }
 
-            writer.write("\n#endif // GENERATED_HEADER_H\n");
+            writer.write("\n#endif // " + guardName + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
