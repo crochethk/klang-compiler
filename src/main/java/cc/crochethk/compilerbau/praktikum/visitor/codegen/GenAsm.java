@@ -21,6 +21,7 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.SectionBuilder;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
+import utils.PathUtils;
 import utils.Result;
 
 public class GenAsm extends CodeGenVisitor<Void> {
@@ -42,9 +43,7 @@ public class GenAsm extends CodeGenVisitor<Void> {
         super(outputDir, packageName, className);
 
         var filePath = outFilePath();
-        var parentDir = filePath.getParent();
-        parentDir = parentDir != null ? parentDir : Path.of("");
-        Files.createDirectories(parentDir);
+        Files.createDirectories(PathUtils.getParentOrEmpty(filePath));
     }
 
     @Override
