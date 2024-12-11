@@ -17,10 +17,10 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cc.crochethk.compilerbau.praktikum.ast.Node;
-import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.visitor.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenCHeader;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
 import utils.PathUtils;
 import utils.Result;
@@ -62,11 +62,11 @@ public class L1Compiler {
             System.out.println(indent + "Generating '" + codeGenerator.outFilePath() + "'...");
             ast.accept(codeGenerator);
 
-            if (codeGenerator.exitStatus.isOk()) {
-                System.out.println(indent + "Success!");
-            } else {
-                System.out.println(indent + "Failed!");
-            }
+            // if (codeGenerator.exitStatus.isOk()) {
+            //     System.out.println(indent + "Success!");
+            // } else {
+            //     System.out.println(indent + "Failed!");
+            // }
             compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
         } else {
             System.out.println(indent + "No JBC generated (disabled).");
@@ -80,19 +80,23 @@ public class L1Compiler {
             System.out.println(indent + "Generating '" + codeGenerator.outFilePath() + "'...");
             ast.accept(codeGenerator);
 
-            if (codeGenerator.exitStatus.isOk()) {
-                System.out.println(indent + "Success!");
-            } else {
-                System.out.println(indent + "Failed!");
-            }
+            // if (codeGenerator.exitStatus.isOk()) {
+            //     System.out.println(indent + "Success!");
+            // } else {
+            //     System.out.println(indent + "Failed!");
+            // }
             compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
 
-            // ---- quick n dirty header gen for easier inclusion of the assembly in C code
-            var prog = (Prog) ast;
-            var asmFilePath = codeGenerator.outFilePath();
-            var headerOutDir = PathUtils.getParentOrEmpty(asmFilePath).toString();
-            GenCHeader.generateHeaderFile(prog.funDefs, headerOutDir, PathUtils.getFileNameNoExt(asmFilePath) + ".h");
-            // -----------------------------
+            // Generate header
+            var headerGen = new GenCHeader(outputDir, packageName, className);
+            System.out.println(indent + "Generating '" + headerGen.outFilePath() + "'...");
+            ast.accept(headerGen);
+            // if (headerGen.exitStatus.isOk()) {
+            //     System.out.println(indent + "Success!");
+            // } else {
+            //     System.out.println(indent + "Failed!");
+            // }
+            compileStatus = compileStatus.isOk() ? headerGen.exitStatus : compileStatus;
         } else {
             System.out.println(indent + "No assembly generated (disabled).");
         }
