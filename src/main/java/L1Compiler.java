@@ -22,6 +22,7 @@ import cc.crochethk.compilerbau.praktikum.visitor.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
+import utils.PathUtils;
 import utils.Result;
 
 public class L1Compiler {
@@ -88,8 +89,9 @@ public class L1Compiler {
 
             // ---- quick n dirty header gen for easier inclusion of the assembly in C code
             var prog = (Prog) ast;
-            var outFilePath = codeGenerator.outFilePath().toString();
-            GenCHeader.generateHeaderFile(prog.funDefs, outFilePath.substring(0, outFilePath.lastIndexOf(".s")) + ".h");
+            var asmFilePath = codeGenerator.outFilePath();
+            var headerOutDir = PathUtils.getParentOrEmpty(asmFilePath).toString();
+            GenCHeader.generateHeaderFile(prog.funDefs, headerOutDir, PathUtils.getFileNameNoExt(asmFilePath) + ".h");
             // -----------------------------
         } else {
             System.out.println(indent + "No assembly generated (disabled).");
@@ -167,14 +169,9 @@ public class L1Compiler {
             var file = fp.toFile();
             var reader = new FileReader(file);
 
-            var fpBase = fp.getParent();
-            fpBase = fpBase != null ? fpBase : Path.of("");
+            var fpBase = PathUtils.getParentOrEmpty(fp);
             var packageName = fpBase.toString().replace(File.separator, ".");
-
-            var fileName = fp.getFileName().toString();
-            var extIdx = fileName.lastIndexOf('.');
-            // remove file extension
-            var className = fileName.substring(0, extIdx > 0 ? extIdx : fileName.length());
+            var className = PathUtils.getFileNameNoExt(fp);
 
             var status = compile(reader, outputDir, packageName, className);
             if (status.isOk()) {
