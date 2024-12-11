@@ -174,7 +174,7 @@ public class L1Compiler {
             var fileName = fp.getFileName().toString();
             var extIdx = fileName.lastIndexOf('.');
             // remove file extension
-            var className = fileName.substring(0, extIdx > 0 ? extIdx : 0);
+            var className = fileName.substring(0, extIdx > 0 ? extIdx : fileName.length());
 
             var status = compile(reader, outputDir, packageName, className);
             if (status.isOk()) {
