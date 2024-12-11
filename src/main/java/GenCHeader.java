@@ -22,7 +22,9 @@ public class GenCHeader {
             writer.write("#ifndef GENERATED_HEADER_H\n");
             writer.write("#define GENERATED_HEADER_H\n\n");
 
-            writer.write("#include <stdint.h>\n\n");
+            writer.write("#include <stdint.h>\n");
+            writer.write("#include <stdbool.h>\n\n");
+            
 
             for (FunDef function : functionDefinitions) {
                 StringBuilder signature = new StringBuilder();
