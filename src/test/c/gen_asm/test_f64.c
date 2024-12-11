@@ -2,10 +2,10 @@
 #include <stdbool.h>
 
 #include "../minunit.h"
-#include "../../../../code_gen/tests.asm_t2_floats.h"
+#include "../../../../code_gen/tests.asm_test_f64.h"
 
 // In project root folder run using:
-// mkdir -p ./bin/.c/ && gcc -o ./bin/.c/test.out src/test/c/gen_asm/test_floats.c code_gen/tests.asm_t2_floats.s && ./bin/.c/test.out
+// mkdir -p ./bin/.c/ && gcc -o ./bin/.c/test.out src/test/c/gen_asm/test_f64.c  code_gen/tests.asm_test_f64.s && ./bin/.c/test.out
 
 char* test_doubleConst42() {
     mu_asserteq(42.d, doubleConst42());
