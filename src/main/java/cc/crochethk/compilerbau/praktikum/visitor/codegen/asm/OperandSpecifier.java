@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum.visitor.codegen;
+package cc.crochethk.compilerbau.praktikum.visitor.codegen.asm;
 
 public interface OperandSpecifier {
     String operandSpec();
