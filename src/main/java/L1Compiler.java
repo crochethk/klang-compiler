@@ -23,7 +23,6 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenCHeader;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
 import utils.PathUtils;
-import utils.Result;
 
 public class L1Compiler {
     /** Compiler config that overrides defaults if present */
@@ -38,11 +37,10 @@ public class L1Compiler {
     static boolean GENERATE_JBC = true;
     static boolean GENERATE_ASM = true;
 
-    public static Result<Void> compile(Reader inputCode, String outputDir, String packageName, String className)
+    public static void compile(Reader inputCode, String outputDir, String packageName, String className)
             throws IOException {
-        var indent = "    ";
-        var compileStatus = Result.Ok;
         var ast = buildAST(inputCode);
+        var indent = " ".repeat(4);
 
         // PrettyPrint
         if (PRETTY_PRINT_AST) {
@@ -60,14 +58,9 @@ public class L1Compiler {
         if (GENERATE_JBC) {
             var codeGenerator = new GenJBC(outputDir, packageName, className);
             System.out.println(indent + "Generating '" + codeGenerator.outFilePath() + "'...");
-            ast.accept(codeGenerator);
 
-            // if (codeGenerator.exitStatus.isOk()) {
-            //     System.out.println(indent + "Success!");
-            // } else {
-            //     System.out.println(indent + "Failed!");
-            // }
-            compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
+            runWithSuccessCheck(() -> ast.accept(codeGenerator), indent);
+
         } else {
             System.out.println(indent + "No JBC generated (disabled).");
         }
@@ -80,29 +73,15 @@ public class L1Compiler {
             System.out.println(indent + "Generating '" + codeGenerator.outFilePath() + "'...");
             ast.accept(codeGenerator);
 
-            // if (codeGenerator.exitStatus.isOk()) {
-            //     System.out.println(indent + "Success!");
-            // } else {
-            //     System.out.println(indent + "Failed!");
-            // }
-            compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
-
             // Generate header
             var headerGen = new GenCHeader(outputDir, packageName, className);
             System.out.println(indent + "Generating '" + headerGen.outFilePath() + "'...");
             ast.accept(headerGen);
-            // if (headerGen.exitStatus.isOk()) {
-            //     System.out.println(indent + "Success!");
-            // } else {
-            //     System.out.println(indent + "Failed!");
-            // }
-            compileStatus = compileStatus.isOk() ? headerGen.exitStatus : compileStatus;
+
         } else {
             System.out.println(indent + "No assembly generated (disabled).");
         }
         System.out.println();
-
-        return compileStatus;
     }
 
     /**
@@ -177,13 +156,25 @@ public class L1Compiler {
             var packageName = fpBase.toString().replace(File.separator, ".");
             var className = PathUtils.getFileNameNoExt(fp);
 
-            var status = compile(reader, outputDir, packageName, className);
-            if (status.isOk()) {
+            try {
+                compile(reader, outputDir, packageName, className);
+                reader.close();
                 System.out.println("All tasks finished successfully.");
-            } else {
+            } catch (Exception e) {
                 System.out.println("Errors occured while processing compilation tasks.");
+                System.err.println(e.getMessage());
+                System.exit(1);
             }
-            reader.close();
+        }
+    }
+
+    private static void runWithSuccessCheck(Runnable callable, String msgIndent) {
+        try {
+            callable.run();
+            System.out.println(msgIndent + "Success!");
+        } catch (RuntimeException e) {
+            System.out.println(msgIndent + "Failed!");
+            throw e;
         }
     }
 

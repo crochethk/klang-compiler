@@ -13,9 +13,11 @@ import cc.crochethk.compilerbau.praktikum.ast.literal.*;
  * by assigning an appropriate Type object to {@code Node.theType}.
  */
 public class TypeChecker implements Visitor<Type> {
-    @Override
-    public void reportError(Node node, String msg) {
-        Visitor.super.reportError(node, "Type error: " + msg);
+    int errorsReported = 0;
+
+    private void reportError(Node node, String s) {
+        errorsReported++;
+        System.err.println("(L" + node.line + ":" + node.column + ") Type error: " + s);
     }
 
     @Override
@@ -329,6 +331,9 @@ public class TypeChecker implements Visitor<Type> {
                         + "' specified but no definition with matching name exists");
             }
         }
+        if (errorsReported != 0) {
+            throw new TypeCheckFailedException();
+        }
         return null;
     }
 
@@ -336,5 +341,11 @@ public class TypeChecker implements Visitor<Type> {
     public Type visit(EmptyNode emptyNode) {
         emptyNode.theType = Type.VOID_T;
         return emptyNode.theType;
+    }
+
+    public class TypeCheckFailedException extends RuntimeException {
+        public TypeCheckFailedException() {
+            super("TypeCheck resulted in " + errorsReported + " errors.");
+        }
     }
 }

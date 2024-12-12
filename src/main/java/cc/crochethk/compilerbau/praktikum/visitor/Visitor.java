@@ -7,7 +7,6 @@ import cc.crochethk.compilerbau.praktikum.ast.FunCall;
 import cc.crochethk.compilerbau.praktikum.ast.FunDef;
 import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
 import cc.crochethk.compilerbau.praktikum.ast.LoopStat;
-import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
@@ -20,10 +19,6 @@ import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 
 public interface Visitor<R> {
-    default void reportError(Node node, String s) {
-        System.err.println("(L" + node.line + ":" + node.column + ") " + s);
-    }
-
     /*
     * Add one visit method per Node type of the tree
     * Concrete Visitors must then implement their behaviour for each of the types.

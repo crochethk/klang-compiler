@@ -6,16 +6,12 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 public class Env {
-    public static Properties readEnvVarFile(String envFileName) {
+    public static Properties readEnvVarFile(String envFileName) throws IOException {
         var props = new Properties();
         var envFile = Paths.get(envFileName);
-        try (var inputStream = Files.newInputStream(envFile)) {
-            props.load(inputStream);
-            inputStream.close();
-        } catch (IOException e) {
-            System.err.println("Error reading file '" + envFile.toAbsolutePath()
-                    + "'. Does it exist?");
-        }
+        var inputStream = Files.newInputStream(envFile);
+        props.load(inputStream);
+        inputStream.close();
         return props;
     }
 }
