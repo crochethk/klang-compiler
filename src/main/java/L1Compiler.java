@@ -23,7 +23,6 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenCHeader;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
 import utils.PathUtils;
-import utils.Result;
 
 public class L1Compiler {
     /** Compiler config that overrides defaults if present */
@@ -38,11 +37,12 @@ public class L1Compiler {
     static boolean GENERATE_JBC = true;
     static boolean GENERATE_ASM = true;
 
-    public static Result<Void> compile(Reader inputCode, String outputDir, String packageName, String className)
+    public static int compile(Reader inputCode, String outputDir, String packageName, String className)
             throws IOException {
-        var indent = "    ";
-        var compileStatus = Result.Ok;
+        var indent = " ".repeat(4);
         var ast = buildAST(inputCode);
+
+        var errorCount = 0; // TODO <----------- count errors when catching exceptions of visitors
 
         // PrettyPrint
         if (PRETTY_PRINT_AST) {
@@ -67,7 +67,6 @@ public class L1Compiler {
             // } else {
             //     System.out.println(indent + "Failed!");
             // }
-            compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
         } else {
             System.out.println(indent + "No JBC generated (disabled).");
         }
@@ -85,7 +84,6 @@ public class L1Compiler {
             // } else {
             //     System.out.println(indent + "Failed!");
             // }
-            compileStatus = compileStatus.isOk() ? codeGenerator.exitStatus : compileStatus;
 
             // Generate header
             var headerGen = new GenCHeader(outputDir, packageName, className);
@@ -96,13 +94,12 @@ public class L1Compiler {
             // } else {
             //     System.out.println(indent + "Failed!");
             // }
-            compileStatus = compileStatus.isOk() ? headerGen.exitStatus : compileStatus;
         } else {
             System.out.println(indent + "No assembly generated (disabled).");
         }
         System.out.println();
 
-        return compileStatus;
+        return errorCount;
     }
 
     /**
@@ -177,11 +174,11 @@ public class L1Compiler {
             var packageName = fpBase.toString().replace(File.separator, ".");
             var className = PathUtils.getFileNameNoExt(fp);
 
-            var status = compile(reader, outputDir, packageName, className);
-            if (status.isOk()) {
-                System.out.println("All tasks finished successfully.");
-            } else {
+            var errorCount = compile(reader, outputDir, packageName, className);
+            if (errorCount != 0) {
                 System.out.println("Errors occured while processing compilation tasks.");
+            } else {
+                System.out.println("All tasks finished successfully.");
             }
             reader.close();
         }

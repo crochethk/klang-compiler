@@ -22,7 +22,6 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.SectionBuilder;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
 import utils.PathUtils;
-import utils.Result;
 
 public class GenAsm extends CodeGenVisitor<Void> {
     private static final String FILE_EXT = ".s";
@@ -168,15 +167,15 @@ public class GenAsm extends CodeGenVisitor<Void> {
                     error = true;
                 }
             }
-            case div -> {
-                if (operandType == Type.LONG_T) {
-                    // TODO
-                } else {
-                    // TODO implement case "operandType == Type.DOUBLE_T"
-                    error = true;
-                }
-            }
             // TODO
+            // case div -> {
+            //     if (operandType == Type.LONG_T) {
+            //         // TODO
+            //     } else {
+            //         // TODO implement case "operandType == Type.DOUBLE_T"
+            //         error = true;
+            //     }
+            // }
             // case mod -> {}
             // case pow -> {}
 
@@ -191,14 +190,15 @@ public class GenAsm extends CodeGenVisitor<Void> {
             }
 
             // Boolean
-            case and -> error = true;//TODO
-            case or -> error = true; //TODO
-            default -> error = true;
+            //case and -> error = true;//TODO
+            //case or -> error = true; //TODO
+            default -> throw new UnsupportedOperationException("Operation '" + op
+                    + "' not yet implemented for '" + operandType + ", " + operandType + "'");
         }
 
         if (error) {
-            throw new UnsupportedOperationException("Operation '"
-                    + op + "' not supported for '" + operandType + ", " + operandType + "'");
+            throw new UnsupportedOperationException("Operation '" + op
+                    + "' not supported for '" + operandType + ", " + operandType + "'");
         }
     }
 
@@ -325,8 +325,6 @@ public class GenAsm extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(Prog prog) {
-        exitStatus = Result.Ok;
-
         prog.funDefs.forEach(f -> f.accept(this));
 
         var filePath = outFilePath();
@@ -343,8 +341,7 @@ public class GenAsm extends CodeGenVisitor<Void> {
 
             w.write("\t.section\t.note.GNU-stack,\"\",@progbits\n");
         } catch (IOException e) {
-            System.err.println(e);
-            exitStatus = Result.Err;
+            throw new RuntimeException(e);
         }
         return null;
     }

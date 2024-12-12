@@ -25,7 +25,6 @@ import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.visitor.Type;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import utils.PathUtils;
-import utils.Result;
 
 /**
  * Visitor that generates Java Byte Code by traversing the AST nodes.
@@ -96,9 +95,9 @@ public class GenJBC extends CodeGenVisitor<Void> {
             case ReferenceType -> codeBuilder.aload(slot);
             case VoidType -> throw new UnsupportedOperationException(
                     "Loading the type '" + var.theType.jvmName() + "' is not supported");
-            default -> throw new AssertionError(
-                    "Could not find a matching load instruction for var'" + var.name + "'");
-
+            default -> throw new UnsupportedOperationException(
+                    "No matching load instruction found for var '" + var.name
+                            + "' with type '" + var.theType + "'");
         }
         return null;
     }
@@ -168,7 +167,7 @@ public class GenJBC extends CodeGenVisitor<Void> {
             * alike javac seems to do it: dcmpg for "<"/"<=" and dcmpl otherwise.
             */
             case eq, neq, gt, gteq, lt, lteq -> {
-                error = genCmpInstruction(cb, operandType.jvmTypeKind(), op).isErr();
+                genCmpInstruction(cb, operandType.jvmTypeKind(), op);
                 genCmpInstructionEvaluation(cb, operandType.jvmTypeKind(), op);
             }
             /**
@@ -183,8 +182,8 @@ public class GenJBC extends CodeGenVisitor<Void> {
         }
 
         if (error) {
-            throw new UnsupportedOperationException("Operation '"
-                    + op + "' not supported for '" + operandType + ", " + operandType + "'");
+            throw new UnsupportedOperationException("Operation '" + op
+                    + "' not supported for '" + operandType + ", " + operandType + "'");
         }
     }
 
@@ -193,7 +192,7 @@ public class GenJBC extends CodeGenVisitor<Void> {
      * Afterwards the comparison result (-1|0|1) is ontop of the stack and ready for
      * further evaluation, e.g. by an "ifXX" instruction.
      */
-    private Result<Void> genCmpInstruction(CodeBuilder cb, TypeKind jvmTypeKind, BinaryOp cmpOp) {
+    private void genCmpInstruction(CodeBuilder cb, TypeKind jvmTypeKind, BinaryOp cmpOp) {
         if (!cmpOp.isComparison()) {
             throw new UnsupportedOperationException(
                     "Invalid operator provided: Only comparison operators are allowed");
@@ -207,10 +206,10 @@ public class GenJBC extends CodeGenVisitor<Void> {
                 }
             }
             default -> {
-                return Result.Err;
+                throw new UnsupportedOperationException("Comparison operator '" + cmpOp
+                        + "' not supported for operand types '" + jvmTypeKind + ", " + jvmTypeKind + "'");
             }
         }
-        return Result.Ok;
     }
 
     /**
@@ -418,7 +417,6 @@ public class GenJBC extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(Prog prog) {
-        exitStatus = Result.Ok;
         var classDesc = ClassDesc.of(packageName, className);
         var bytes = ClassFile.of().build(classDesc, cb -> {
             this.classBuilder = cb;
@@ -439,8 +437,7 @@ public class GenJBC extends CodeGenVisitor<Void> {
             file.write(bytes);
             file.close();
         } catch (IOException e) {
-            System.err.println(e);
-            exitStatus = Result.Err;
+            throw new RuntimeException(e);
         }
 
         return null;

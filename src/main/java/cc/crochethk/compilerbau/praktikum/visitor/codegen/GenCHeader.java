@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import utils.PathUtils;
-import utils.Result;
 
 /** Generates a C header file containing all function signatures of the programs FunDef nodes. */
 public class GenCHeader extends CodeGenVisitor<Void> {
@@ -156,8 +155,6 @@ public class GenCHeader extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(Prog prog) {
-        exitStatus = Result.Ok;
-
         var outputFileName = outFilePath().getFileName().toString();
         var guardName = outputFileName.replace('.', '_').toUpperCase();
         write("// Auto-generated C header file");
@@ -171,8 +168,7 @@ public class GenCHeader extends CodeGenVisitor<Void> {
         try {
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
-            exitStatus = Result.Err;
+            throw new RuntimeException(e);
         }
         return null;
     }

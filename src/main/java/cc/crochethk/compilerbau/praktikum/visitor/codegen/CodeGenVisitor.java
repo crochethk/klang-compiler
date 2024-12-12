@@ -3,15 +3,8 @@ package cc.crochethk.compilerbau.praktikum.visitor.codegen;
 import java.nio.file.Path;
 
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
-import utils.Result;
 
 public abstract class CodeGenVisitor<T> implements Visitor<T> {
-    /**
-    * The status after code generation finished.
-    * Might be null if visiting started in an inappropriate Node.
-    */
-    public Result<Void> exitStatus = null;
-
     protected String outDir;
     protected String packageName;
     protected String className;
