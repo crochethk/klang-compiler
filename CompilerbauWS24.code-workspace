@@ -7,13 +7,16 @@
         },
     ],
     "settings": { // These are settings for ALL FOLDERS
+        "editor.pasteAs.preferences": [
+            "text.plain"
+        ],
         "java.format.comments.enabled": false,
         "java.inlayHints.parameterNames.enabled": "none",
         "java.project.sourcePaths": [
             "src/main/gen",
             "src/main/java",
             "src/test/java",
-            "gen_jbc"
+            "code_gen"
         ],
         "java.project.outputPath": "bin",
         "java.project.referencedLibraries": [
