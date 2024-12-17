@@ -46,7 +46,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
     final Type STRING_T = new RefType("String", "java.lang");
     final Type LONG_T = new PrimType(TypeKind.LongType, 8);
     final Type BOOL_T = new PrimType(TypeKind.BooleanType, 1);
-    final Type DOUBLE_T = new PrimType(TypeKind.DoubleType, 4);
+    final Type DOUBLE_T = new PrimType(TypeKind.DoubleType, 8);
     final Type VOID_T = new PrimType(TypeKind.VoidType, 0);
 
     /**
