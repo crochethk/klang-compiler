@@ -154,6 +154,7 @@ COLON: ':';
 COMMA: ',';
 SEMI: ';';
 QM: '?';
+DOT: '.';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';
@@ -166,6 +167,9 @@ KW_AS: 'as';
 
 KW_LOOP: 'loop';
 KW_BREAK: 'break';
+
+KW_STRUCT: 'struct';
+KW_NULL: 'null';
 
 T_BOOL: 'bool';
 T_VOID: 'void';

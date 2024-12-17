@@ -176,6 +176,11 @@ public class L1LexerTest {
         }
 
         @Test
+        public void testDOT() {
+            assertEquals(List.of(L1Lexer.DOT, L1Lexer.EOF), getTokenTypesFromText("."));
+        }
+
+        @Test
         public void testKW_FUN() {
             assertEquals(List.of(L1Lexer.KW_FUN, L1Lexer.EOF), getTokenTypesFromText("fn"));
         }
@@ -213,6 +218,16 @@ public class L1LexerTest {
         @Test
         public void testKW_BREAK() {
             assertEquals(List.of(L1Lexer.KW_BREAK, L1Lexer.EOF), getTokenTypesFromText("break"));
+        }
+
+        @Test
+        public void testKW_STRUCT() {
+            assertEquals(List.of(L1Lexer.KW_STRUCT, L1Lexer.EOF), getTokenTypesFromText("struct"));
+        }
+
+        @Test
+        public void testKW_NULL() {
+            assertEquals(List.of(L1Lexer.KW_NULL, L1Lexer.EOF), getTokenTypesFromText("null"));
         }
 
         @Test
@@ -436,6 +451,29 @@ public class L1LexerTest {
                 L1Lexer.SEMI, L1Lexer.RBRACE,
                 L1Lexer.EOF);
         assertEquals(expTokens, tokens);
+    }
+
+    @Test
+    void testStruct1() {
+        var tokens = getTokenTypesFromText("struct MyStruct\n{\nfield1:i64,\nfield2:Foo\n}");
+        List<Integer> expTokens = List.of(
+                L1Lexer.KW_STRUCT, L1Lexer.IDENT, L1Lexer.LBRACE,
+                L1Lexer.IDENT, L1Lexer.COLON, L1Lexer.T_I64, L1Lexer.COMMA,
+                L1Lexer.IDENT, L1Lexer.COLON, L1Lexer.IDENT, L1Lexer.RBRACE,
+                L1Lexer.EOF);
+        assertEquals(expTokens, tokens);
+        return;
+    }
+
+    @Test
+    void testStruct2() {
+        var tokens = getTokenTypesFromText("myStruct.structField.field1=null;");
+        List<Integer> expTokens = List.of(
+                L1Lexer.IDENT, L1Lexer.DOT, L1Lexer.IDENT, L1Lexer.DOT,
+                L1Lexer.IDENT, L1Lexer.EQ, L1Lexer.KW_NULL, L1Lexer.SEMI,
+                L1Lexer.EOF);
+        assertEquals(expTokens, tokens);
+        return;
     }
 
     //
