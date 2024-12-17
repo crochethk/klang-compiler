@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -5,7 +6,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef.Parameter;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import utils.SourcePos;
@@ -285,30 +285,53 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
-    public void exitDefinition(L1Parser.DefinitionContext ctx) {
+    public void exitParam(L1Parser.ParamContext ctx) {
+        ctx.result = new Parameter(ctx.name.getText(), ctx.type().result);
+    }
+
+    @Override
+    public void exitFunctionDef(L1Parser.FunctionDefContext ctx) {
         var srcPos = getSourcePos(ctx);
-        var name = ctx.funName.getText();
+        var name = ctx.name.getText();
         var returnType = ctx.type() != null ? ctx.type().result : new TypeNode(srcPos, "void");
-        List<Parameter> params = ctx.funParam().stream()
-                .map(p -> new Parameter(p.name.getText(), p.type().result)).toList();
+        List<Parameter> params = ctx.param().stream().map(p -> p.result).toList();
         var body = ctx.funBody.result;
         ctx.result = new FunDef(srcPos, name, params, returnType, body);
     }
 
     @Override
+    public void exitStructDef(L1Parser.StructDefContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        var name = ctx.name.getText();
+        List<Parameter> params = ctx.param().stream().map(p -> p.result).toList();
+        ctx.result = new StructDef(srcPos, name, params);
+
+    }
+
+    @Override
     public void exitStart(L1Parser.StartContext ctx) {
         var srcPos = getSourcePos(ctx);
-        boolean[] hasEntryPoint = { false };
-        List<FunDef> defs = ctx.definition().stream().map(d -> {
-            if (!hasEntryPoint[0] && d.result.name.equals("___main___")) {
-                hasEntryPoint[0] = true;
+
+        List<StructDef> structs = new ArrayList<>();
+        List<FunDef> funs = new ArrayList<>();
+        boolean hasEntryPoint = false;
+
+        for (var def : ctx.definition()) {
+            if (def.functionDef() != null) {
+                // watch for entry point
+                if (!hasEntryPoint && def.functionDef().result.name.equals("___main___")) {
+                    hasEntryPoint = true;
+                }
+                funs.add(def.functionDef().result);
+            } else if (def.structDef() != null) {
+                structs.add(def.structDef().result);
             }
-            return d.result;
-        }).toList();
-        var entryPoint = hasEntryPoint[0]
+        }
+
+        var entryPoint = hasEntryPoint
                 ? new FunCall(new SourcePos(-1, -1), "___main___", Collections.emptyList())
                 : null;
-        ctx.result = new Prog(srcPos, defs, entryPoint);
+        ctx.result = new Prog(srcPos, funs, entryPoint, structs);
     }
 
     //

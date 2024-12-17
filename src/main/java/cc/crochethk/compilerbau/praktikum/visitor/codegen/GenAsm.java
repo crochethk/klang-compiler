@@ -324,6 +324,12 @@ public class GenAsm extends CodeGenVisitor<Void> {
     }
 
     @Override
+    public Void visit(StructDef structDef) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Void visit(Prog prog) {
         prog.funDefs.forEach(f -> f.accept(this));
 

@@ -214,4 +214,10 @@ public class Interpreter implements Visitor<InterpretResult> {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public InterpretResult visit(StructDef structDef) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
 }
