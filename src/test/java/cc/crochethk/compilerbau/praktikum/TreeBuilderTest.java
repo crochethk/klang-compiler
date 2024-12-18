@@ -35,6 +35,38 @@ public class TreeBuilderTest {
     }
 
     @Nested
+    class ExitStringTests {
+        @Test
+        public void buildRegularStringLit() {
+            var ctx = parse("\"hello world\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), "hello world"), ctx.result);
+        }
+
+        @Test
+        public void buildEmptyStringLit() {
+            var ctx = parse("\"\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), ""), ctx.result);
+        }
+
+        @Test
+        public void buildWhitespaceStringLit() {
+            var ctx = parse("\" \n\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), " \n"), ctx.result);
+        }
+
+        @Test
+        public void buildEscapedQuotationMarkStringLit() {
+            var ctx = parse("\"escaped quote \\\" inside string\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), "escaped quote \" inside string"), ctx.result);
+        }
+
+    }
+
+    @Nested
     class ExitBoolTests {
         @Test
         public void buildBoolLitTrue() {
