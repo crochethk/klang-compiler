@@ -35,6 +35,23 @@ public class TreeBuilderTest {
     }
 
     @Nested
+    class ExitBoolTests {
+        @Test
+        public void buildBoolLitTrue() {
+            var ctx = parse("true", p -> p.bool());
+            treeBuilder.exitBool(ctx);
+            assertEquals(new BoolLit(srcPos(ctx.result), true), ctx.result);
+        }
+
+        @Test
+        public void buildBoolLitFalse() {
+            var ctx = parse("false", p -> p.bool());
+            treeBuilder.exitBool(ctx);
+            assertEquals(new BoolLit(srcPos(ctx.result), false), ctx.result);
+        }
+    }
+
+    @Nested
     class ExitNumberTests {
         @Test
         public void buildI64Lit() {

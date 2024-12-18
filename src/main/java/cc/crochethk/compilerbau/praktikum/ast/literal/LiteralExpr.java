@@ -21,4 +21,9 @@ public abstract class LiteralExpr<T> extends Node {
             return false;
         }
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "(" + value + ")";
+    }
 }
