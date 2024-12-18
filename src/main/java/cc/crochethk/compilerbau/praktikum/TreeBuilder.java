@@ -3,6 +3,7 @@ package cc.crochethk.compilerbau.praktikum;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -85,9 +86,38 @@ public class TreeBuilder extends L1BaseListener {
     @Override
     public void exitString(L1Parser.StringContext ctx) {
         var ttext = ctx.LIT_STRING().getText();
-        // store text without the surrounding '"'
-        ctx.result = new StringLit(getSourcePos(ctx),
-                ttext.substring(1, ttext.length() - 1));
+        // remove enclosing '"'
+        ttext = ttext.substring(1, ttext.length() - 1);
+        ttext = resolveEscapeSequences(ttext);
+        ctx.result = new StringLit(getSourcePos(ctx), ttext);
+    }
+
+    String resolveEscapeSequences(String s) {
+        // other "\"-escaped chars will be simply removed
+        List<String> rawSpecialChars = List.of(
+                "\"", // literal "
+                "\\" // literal \
+        );
+        var escapedSpecialChars = rawSpecialChars.stream().map(
+                rech -> "\\" + rech).toList();
+
+        var regexStr = String.join("|",
+                escapedSpecialChars.stream().map(escCh -> Pattern.quote(escCh)).toList());
+        var regex = Pattern.compile(regexStr);
+
+        var chunks = regex.splitWithDelimiters(s, 0);
+        for (int i = 0; i < chunks.length; i++) {
+            var escCharIdx = escapedSpecialChars.indexOf(chunks[i]);
+            if (escCharIdx > -1) {
+                // replace escaped by actual char
+                chunks[i] = rawSpecialChars.get(escCharIdx);
+            } else {
+                // remove all chars with '\' prefix
+                chunks[i] = chunks[i].replaceAll("\\\\.", "");
+            }
+        }
+
+        return String.join("", chunks);
     }
 
     @Override

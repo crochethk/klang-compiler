@@ -126,7 +126,11 @@ LIT_INTEGER: DIGIT+;
 LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
 
-LIT_STRING: '"' .*? '"';
+/** String literal. '\' can be used to escape '"' and '\' */
+LIT_STRING: DQUOTE (ESCAPE_SEQ | ~["])* DQUOTE;
+/** Escaped characters */
+ESCAPE_SEQ: '\\' ["\\];
+DQUOTE: '"';
 
 TRUE: 'true';
 FALSE: 'false';

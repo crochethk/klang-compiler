@@ -58,12 +58,46 @@ public class TreeBuilderTest {
         }
 
         @Test
-        public void buildEscapedQuotationMarkStringLit() {
+        public void escapedQuotationMark() {
             var ctx = parse("\"escaped quote \\\" inside string\"", p -> p.string());
             treeBuilder.exitString(ctx);
             assertEquals(new StringLit(srcPos(ctx.result), "escaped quote \" inside string"), ctx.result);
         }
 
+        @Test
+        public void escapedBackslash() {
+            var ctx = parse("\"escaped \\\\Backslash\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), "escaped \\Backslash"), ctx.result);
+        }
+
+        @Test
+        public void escapedBackslashesInSequence() {
+            var ctx = parse("\"escaped \\\\\\\\Backslashes\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), "escaped \\\\Backslashes"), ctx.result);
+        }
+
+        @Test
+        public void escapedBackslashThenEscapedRegularCharacter() {
+            var ctx = parse("\"backslash removes 'B': \\\\\\Backslash\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), "backslash removes 'B': \\ackslash"), ctx.result);
+        }
+
+        @Test
+        public void escapedBackslashThenEscapedQuote() {
+            var ctx = parse("\"literal backslash, then literal quote: \\\\\\\"\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), "literal backslash, then literal quote: \\\""), ctx.result);
+        }
+
+        @Test
+        public void mixedEscapeSequences() {
+            var ctx = parse("\"escaped \\\\\\quote \\\" inside\\ String\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), "escaped \\uote \" insideString"), ctx.result);
+        }
     }
 
     @Nested
