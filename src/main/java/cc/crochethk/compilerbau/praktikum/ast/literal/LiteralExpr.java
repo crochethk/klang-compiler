@@ -12,4 +12,13 @@ public abstract class LiteralExpr<T> extends Node {
         super(srcPos);
         this.value = value;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof LiteralExpr other) {
+            return this.value.equals(other.value);
+        } else {
+            return false;
+        }
+    }
 }

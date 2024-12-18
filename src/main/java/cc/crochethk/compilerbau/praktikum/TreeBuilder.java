@@ -1,4 +1,5 @@
 package cc.crochethk.compilerbau.praktikum;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +49,7 @@ public class TreeBuilder extends L1BaseListener {
             } else if (typeAnnot.T_I64() != null && ctx.LIT_INTEGER() != null) {
                 return NumberLiteralType.i64;
             } else {
-                throw new IllegalLiteralTypeSuffixException(
+                throw new IllegalLiteralTypeAnnotException(
                         srcPos, ctx.getText(), typeAnnot.getText());
             }
         } else if (ctx.LIT_INTEGER() != null) {
@@ -361,8 +362,8 @@ public class TreeBuilder extends L1BaseListener {
         }
     }
 
-    private class IllegalLiteralTypeSuffixException extends UnsupportedOperationException {
-        IllegalLiteralTypeSuffixException(SourcePos srcPos, String literalText, String suffixText) {
+    class IllegalLiteralTypeAnnotException extends UnsupportedOperationException {
+        IllegalLiteralTypeAnnotException(SourcePos srcPos, String literalText, String suffixText) {
             super("Illegal type suffix '" + suffixText + "' in literal '"
                     + literalText + "'" + "at " + srcPos);
         }
