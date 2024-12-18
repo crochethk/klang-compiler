@@ -1,3 +1,4 @@
+package cc.crochethk.compilerbau.praktikum;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -11,6 +12,8 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import cc.crochethk.compilerbau.praktikum.antlr.L1Lexer;
 
 public class L1LexerTest {
     @Nested

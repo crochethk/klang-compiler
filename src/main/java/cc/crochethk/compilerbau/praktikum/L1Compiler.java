@@ -1,3 +1,4 @@
+package cc.crochethk.compilerbau.praktikum;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import cc.crochethk.compilerbau.praktikum.antlr.*;
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.visitor.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker;

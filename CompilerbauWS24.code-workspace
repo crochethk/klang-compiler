@@ -26,7 +26,8 @@
             "mode": "external",
             "listeners": true,
             "visitors": false,
-            "outputDir": "gen",
+            "outputDir": "gen/cc/crochethk/compilerbau/praktikum/antlr",
+            "package": "cc.crochethk.compilerbau.praktikum.antlr"
         },
         "antlr4.format": {
             "reflowComments": false,
