@@ -12,6 +12,8 @@ import org.antlr.v4.runtime.Token;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import cc.crochethk.compilerbau.praktikum.antlr.L1Lexer;
+
 public class L1LexerTest {
     @Nested
     class SingleToken {

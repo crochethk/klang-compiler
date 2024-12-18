@@ -1,7 +1,10 @@
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cc.crochethk.compilerbau.praktikum.antlr.*;
+
 import utils.SourcePos;
 
+@SuppressWarnings("unused")
 public class TestParseTreeListener extends L1BaseListener {
     @Override
     public void exitIfElse(L1Parser.IfElseContext ctx) {
