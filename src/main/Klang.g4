@@ -1,4 +1,4 @@
-grammar L1;
+grammar Klang;
 
 // Creates import of the used types in the generated java source,
 // so that we can use it in the parser rules without further ado.
