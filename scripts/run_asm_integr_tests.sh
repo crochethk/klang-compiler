@@ -1,4 +1,5 @@
 #!/bin/sh
+# >>> Expects $(pwd) to be the __project root folder__. <<<
 
 # ==============================================================================
 # Runs all "test_*.c" files in TEST_FILE_DIR. For each test file first assembly
