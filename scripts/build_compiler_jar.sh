@@ -7,7 +7,7 @@
 # Jar Usage: java --enable-preview -jar klangc.jar [OUTDIR SOURCEFILE [FILES...]]
 # - [OUTDIR SOURCEFILE [FILES...]]
 #       Semi-Optional outputpath and one or more input source file(s).
-#       If not specified a "KlangCompiler.env" file must define OUTDIR and SOURCEFILE.
+#       If not specified a "klangc.env" file must define OUTDIR and SOURCEFILE.
 # ==============================================================================
 
 JAR_PATH=./klangc.jar           # The output JAR path and filename

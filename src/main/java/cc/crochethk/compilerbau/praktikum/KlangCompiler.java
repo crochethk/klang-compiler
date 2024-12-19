@@ -29,7 +29,7 @@ import utils.PathUtils;
 
 public class KlangCompiler {
     /** Compiler config that overrides defaults if present */
-    static String DOTENV_FILE = "KlangCompiler.env";
+    static String DOTENV_FILE = "klangc.env";
 
     // Default compiler config
     // These are overridden by the .env file (if present)
@@ -116,7 +116,7 @@ public class KlangCompiler {
      *      - so fullClassName is inferred from the file's relative path
      * 
      * - either args must be specified as follows 
-     *      or a KlangCompiler.env must exist containing values for at least
+     *      or a klangc.env must exist containing values for at least
      *          OUTDIR and SOURCEFILE
      * 
      * - Arguments:
