@@ -7,7 +7,7 @@
 # Jar Usage: java --enable-preview -jar klangc.jar [OUTDIR SOURCEFILE [FILES...]]
 # - [OUTDIR SOURCEFILE [FILES...]]
 #       Semi-Optional outputpath and one or more input source file(s).
-#       If not specified a "L1Compiler.env" file must define OUTDIR and SOURCEFILE.
+#       If not specified a "KlangCompiler.env" file must define OUTDIR and SOURCEFILE.
 # ==============================================================================
 
 JAR_PATH=./klangc.jar           # The output JAR path and filename
@@ -34,4 +34,4 @@ jar xf "${cwd_bak}/lib/antlr4-4.13.2-complete.jar"
 cd "${cwd_bak}"
 
 # create jar containing all class files, using the specified main class
-jar --create --file "${JAR_PATH}" --main-class cc.crochethk.compilerbau.praktikum.L1Compiler -C "${javacOutDir}" .
+jar --create --file "${JAR_PATH}" --main-class cc.crochethk.compilerbau.praktikum.KlangCompiler -C "${javacOutDir}" .
