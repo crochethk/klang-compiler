@@ -7,8 +7,8 @@
 # ==============================================================================
 
 # Constants
-JAVA_BIN_DIR=./bin
-C_BIN_DIR=bin/.c
+JAVA_BIN_DIR=./build/dev
+C_BIN_DIR=build/dev/.c
 TEST_FILE_DIR=src/test/c/gen_asm
 SRC_FILES_DIR=tests
 SRC_FILE_COMPILE_DIR=code_gen
@@ -40,7 +40,7 @@ for test_file in $TEST_FILE_DIR/test_*.c; do
 
     # Compile the test's source file
     echo "Compiling '${SRC_FILES_DIR}/${src_file_name_no_ext}.k' to assembly"
-    java --enable-preview -cp "bin:lib/*:"\
+    java --enable-preview -cp "build/dev:lib/*:"\
         cc.crochethk.compilerbau.praktikum.KlangCompiler $SRC_FILE_COMPILE_DIR $SRC_FILES_DIR/${src_file_name_no_ext}.k > /dev/null
     if [ $? -ne 0 ]; then
         echo ">>> ERROR. Test skipped!\n"

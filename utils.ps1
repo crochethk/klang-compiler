@@ -42,6 +42,6 @@ function CompileFile {
     )
     $sourceFilePath = Resolve-Path -Path $sourceFilePath
     $relativePath = $sourceFilePath.Substring($pwd.Path.Length + 1)  # Strip out the base directory part
-    java --enable-preview -cp "bin;lib/antlr4-runtime-4.13.2.jar;lib/antlr4-4.13.2.jar;lib/antlr4-4.13.2-complete.jar"`
+    java --enable-preview -cp "build/dev;lib/antlr4-runtime-4.13.2.jar;lib/antlr4-4.13.2.jar;lib/antlr4-4.13.2-complete.jar"`
         cc.crochethk.compilerbau.praktikum.KlangCompiler $outDir $relativePath
 }
