@@ -28,7 +28,7 @@ find "${JAVA_SOURCES_ROOT}" -type f -name "*.java" > ${sourcesListFile}
 javac --enable-preview --source 23 --target 23 -cp "lib/antlr4-4.13.2-complete.jar:" -d "${javacOutDir}" @"${sourcesListFile}"
 
 if [ $? -ne 0 ]; then
-    echo ">>> ERROR while compiling java source files\n"
+    echo -e ">>> ERROR while compiling java source files\n"
     exit 1
 fi
 

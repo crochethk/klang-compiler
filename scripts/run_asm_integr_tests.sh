@@ -26,7 +26,7 @@ find "./src" -type f -name "*.java" > ${sourcesListFile}
 javac --enable-preview --source 23 --target 23 -cp "lib/*:" -d "${JAVA_BIN_DIR}" @"${sourcesListFile}"
 
 if [ $? -ne 0 ]; then
-    echo ">>> ERROR while compiling java source files\n"
+    echo -e ">>> ERROR while compiling java source files\n"
     exit 1
 fi
 
@@ -44,7 +44,7 @@ for test_file in $TEST_FILE_DIR/test_*.c; do
     java --enable-preview -cp "build/dev:lib/*:"\
         cc.crochethk.compilerbau.praktikum.KlangCompiler $SRC_FILE_COMPILE_DIR $SRC_FILES_DIR/${src_file_name_no_ext}.k > /dev/null
     if [ $? -ne 0 ]; then
-        echo ">>> ERROR. Test skipped!\n"
+        echo -e ">>> ERROR. Test skipped!\n"
         continue
     fi
 
@@ -52,7 +52,7 @@ for test_file in $TEST_FILE_DIR/test_*.c; do
     echo "Compiling and linking '$test_file' and 'tests.${src_file_name_no_ext}.s'"
     gcc -o $C_BIN_DIR/$test_file_name_no_ext $test_file $SRC_FILE_COMPILE_DIR/tests.${src_file_name_no_ext}.s
     if [ $? -ne 0 ]; then
-        echo ">>> ERROR. Test skipped!\n"
+        echo -e ">>> ERROR. Test skipped!\n"
         continue
     fi
     
