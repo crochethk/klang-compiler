@@ -80,3 +80,12 @@ compile_dev() {
     )
     _compile_sources "${targetname}" "DEV_DEPENDENCIES[@]" "source_dirs[@]"
 }
+
+compile_release() {
+    local targetname="release"
+    local source_dirs=(     \
+        'src/main/java'     \
+        'src/main/gen'      \
+    )
+    _compile_sources "${targetname}" "DEPENDENCIES[@]" "source_dirs[@]"
+}
