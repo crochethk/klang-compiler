@@ -23,9 +23,9 @@ for test_file in $TEST_FILE_DIR/test_*.c; do
     echo "--- Testfile: '$test_file'"
 
     # Compile the test's source file
-    echo "Compiling '${SRC_FILES_DIR}/${src_file_name_no_ext}.L1' to assembly"
+    echo "Compiling '${SRC_FILES_DIR}/${src_file_name_no_ext}.k' to assembly"
     java --enable-preview -cp "bin:src/main/java:src/main/gen:src/test/java:code_gen:lib/*:"\
-        cc.crochethk.compilerbau.praktikum.L1Compiler $SRC_FILE_COMPILE_DIR $SRC_FILES_DIR/${src_file_name_no_ext}.L1 > /dev/null
+        cc.crochethk.compilerbau.praktikum.KlangCompiler $SRC_FILE_COMPILE_DIR $SRC_FILES_DIR/${src_file_name_no_ext}.k > /dev/null
     if [ $? -ne 0 ]; then
         echo ">>> ERROR. Test skipped!\n"
         continue

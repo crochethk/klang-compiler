@@ -25,9 +25,9 @@ public class TreeBuilderTest {
         treeBuilder = new TreeBuilder();
     }
 
-    private <C extends ParserRuleContext> C parse(String s, Function<L1Parser, C> contextGetter) {
-        var lexer = new L1Lexer(CharStreams.fromString(s));
-        return contextGetter.apply(new L1Parser(new CommonTokenStream(lexer)));
+    private <C extends ParserRuleContext> C parse(String s, Function<KlangParser, C> contextGetter) {
+        var lexer = new KlangLexer(CharStreams.fromString(s));
+        return contextGetter.apply(new KlangParser(new CommonTokenStream(lexer)));
     }
 
     private SourcePos srcPos(Node src) {

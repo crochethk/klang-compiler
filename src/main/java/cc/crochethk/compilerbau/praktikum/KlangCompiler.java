@@ -1,4 +1,5 @@
 package cc.crochethk.compilerbau.praktikum;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,9 +27,9 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenCHeader;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
 import utils.PathUtils;
 
-public class L1Compiler {
+public class KlangCompiler {
     /** Compiler config that overrides defaults if present */
-    static String DOTENV_FILE = "L1Compiler.env";
+    static String DOTENV_FILE = "klangc.env";
 
     // Default compiler config
     // These are overridden by the .env file (if present)
@@ -92,7 +93,7 @@ public class L1Compiler {
      */
     private static Node buildAST(Reader inputCode) throws IOException {
         var lexer = applyLexer(inputCode);
-        var parser = new L1Parser(new CommonTokenStream(lexer));
+        var parser = new KlangParser(new CommonTokenStream(lexer));
         var antlrTree = parser.start();
         if (VISUALIZE_PARSETREE) {
             showAstVisualization(parser, antlrTree);
@@ -107,7 +108,7 @@ public class L1Compiler {
     }
 
     static Lexer applyLexer(Reader inputText) throws IOException {
-        return new L1Lexer(CharStreams.fromReader(inputText));
+        return new KlangLexer(CharStreams.fromReader(inputText));
     }
 
     /**
@@ -115,7 +116,7 @@ public class L1Compiler {
      *      - so fullClassName is inferred from the file's relative path
      * 
      * - either args must be specified as follows 
-     *      or a L1Compiler.env must exist containing values for at least
+     *      or a klangc.env must exist containing values for at least
      *          OUTDIR and SOURCEFILE
      * 
      * - Arguments:

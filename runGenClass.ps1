@@ -6,7 +6,7 @@
 . .\utils.ps1
 
 # Load environment variables from file
-$envFilePath = ".\L1Compiler.env"
+$envFilePath = ".\klangc.env"
 LoadEnvVariables -filePath $envFilePath
 
 # Construct fully qualified classname
