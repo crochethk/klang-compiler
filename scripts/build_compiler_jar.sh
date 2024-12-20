@@ -10,12 +10,12 @@
 #       If not specified a "klangc.env" file must define OUTDIR and SOURCEFILE.
 # ==============================================================================
 
-JAR_PATH=./klangc.jar           # The output JAR path and filename
 BUILD_ARTIFACTS_DIR=./build
-JAVA_SOURCES_ROOT=./src/main    # Parent folder of all java files that will be passed to javac
+JAR_PATH=${BUILD_ARTIFACTS_DIR}/klangc.jar  # The output JAR path and filename
+JAVA_SOURCES_ROOT=./src/main                # Parent folder of all java files that will be passed to javac
 
-javacOutDir=${BUILD_ARTIFACTS_DIR}/javac/
-sourcesListFile=${BUILD_ARTIFACTS_DIR}/sources.txt
+javacOutDir=${BUILD_ARTIFACTS_DIR}/jar/classes/
+sourcesListFile=${BUILD_ARTIFACTS_DIR}/jar/sources.txt
 mkdir -p "${BUILD_ARTIFACTS_DIR}" "${javacOutDir}"
 
 # make sure lexer/parser were generated
@@ -40,3 +40,5 @@ cd "${cwd_bak}"
 
 # create jar containing all class files, using the specified main class
 jar --create --file "${JAR_PATH}" --main-class cc.crochethk.compilerbau.praktikum.KlangCompiler -C "${javacOutDir}" .
+
+echo "Jar created: '${JAR_PATH}'"
