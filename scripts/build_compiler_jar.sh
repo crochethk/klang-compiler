@@ -27,6 +27,11 @@ find -depth -wholename "${JAVA_SOURCES_ROOT}/*.java" > ${sourcesListFile}
 # compile all files specified in "${sourcesListFile}"
 javac --enable-preview --source 23 --target 23 -cp "lib/antlr4-4.13.2-complete.jar:" -d "${javacOutDir}" @"${sourcesListFile}"
 
+if [ $? -ne 0 ]; then
+    echo ">>> ERROR while compiling java source files\n"
+    exit 1
+fi
+
 # extract libraries to be included
 cwd_bak=$(pwd)
 cd "${javacOutDir}"
