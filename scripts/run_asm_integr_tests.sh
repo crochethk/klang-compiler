@@ -7,12 +7,28 @@
 # ==============================================================================
 
 # Constants
+JAVA_BIN_DIR=./bin
 C_BIN_DIR=bin/.c
 TEST_FILE_DIR=src/test/c/gen_asm
 SRC_FILES_DIR=tests
 SRC_FILE_COMPILE_DIR=code_gen
 
+# make sure lexer/parser were generated
+$(dirname $0)/run_antlr.sh
+
 mkdir -p $C_BIN_DIR
+
+# compile all java source files
+sourcesListFile=${JAVA_BIN_DIR}/sources.txt
+
+find "./src" -type f -name "*.java" > ${sourcesListFile}
+javac --enable-preview --source 23 --target 23 -cp "lib/*:" -d "${JAVA_BIN_DIR}" @"${sourcesListFile}"
+
+if [ $? -ne 0 ]; then
+    echo ">>> ERROR while compiling java source files\n"
+    exit 1
+fi
+
 
 # Iterate over each file in TEST_FILE_DIR with prefix "test_" and extension ".c"
 for test_file in $TEST_FILE_DIR/test_*.c; do
@@ -24,7 +40,7 @@ for test_file in $TEST_FILE_DIR/test_*.c; do
 
     # Compile the test's source file
     echo "Compiling '${SRC_FILES_DIR}/${src_file_name_no_ext}.k' to assembly"
-    java --enable-preview -cp "bin:src/main/java:src/main/gen:src/test/java:code_gen:lib/*:"\
+    java --enable-preview -cp "bin:lib/*:"\
         cc.crochethk.compilerbau.praktikum.KlangCompiler $SRC_FILE_COMPILE_DIR $SRC_FILES_DIR/${src_file_name_no_ext}.k > /dev/null
     if [ $? -ne 0 ]; then
         echo ">>> ERROR. Test skipped!\n"
