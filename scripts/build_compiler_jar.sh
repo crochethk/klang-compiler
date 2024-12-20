@@ -22,7 +22,7 @@ mkdir -p "${BUILD_ARTIFACTS_DIR}" "${javacOutDir}"
 $(dirname $0)/run_antlr.sh
 
 # create list of all java files to be compiled
-find -depth -wholename "${JAVA_SOURCES_ROOT}/*.java" > ${sourcesListFile}
+find "${JAVA_SOURCES_ROOT}" -type f -name "*.java" > ${sourcesListFile}
 
 # compile all files specified in "${sourcesListFile}"
 javac --enable-preview --source 23 --target 23 -cp "lib/antlr4-4.13.2-complete.jar:" -d "${javacOutDir}" @"${sourcesListFile}"
