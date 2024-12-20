@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # >>> Expects $(pwd) to be the __project root folder__. <<<
 
 # ==============================================================================
@@ -11,7 +11,8 @@ JAVA_BIN_DIR=./build/dev
 C_BIN_DIR=build/dev/.c
 TEST_FILE_DIR=src/test/c/gen_asm
 SRC_FILES_DIR=tests
-SRC_FILE_COMPILE_DIR=code_gen
+
+SRC_FILE_COMPILE_DIR=build/dev/code_gen
 
 # make sure lexer/parser were generated
 $(dirname $0)/run_antlr.sh
