@@ -1,10 +1,10 @@
 #include <stdio.h>
 
 #include "../minunit.h"
-#include "../../../../code_gen/tests.asm_test_i64.h"
+#include "../../../../build/dev/code_gen/tests.asm_test_i64.h"
 
 // In project root folder run using:
-// mkdir -p ./bin/.c/ && gcc -o ./bin/.c/test.out src/test/c/gen_asm/test_i64.c  code_gen/tests.asm_test_i64.s && ./bin/.c/test.out
+// mkdir -p ./build/dev/.c/ && gcc -o ./build/dev/.c/test.out src/test/c/gen_asm/test_i64.c  build/dev/code_gen/tests.asm_test_i64.s && ./build/dev/.c/test.out
 
 char* test_f42() { mu_asserteq(42, f42()); return 0; }
 char* test_soManyParams() { mu_asserteq(28, soManyParams(1,2,3,4,5,6,7)); return 0; }

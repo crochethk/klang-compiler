@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # >>> Expects $(pwd) to be the __project root folder__. <<<
 
 # ==============================================================================
@@ -6,42 +6,55 @@
 # code of the corresponding source file in "SRC_FILES_DIR" is generated.
 # ==============================================================================
 
-# Constants
-C_BIN_DIR=bin/.c
-TEST_FILE_DIR=src/test/c/gen_asm
-SRC_FILES_DIR=tests
-SRC_FILE_COMPILE_DIR=code_gen
+source ./scripts/compile_java.sh
 
-mkdir -p $C_BIN_DIR
+SRC_FILES_DIR=tests
+TEST_FILE_DIR=src/test/c/gen_asm
+
+work_dir="${BUILD_ARTIFACTS_BASE_DIR}/dev"
+C_BIN_DIR="${work_dir}/.c"
+
+# Build project
+./scripts/run_antlr.sh
+compile_dev
+if [ $? -ne 0 ]; then
+    echo -e ">>> ERROR while compiling java source files\n"
+    exit 1
+fi
+
+# DONT CHANGE ("test_*.c" files depend on this)
+src_file_compile_dir="${work_dir}/code_gen"
 
 # Iterate over each file in TEST_FILE_DIR with prefix "test_" and extension ".c"
-for test_file in $TEST_FILE_DIR/test_*.c; do
+for test_file in ${TEST_FILE_DIR}/test_*.c; do
     # Extract the file name without extension
     test_file_name_no_ext=$(basename $test_file .c)
-    src_file_name_no_ext=asm_$test_file_name_no_ext
+    src_file_name_no_ext="asm_${test_file_name_no_ext}"
 
-    echo "--- Testfile: '$test_file'"
+    echo "--- Testfile: '${test_file}'"
 
     # Compile the test's source file
     echo "Compiling '${SRC_FILES_DIR}/${src_file_name_no_ext}.k' to assembly"
-    java --enable-preview -cp "bin:src/main/java:src/main/gen:src/test/java:code_gen:lib/*:"\
-        cc.crochethk.compilerbau.praktikum.KlangCompiler $SRC_FILE_COMPILE_DIR $SRC_FILES_DIR/${src_file_name_no_ext}.k > /dev/null
+    dependencies_cp=$(_join_array "DEPENDENCIES[@]" ":")
+    java --enable-preview -cp "${work_dir}/classes:${dependencies_cp}"\
+        cc.crochethk.compilerbau.praktikum.KlangCompiler "${src_file_compile_dir}" "${SRC_FILES_DIR}/${src_file_name_no_ext}.k" > /dev/null
     if [ $? -ne 0 ]; then
-        echo ">>> ERROR. Test skipped!\n"
+        echo -e ">>> ERROR. Test skipped!\n"
         continue
     fi
 
     # Compile the test, linking it with the assembly file using gcc
     echo "Compiling and linking '$test_file' and 'tests.${src_file_name_no_ext}.s'"
-    gcc -o $C_BIN_DIR/$test_file_name_no_ext $test_file $SRC_FILE_COMPILE_DIR/tests.${src_file_name_no_ext}.s
+    mkdir -p "$C_BIN_DIR"
+    gcc -o "${C_BIN_DIR}/${test_file_name_no_ext}" "${test_file}" "${src_file_compile_dir}/tests.${src_file_name_no_ext}.s"
     if [ $? -ne 0 ]; then
-        echo ">>> ERROR. Test skipped!\n"
+        echo -e ">>> ERROR. Test skipped!\n"
         continue
     fi
     
     # Execute the compiled test binary
-    echo "Run test: $C_BIN_DIR/$test_file_name_no_ext"
-    $C_BIN_DIR/$test_file_name_no_ext
+    echo "Run test: ${C_BIN_DIR}/${test_file_name_no_ext}"
+    "${C_BIN_DIR}/${test_file_name_no_ext}"
     echo ""
 done
 
