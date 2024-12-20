@@ -5,8 +5,8 @@
 $envFilePath = ".\klangc.env"
 LoadEnvVariables -filePath $envFilePath
 
-# Compiles all "*.k" files of "./tests" into "gen_jbc"
-$testsSourcesDir = $env:TESTS_DIR
+# Compiles all "*.k" files in "./tests" into "$OUTDIR"
+$testsSourcesDir = ./tests
 Get-ChildItem -Path $testsSourcesDir -Include "*.k" -Recurse | ForEach-Object {
     Write-Host "+-----------------------"
     Write-Host "+ Source: '$_'"
