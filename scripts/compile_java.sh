@@ -32,3 +32,23 @@ compile_file_list() {
     echo "${cmd}"
     eval ${cmd}
 }
+
+compile_dev() {
+    # dependencies
+    local classpath="lib/*:"
+
+    local work_dir="${BUILD_ARTIFACTS_BASE_DIR}/dev"
+    # where to put all .class files
+    local classes_out_dir="${work_dir}/classes"
+    local source_dirs=(     \
+        'src/main/java'     \
+        'src/main/gen'      \
+        'src/test/java'     \
+    )
+
+    local sourcesListFile="${work_dir}/sources.txt"
+    collect_sources "source_dirs[@]" "${sourcesListFile}"
+
+    # compile source files
+    compile_file_list "${sourcesListFile}" "${classpath}" "${classes_out_dir}"
+}
