@@ -17,7 +17,7 @@
             "src/main/java",
             "src/test/java",
         ],
-        "java.project.outputPath": "build/dev",
+        "java.project.outputPath": "build/dev/classes",
         "java.project.referencedLibraries": [
             "lib/**/*.jar"
         ],
