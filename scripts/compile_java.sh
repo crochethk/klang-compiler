@@ -16,7 +16,7 @@ BUILD_ARTIFACTS_BASE_DIR="./build"
 #   $3 : output directory
 _compile_file_list() {
     if [[ $# -ne 3 ]]; then
-        echo "$# args received but expected 3"
+        echo "'${0}' (${LINENO}): $# args received but expected 3"
         return 1
     fi
     cmd="javac --enable-preview --source 23 --target 23 -cp \"${2}\" -d \"${3}\" @\"${1}\""
@@ -29,6 +29,10 @@ _compile_file_list() {
 #   $1 : Full filename, the list will be written to. Will be overwritten, if existing!
 #   $2 : Directories as array reference (passed as: "myArr[@]")
 _collect_sources() {
+    if [[ $# -ne 2 ]]; then
+        echo "'${0}' (${LINENO}): $# args received but expected 2"
+        return 1
+    fi
     local dirs=("${!2}") # get array
 
     mkdir -p $(dirname "${1}")
@@ -43,6 +47,10 @@ _collect_sources() {
 #   $1 : Aarray reference whose elements to join
 #   $2 : Symbol to use as separator
 _join_array() {
+    if [[ $# -ne 2 ]]; then
+        echo "'${0}' (${LINENO}): $# args received but expected 2"
+        return 1
+    fi
     local arr=("${!1}")
     old_IFS="$IFS"
     IFS="${2}"
@@ -58,6 +66,10 @@ _join_array() {
 #   $2 : Array ref with paths to dependencies
 #   $3 : Array ref with source directories
 _compile_sources() {
+    if [[ $# -ne 3 ]]; then
+        echo "'${0}' (${LINENO}): $# args received but expected 3"
+        return 1
+    fi
     # where to put all .class files
     local work_dir="${BUILD_ARTIFACTS_BASE_DIR}/${1}"
     local classes_out_dir="${work_dir}/classes"
