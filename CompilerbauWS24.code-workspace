@@ -16,7 +16,6 @@
             "src/main/gen",
             "src/main/java",
             "src/test/java",
-            "code_gen"
         ],
         "java.project.outputPath": "bin",
         "java.project.referencedLibraries": [
@@ -34,12 +33,7 @@
             "alignSemicolons": "ownLine",
             "spaceBeforeAssignmentOperators": false,
         },
-        // "github.copilot.enable": {
-        //     "*": true,
-        //     "plaintext": false,
-        //     "markdown": false,
-        //     "scminput": false
-        // }
+        "testing.automaticallyOpenTestResults": "openExplorerOnTestStart",
     },
     "extensions": {
         "recommendations": [
