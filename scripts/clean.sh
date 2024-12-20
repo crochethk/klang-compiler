@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 rm -rf ./build
 if [ "$1" = "all" ]; then

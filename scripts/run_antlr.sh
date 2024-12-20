@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # >>> Expects $(pwd) to be the __project root folder__. <<<
 
 # antlr config
