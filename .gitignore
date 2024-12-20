@@ -1,8 +1,6 @@
 .antlr
 **/gen
 **---LOCAL**
-code_gen
 **.env
 lib/junit-jupiter-api-5.11.3-sources.jar
 /build
-/*.jar
