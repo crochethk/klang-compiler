@@ -37,7 +37,36 @@ public class TreeBuilderTest {
     @Nested
     class ExitStringTests {
         @Test
-        public void buildRegularStringLit() {
+        void testResolveEscapeSequences_basic() {
+            var tb = treeBuilder;
+            assertEquals("This is a \"quote\"", tb.resolveEscapeSequences("This is a \\\"quote\\\""));
+            assertEquals("\\path\\to\\file", tb.resolveEscapeSequences("\\\\path\\\\to\\\\file"));
+            assertEquals("UnsupportedEscape", tb.resolveEscapeSequences("Unsupported\\xEscape"));
+            assertEquals("escaped nl:\n, tab:\t, cr: \r",
+                    tb.resolveEscapeSequences("escaped nl:\\n, tab:\\t, cr: \\r"));
+        }
+
+        @Test
+        public void testResolveEscapeSequences_evilCombinations() {
+            var tb = treeBuilder;
+            assertEquals("2 backslashes: \\", tb.resolveEscapeSequences("2 backslashes: \\\\"));
+            assertEquals("literal backslash, then literal quote: \\\"", tb.resolveEscapeSequences(
+                    "literal backslash, then literal quote: \\\\\\\""));
+            assertEquals("UnsupportedEscape", tb.resolveEscapeSequences("Unsupported\\xEscape"));
+            assertEquals("escaped nl:\n, tab:\t, cr: \r",
+                    tb.resolveEscapeSequences("escaped nl:\\n, tab:\\t, cr: \\r"));
+            assertEquals("not a new line: \\n", tb.resolveEscapeSequences("not a new line: \\\\n"));
+        }
+
+        @Test
+        public void buildWithMixedEscapeSequences() {
+            var ctx = parse("\"esc. \\\\\\quote \\\" inside\\n String\"", p -> p.string());
+            treeBuilder.exitString(ctx);
+            assertEquals(new StringLit(srcPos(ctx.result), "esc. \\uote \" inside\n String"), ctx.result);
+        }
+
+        @Test
+        public void buildBasicStringLit() {
             var ctx = parse("\"hello world\"", p -> p.string());
             treeBuilder.exitString(ctx);
             assertEquals(new StringLit(srcPos(ctx.result), "hello world"), ctx.result);
@@ -51,53 +80,26 @@ public class TreeBuilderTest {
         }
 
         @Test
-        public void buildWhitespaceStringLit() {
-            var ctx = parse("\" \n\"", p -> p.string());
+        public void buildMultiLineStringLit() {
+            var ctx = parse("\"Hello\nWorld\"", p -> p.string());
             treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(ctx.result), " \n"), ctx.result);
+            assertEquals(new StringLit(srcPos(ctx.result), "Hello\nWorld"), ctx.result);
         }
 
         @Test
-        public void escapedQuotationMark() {
-            var ctx = parse("\"escaped quote \\\" inside string\"", p -> p.string());
+        public void buildEmptyMultiLineStringLit() {
+            var ctx = parse("\"\n\"", p -> p.string());
             treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(ctx.result), "escaped quote \" inside string"), ctx.result);
+            assertEquals(new StringLit(srcPos(ctx.result), "\n"), ctx.result);
         }
 
         @Test
-        public void escapedBackslash() {
-            var ctx = parse("\"escaped \\\\Backslash\"", p -> p.string());
+        public void buildUnescapedWhitespaceStringLit() {
+            var ctx = parse("\" \r\t\n\"", p -> p.string());
             treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(ctx.result), "escaped \\Backslash"), ctx.result);
+            assertEquals(new StringLit(srcPos(ctx.result), " \r\t\n"), ctx.result);
         }
 
-        @Test
-        public void escapedBackslashesInSequence() {
-            var ctx = parse("\"escaped \\\\\\\\Backslashes\"", p -> p.string());
-            treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(ctx.result), "escaped \\\\Backslashes"), ctx.result);
-        }
-
-        @Test
-        public void escapedBackslashThenEscapedRegularCharacter() {
-            var ctx = parse("\"backslash removes 'B': \\\\\\Backslash\"", p -> p.string());
-            treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(ctx.result), "backslash removes 'B': \\ackslash"), ctx.result);
-        }
-
-        @Test
-        public void escapedBackslashThenEscapedQuote() {
-            var ctx = parse("\"literal backslash, then literal quote: \\\\\\\"\"", p -> p.string());
-            treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(ctx.result), "literal backslash, then literal quote: \\\""), ctx.result);
-        }
-
-        @Test
-        public void mixedEscapeSequences() {
-            var ctx = parse("\"escaped \\\\\\quote \\\" inside\\ String\"", p -> p.string());
-            treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(ctx.result), "escaped \\uote \" insideString"), ctx.result);
-        }
     }
 
     @Nested
