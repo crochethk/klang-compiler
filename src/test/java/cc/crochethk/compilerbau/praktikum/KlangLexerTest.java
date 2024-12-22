@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
@@ -32,9 +33,13 @@ public class KlangLexerTest {
         }
 
         @Test
-        public void testLIT_STRING() {
+        public void simpleLIT_STRING() {
             assertEquals(List.of(KlangLexer.LIT_STRING, KlangLexer.EOF), getTokenTypesFromText("\"abc\""));
             assertEquals("\"abc\"", getTokensFromText("\"abc\"").get(0).getText());
+        }
+
+        @Test
+        public void emptyLIT_STRING() {
             assertEquals(List.of(KlangLexer.LIT_STRING, KlangLexer.EOF), getTokenTypesFromText("\"\""));
             assertEquals("\"\"", getTokensFromText("\"\"").get(0).getText());
         }
@@ -397,6 +402,59 @@ public class KlangLexerTest {
 
     }
 
+    @Nested
+    class StringTests {
+        private void assertStringTokenTextAndTokenTypes(String input, String expStrTokText, int expPosition,
+                List<Integer> expTokenTypes) {
+            var tokens = getTokensFromText(input);
+            assertEquals(expTokenTypes, getTokenTypes(tokens));
+            if (expPosition > -1)
+                assertEquals(expStrTokText, tokens.get(expPosition).getText());
+        }
+
+        @Test
+        void mostCommonAnsiEscapesArePreserved() {
+            var input = "\"\n\t\r\"";
+            var expStrText = input;
+            assertStringTokenTextAndTokenTypes(input, expStrText, 0, List.of(KlangLexer.LIT_STRING, KlangLexer.EOF));
+        }
+
+        @Test
+        void stringInbetweenOtherTokens() {
+            assertStringTokenTextAndTokenTypes("i64\"foo\"baz", "\"foo\"", 1,
+                    List.of(KlangLexer.T_I64, KlangLexer.LIT_STRING, KlangLexer.IDENT, KlangLexer.EOF));
+        }
+
+        @Test
+        void backslashEscapedQuoteInString() {
+            assertStringTokenTextAndTokenTypes("\"\\\"\"", "\"\\\"\"", 0,
+                    List.of(KlangLexer.LIT_STRING, KlangLexer.EOF));
+        }
+
+        @Test
+        void backslashEscapedBackslashInString() {
+            // equivalent to literal string '\'
+            assertStringTokenTextAndTokenTypes("\"\\\\\"", "\"\\\\\"",
+                    0, List.of(KlangLexer.LIT_STRING, KlangLexer.EOF));
+            // equivalent to literal string '\\'
+            assertStringTokenTextAndTokenTypes("\"\\\\\\\\\"", "\"\\\\\\\\\"", 0,
+                    List.of(KlangLexer.LIT_STRING, KlangLexer.EOF));
+        }
+
+        @Test
+        void noStringWhenClosingQuoteIsEscaped() {
+            assertEquals(List.of(
+                    KlangLexer.DQUOTE, KlangLexer.IDENT, KlangLexer.ANY, KlangLexer.DQUOTE, KlangLexer.EOF),
+                    getTokenTypesFromText("\"abc\\\""));
+        }
+
+        @Test
+        void literalBackslashThenLiteralQuoteInString() {
+            assertStringTokenTextAndTokenTypes("\"\\\\\\\"\"", "\"\\\\\\\"\"", 0,
+                    List.of(KlangLexer.LIT_STRING, KlangLexer.EOF));
+        }
+    }
+
     @Test
     void testFunDef() {
         var tokens = getTokenTypesFromText("fn f(a:A,)-> f64{return 42 as f64;}");
@@ -497,7 +555,7 @@ public class KlangLexerTest {
         var strReader = new StringReader(txt);
         Lexer lexer;
         try {
-            lexer = KlangCompiler.applyLexer(strReader);
+            lexer = new KlangLexer(CharStreams.fromReader(strReader));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

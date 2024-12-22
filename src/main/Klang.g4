@@ -126,10 +126,16 @@ LIT_INTEGER: DIGIT+;
 LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
 
-/** String literal. '\' can be used to escape '"' and '\' */
-LIT_STRING: DQUOTE (ESCAPE_SEQ | ~["])* DQUOTE;
-/** Escaped characters */
-ESCAPE_SEQ: '\\' ["\\];
+/**
+ * String literal.
+ * - '\' starts an escape sequence (which is evaluated later)
+ * - SPECIAL_CHARs must be escaped using '\' in order to get their literal
+ * - Multiline strings are allowed without further ado
+ */
+LIT_STRING: DQUOTE (ESCAPE_SEQ | NOT_SPECIAL_CHAR)* DQUOTE;
+/** "\" escapes any character */
+fragment ESCAPE_SEQ: '\\' .;
+fragment NOT_SPECIAL_CHAR: ~["\\];
 DQUOTE: '"';
 
 TRUE: 'true';
