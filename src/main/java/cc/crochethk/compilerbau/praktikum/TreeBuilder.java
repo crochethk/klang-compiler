@@ -3,6 +3,7 @@ package cc.crochethk.compilerbau.praktikum;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -92,32 +93,32 @@ public class TreeBuilder extends KlangBaseListener {
         ctx.result = new StringLit(getSourcePos(ctx), ttext);
     }
 
-    String resolveEscapeSequences(String s) {
-        // other "\"-escaped chars will be simply removed
-        List<String> rawSpecialChars = List.of(
-                "\"", // literal "
-                "\\" // literal \
-        );
-        var escapedSpecialChars = rawSpecialChars.stream().map(
-                rech -> "\\" + rech).toList();
+    final static Map<String, String> escapeSequencesMap = Map.of(
+            "\\\"", "\"",
+            "\\\\", "\\",
+            "\\n", "\n",
+            "\\t", "\t",
+            "\\r", "\r");
 
+    String resolveEscapeSequences(String s) {
+        var escapedSeqs = escapeSequencesMap.keySet();
+        // Regex matching the escaped special chars
         var regexStr = String.join("|",
-                escapedSpecialChars.stream().map(escCh -> Pattern.quote(escCh)).toList());
+                escapedSeqs.stream().map(escSeq -> Pattern.quote(escSeq)).toList());
         var regex = Pattern.compile(regexStr);
 
-        var chunks = regex.splitWithDelimiters(s, 0);
-        for (int i = 0; i < chunks.length; i++) {
-            var escCharIdx = escapedSpecialChars.indexOf(chunks[i]);
-            if (escCharIdx > -1) {
+        var escChunks = regex.splitWithDelimiters(s, 0);
+        for (int i = 0; i < escChunks.length; i++) {
+            var resolvedSeq = escapeSequencesMap.get(escChunks[i]);
+            if (resolvedSeq != null) {
                 // replace escaped by actual char
-                chunks[i] = rawSpecialChars.get(escCharIdx);
+                escChunks[i] = resolvedSeq;
             } else {
                 // remove all chars with '\' prefix
-                chunks[i] = chunks[i].replaceAll("\\\\.", "");
+                escChunks[i] = escChunks[i].replaceAll(Pattern.quote("\\") + ".", "");
             }
         }
-
-        return String.join("", chunks);
+        return String.join("", escChunks);
     }
 
     @Override
