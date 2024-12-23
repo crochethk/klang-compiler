@@ -371,7 +371,7 @@ public class TreeBuilder extends KlangBaseListener {
     //
     // Helper methods and structs
     //
-    private SourcePos getSourcePos(ParserRuleContext ctx) {
+    protected SourcePos getSourcePos(ParserRuleContext ctx) {
         return new SourcePos(
                 ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
     }
