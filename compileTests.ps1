@@ -2,12 +2,12 @@
 . .\utils.ps1
 
 # Load environment variables from file
-$envFilePath = ".\L1Compiler.env"
+$envFilePath = ".\klangc.env"
 LoadEnvVariables -filePath $envFilePath
 
-# Compiles all "*.l1" files of "./tests" into "gen_jbc"
-$testsSourcesDir = $env:TESTS_DIR
-Get-ChildItem -Path $testsSourcesDir -Include "*.l1", "*.L1" -Recurse | ForEach-Object {
+# Compiles all "*.k" files in "./tests" into "$OUTDIR"
+$testsSourcesDir = ./tests
+Get-ChildItem -Path $testsSourcesDir -Include "*.k" -Recurse | ForEach-Object {
     Write-Host "+-----------------------"
     Write-Host "+ Source: '$_'"
     Write-Host "+-----------------------"

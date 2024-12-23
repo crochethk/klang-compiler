@@ -1,18 +1,23 @@
+package cc.crochethk.compilerbau.praktikum;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cc.crochethk.compilerbau.praktikum.antlr.*;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef.Parameter;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import utils.SourcePos;
 
-public class TreeBuilder extends L1BaseListener {
+public class TreeBuilder extends KlangBaseListener {
     @Override
-    public void exitNumber(L1Parser.NumberContext ctx) {
+    public void exitNumber(KlangParser.NumberContext ctx) {
         /**
          * There are two kinds of literal number expressions:
          * 1) bare ("123") and
@@ -36,7 +41,7 @@ public class TreeBuilder extends L1BaseListener {
         ctx.result = buildNumberLiteral(ctx, targetType);
     }
 
-    private NumberLiteralType inferNumberType(L1Parser.NumberContext ctx) {
+    private NumberLiteralType inferNumberType(KlangParser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
         var typeAnnot = ctx.typeAnnot;
         if (typeAnnot != null) {
@@ -46,7 +51,7 @@ public class TreeBuilder extends L1BaseListener {
             } else if (typeAnnot.T_I64() != null && ctx.LIT_INTEGER() != null) {
                 return NumberLiteralType.i64;
             } else {
-                throw new IllegalLiteralTypeSuffixException(
+                throw new IllegalLiteralTypeAnnotException(
                         srcPos, ctx.getText(), typeAnnot.getText());
             }
         } else if (ctx.LIT_INTEGER() != null) {
@@ -61,7 +66,7 @@ public class TreeBuilder extends L1BaseListener {
         i64, f64
     }
 
-    Node buildNumberLiteral(L1Parser.NumberContext ctx, NumberLiteralType targetType) {
+    Node buildNumberLiteral(KlangParser.NumberContext ctx, NumberLiteralType targetType) {
         var srcPos = getSourcePos(ctx);
         boolean hasTypeAnnot = ctx.typeAnnot != null;
         Node node = switch (targetType) {
@@ -72,7 +77,7 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
-    public void exitBool(L1Parser.BoolContext ctx) {
+    public void exitBool(KlangParser.BoolContext ctx) {
         var srcPos = getSourcePos(ctx);
         boolean value = ctx.TRUE() != null;
         var node = new BoolLit(srcPos, value);
@@ -80,15 +85,44 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
-    public void exitString(L1Parser.StringContext ctx) {
+    public void exitString(KlangParser.StringContext ctx) {
         var ttext = ctx.LIT_STRING().getText();
-        // store text without the surrounding '"'
-        ctx.result = new StringLit(getSourcePos(ctx),
-                ttext.substring(1, ttext.length() - 1));
+        // remove enclosing '"'
+        ttext = ttext.substring(1, ttext.length() - 1);
+        ttext = resolveEscapeSequences(ttext);
+        ctx.result = new StringLit(getSourcePos(ctx), ttext);
+    }
+
+    final static Map<String, String> escapeSequencesMap = Map.of(
+            "\\\"", "\"",
+            "\\\\", "\\",
+            "\\n", "\n",
+            "\\t", "\t",
+            "\\r", "\r");
+
+    String resolveEscapeSequences(String s) {
+        var escapedSeqs = escapeSequencesMap.keySet();
+        // Regex matching the escaped special chars
+        var regexStr = String.join("|",
+                escapedSeqs.stream().map(escSeq -> Pattern.quote(escSeq)).toList());
+        var regex = Pattern.compile(regexStr);
+
+        var escChunks = regex.splitWithDelimiters(s, 0);
+        for (int i = 0; i < escChunks.length; i++) {
+            var resolvedSeq = escapeSequencesMap.get(escChunks[i]);
+            if (resolvedSeq != null) {
+                // replace escaped by actual char
+                escChunks[i] = resolvedSeq;
+            } else {
+                // remove all chars with '\' prefix
+                escChunks[i] = escChunks[i].replaceAll(Pattern.quote("\\") + ".", "");
+            }
+        }
+        return String.join("", escChunks);
     }
 
     @Override
-    public void exitVarOrFunCall(L1Parser.VarOrFunCallContext ctx) {
+    public void exitVarOrFunCall(KlangParser.VarOrFunCallContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.LPAR() != null) {
             // function call
@@ -109,7 +143,7 @@ public class TreeBuilder extends L1BaseListener {
     // components of the matched rule where already parsed. This means, we can safely
     // assume rule components have a result and we dont have to care about computing
     // it first.
-    public void exitExpr(L1Parser.ExprContext ctx) {
+    public void exitExpr(KlangParser.ExprContext ctx) {
         // arithmetic
         if (ctx.number() != null) {
             ctx.result = ctx.number().result;
@@ -168,7 +202,7 @@ public class TreeBuilder extends L1BaseListener {
         }
     }
 
-    public void exitTernaryElseBranch(L1Parser.TernaryElseBranchContext ctx) {
+    public void exitTernaryElseBranch(KlangParser.TernaryElseBranchContext ctx) {
         if (ctx.ternaryElseBranch() != null) {
             ctx.result = buildTernaryConditionalNode(ctx, ctx.expr(), ctx.ternaryElseBranch());
         } else {
@@ -176,8 +210,8 @@ public class TreeBuilder extends L1BaseListener {
         }
     }
 
-    private Node buildTernaryConditionalNode(ParserRuleContext ctx, List<L1Parser.ExprContext> ifThenExprs,
-            L1Parser.TernaryElseBranchContext ternaryElseBranch) {
+    private Node buildTernaryConditionalNode(ParserRuleContext ctx, List<KlangParser.ExprContext> ifThenExprs,
+            KlangParser.TernaryElseBranchContext ternaryElseBranch) {
         var srcPos = getSourcePos(ctx);
         var condition = ifThenExprs.get(0).result;
         var then = ifThenExprs.get(1).result;
@@ -186,7 +220,7 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
-    public void exitVarDeclarationOrAssignment(L1Parser.VarDeclarationOrAssignmentContext ctx) {
+    public void exitVarDeclarationOrAssignment(KlangParser.VarDeclarationOrAssignmentContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.KW_LET() != null && ctx.EQ() != null) {
             ctx.result = new StatementList(srcPos, List.of(
@@ -201,16 +235,16 @@ public class TreeBuilder extends L1BaseListener {
         }
     }
 
-    private Node buildVarDeclareNode(SourcePos srcPos, L1Parser.VarDeclarationOrAssignmentContext ctx) {
+    private Node buildVarDeclareNode(SourcePos srcPos, KlangParser.VarDeclarationOrAssignmentContext ctx) {
         return new VarDeclareStat(srcPos, ctx.varName.getText(), ctx.type().result);
     }
 
-    private Node buildVarAssignNode(SourcePos srcPos, L1Parser.VarDeclarationOrAssignmentContext ctx) {
+    private Node buildVarAssignNode(SourcePos srcPos, KlangParser.VarDeclarationOrAssignmentContext ctx) {
         return new VarAssignStat(srcPos, ctx.varName.getText(), ctx.expr().result);
     }
 
     @Override
-    public void exitIfElse(L1Parser.IfElseContext ctx) {
+    public void exitIfElse(KlangParser.IfElseContext ctx) {
         var srcPos = getSourcePos(ctx);
         // Create ifElse Node
         var condition = ctx.condition.result;
@@ -222,23 +256,23 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
-    public void exitLoop(L1Parser.LoopContext ctx) {
+    public void exitLoop(KlangParser.LoopContext ctx) {
         ctx.result = new LoopStat(getSourcePos(ctx), ctx.block().result);
     }
 
     @Override
-    public void exitBlock(L1Parser.BlockContext ctx) {
+    public void exitBlock(KlangParser.BlockContext ctx) {
         ctx.result = ctx.statementList().result;
     }
 
     @Override
-    public void exitStatementList(L1Parser.StatementListContext ctx) {
+    public void exitStatementList(KlangParser.StatementListContext ctx) {
         var statements = ctx.statement().stream().map(s -> s.result).toList();
         ctx.result = new StatementList(getSourcePos(ctx), statements);
     }
 
     @Override
-    public void exitBlockLikeStatement(L1Parser.BlockLikeStatementContext ctx) {
+    public void exitBlockLikeStatement(KlangParser.BlockLikeStatementContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.ifElse() != null) {
             ctx.result = ctx.ifElse().result;
@@ -252,7 +286,7 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
-    public void exitStatement(L1Parser.StatementContext ctx) {
+    public void exitStatement(KlangParser.StatementContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.blockLikeStatement() != null) {
             ctx.result = ctx.blockLikeStatement().result;
@@ -271,7 +305,7 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
-    public void exitType(L1Parser.TypeContext ctx) {
+    public void exitType(KlangParser.TypeContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.primitiveType() != null) {
             var ttext = ctx.primitiveType().getText();
@@ -285,46 +319,69 @@ public class TreeBuilder extends L1BaseListener {
     }
 
     @Override
-    public void exitDefinition(L1Parser.DefinitionContext ctx) {
+    public void exitParam(KlangParser.ParamContext ctx) {
+        ctx.result = new Parameter(ctx.name.getText(), ctx.type().result);
+    }
+
+    @Override
+    public void exitFunctionDef(KlangParser.FunctionDefContext ctx) {
         var srcPos = getSourcePos(ctx);
-        var name = ctx.funName.getText();
+        var name = ctx.name.getText();
         var returnType = ctx.type() != null ? ctx.type().result : new TypeNode(srcPos, "void");
-        List<Parameter> params = ctx.funParam().stream()
-                .map(p -> new Parameter(p.name.getText(), p.type().result)).toList();
+        List<Parameter> params = ctx.param().stream().map(p -> p.result).toList();
         var body = ctx.funBody.result;
         ctx.result = new FunDef(srcPos, name, params, returnType, body);
     }
 
     @Override
-    public void exitStart(L1Parser.StartContext ctx) {
+    public void exitStructDef(KlangParser.StructDefContext ctx) {
         var srcPos = getSourcePos(ctx);
-        boolean[] hasEntryPoint = { false };
-        List<FunDef> defs = ctx.definition().stream().map(d -> {
-            if (!hasEntryPoint[0] && d.result.name.equals("___main___")) {
-                hasEntryPoint[0] = true;
+        var name = ctx.name.getText();
+        List<Parameter> params = ctx.param().stream().map(p -> p.result).toList();
+        ctx.result = new StructDef(srcPos, name, params);
+
+    }
+
+    @Override
+    public void exitStart(KlangParser.StartContext ctx) {
+        var srcPos = getSourcePos(ctx);
+
+        List<StructDef> structs = new ArrayList<>();
+        List<FunDef> funs = new ArrayList<>();
+        boolean hasEntryPoint = false;
+
+        for (var def : ctx.definition()) {
+            if (def.functionDef() != null) {
+                // watch for entry point
+                if (!hasEntryPoint && def.functionDef().result.name.equals("___main___")) {
+                    hasEntryPoint = true;
+                }
+                funs.add(def.functionDef().result);
+            } else if (def.structDef() != null) {
+                structs.add(def.structDef().result);
             }
-            return d.result;
-        }).toList();
-        var entryPoint = hasEntryPoint[0]
+        }
+
+        var entryPoint = hasEntryPoint
                 ? new FunCall(new SourcePos(-1, -1), "___main___", Collections.emptyList())
                 : null;
-        ctx.result = new Prog(srcPos, defs, entryPoint);
+        ctx.result = new Prog(srcPos, funs, entryPoint, structs);
     }
 
     //
     // Helper methods and structs
     //
-    private SourcePos getSourcePos(ParserRuleContext ctx) {
+    protected SourcePos getSourcePos(ParserRuleContext ctx) {
         return new SourcePos(
                 ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
     }
 
-    private Node parseBinOpExpr(L1Parser.ExprContext ctx, BinaryOp op) {
+    private Node parseBinOpExpr(KlangParser.ExprContext ctx, BinaryOp op) {
         var srcPos = getSourcePos(ctx);
         return new BinOpExpr(srcPos, ctx.lhs.result, op, ctx.rhs.result);
     }
 
-    private Node parseUnaryOpExpr(L1Parser.ExprContext ctx, UnaryOp op) {
+    private Node parseUnaryOpExpr(KlangParser.ExprContext ctx, UnaryOp op) {
         var srcPos = getSourcePos(ctx);
         var operand = ctx.expr(0).result;
         return new UnaryOpExpr(srcPos, operand, op);
@@ -336,8 +393,8 @@ public class TreeBuilder extends L1BaseListener {
         }
     }
 
-    private class IllegalLiteralTypeSuffixException extends UnsupportedOperationException {
-        IllegalLiteralTypeSuffixException(SourcePos srcPos, String literalText, String suffixText) {
+    class IllegalLiteralTypeAnnotException extends UnsupportedOperationException {
+        IllegalLiteralTypeAnnotException(SourcePos srcPos, String literalText, String suffixText) {
             super("Illegal type suffix '" + suffixText + "' in literal '"
                     + literalText + "'" + "at " + srcPos);
         }

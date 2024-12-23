@@ -16,9 +16,8 @@
             "src/main/gen",
             "src/main/java",
             "src/test/java",
-            "code_gen"
         ],
-        "java.project.outputPath": "bin",
+        "java.project.outputPath": "build/dev/classes",
         "java.project.referencedLibraries": [
             "lib/**/*.jar"
         ],
@@ -26,19 +25,15 @@
             "mode": "external",
             "listeners": true,
             "visitors": false,
-            "outputDir": "gen",
+            "outputDir": "gen/cc/crochethk/compilerbau/praktikum/antlr",
+            "package": "cc.crochethk.compilerbau.praktikum.antlr"
         },
         "antlr4.format": {
             "reflowComments": false,
             "alignSemicolons": "ownLine",
             "spaceBeforeAssignmentOperators": false,
         },
-        // "github.copilot.enable": {
-        //     "*": true,
-        //     "plaintext": false,
-        //     "markdown": false,
-        //     "scminput": false
-        // }
+        "testing.automaticallyOpenTestResults": "openExplorerOnTestStart",
     },
     "extensions": {
         "recommendations": [

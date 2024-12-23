@@ -300,6 +300,12 @@ public class TypeChecker implements Visitor<Type> {
         return funDef.theType;
     }
 
+    @Override
+    public Type visit(StructDef structDef) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
     private Map<String, FunDef> funDefs = new HashMap<>();
 
     @Override

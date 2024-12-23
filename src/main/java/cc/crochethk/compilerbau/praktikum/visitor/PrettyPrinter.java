@@ -233,6 +233,12 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
+    public Writer visit(StructDef structDef) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Writer visit(Prog prog) {
         for (int i = 0; i < prog.funDefs.size(); i++) {
             prog.funDefs.get(i).accept(this);

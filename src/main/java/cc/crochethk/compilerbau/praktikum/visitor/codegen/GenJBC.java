@@ -416,6 +416,12 @@ public class GenJBC extends CodeGenVisitor<Void> {
     }
 
     @Override
+    public Void visit(StructDef structDef) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Void visit(Prog prog) {
         var classDesc = ClassDesc.of(packageName, className);
         var bytes = ClassFile.of().build(classDesc, cb -> {

@@ -10,6 +10,7 @@ import cc.crochethk.compilerbau.praktikum.ast.LoopStat;
 import cc.crochethk.compilerbau.praktikum.ast.Prog;
 import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
 import cc.crochethk.compilerbau.praktikum.ast.StatementList;
+import cc.crochethk.compilerbau.praktikum.ast.StructDef;
 import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
 import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
@@ -60,6 +61,8 @@ public interface Visitor<R> {
     R visit(TypeNode type);
 
     R visit(FunDef funDef);
+
+    R visit(StructDef structDef);
 
     R visit(Prog prog);
 

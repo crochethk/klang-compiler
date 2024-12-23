@@ -7,11 +7,13 @@ import utils.SourcePos;
 
 public class Prog extends Node {
     public List<FunDef> funDefs;
+    public List<StructDef> structDefs;
     public FunCall entryPoint;
 
-    public Prog(SourcePos srcPos, List<FunDef> funDefs, FunCall entryPoint) {
+    public Prog(SourcePos srcPos, List<FunDef> funDefs, FunCall entryPoint, List<StructDef> structDefs) {
         super(srcPos);
         this.funDefs = funDefs;
+        this.structDefs = structDefs;
         this.entryPoint = entryPoint;
     }
 

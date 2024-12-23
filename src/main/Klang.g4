@@ -1,4 +1,4 @@
-grammar L1;
+grammar Klang;
 
 // Creates import of the used types in the generated java source,
 // so that we can use it in the parser rules without further ado.
@@ -9,13 +9,21 @@ grammar L1;
 start
 	returns[Prog result]: definition* EOF;
 
-definition
+definition: functionDef | structDef;
+
+functionDef
 	returns[FunDef result]:
-	KW_FUN funName=IDENT LPAR (funParam (COMMA funParam)* COMMA?)? RPAR //
+	KW_FUN name=IDENT LPAR (param (COMMA param)* COMMA?)? RPAR //
 	(RARROW type)? LBRACE funBody=statementList RBRACE
 ;
 
-funParam: name=IDENT COLON type;
+structDef
+	returns[StructDef result]:
+	KW_STRUCT name=IDENT LBRACE (param (COMMA param)* COMMA?)? RBRACE
+;
+
+param
+	returns[Parameter result]: name=IDENT COLON type;
 
 type
 	returns[TypeNode result]: primitiveType | refType;
@@ -118,7 +126,17 @@ LIT_INTEGER: DIGIT+;
 LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
 
-LIT_STRING: '"' .*? '"';
+/**
+ * String literal.
+ * - '\' starts an escape sequence (which is evaluated later)
+ * - SPECIAL_CHARs must be escaped using '\' in order to get their literal
+ * - Multiline strings are allowed without further ado
+ */
+LIT_STRING: DQUOTE (ESCAPE_SEQ | NOT_SPECIAL_CHAR)* DQUOTE;
+/** "\" escapes any character */
+fragment ESCAPE_SEQ: '\\' .;
+fragment NOT_SPECIAL_CHAR: ~["\\];
+DQUOTE: '"';
 
 TRUE: 'true';
 FALSE: 'false';
@@ -154,6 +172,7 @@ COLON: ':';
 COMMA: ',';
 SEMI: ';';
 QM: '?';
+DOT: '.';
 
 KW_FUN: 'fn';
 KW_RETURN: 'return';
@@ -166,6 +185,9 @@ KW_AS: 'as';
 
 KW_LOOP: 'loop';
 KW_BREAK: 'break';
+
+KW_STRUCT: 'struct';
+KW_NULL: 'null';
 
 T_BOOL: 'bool';
 T_VOID: 'void';

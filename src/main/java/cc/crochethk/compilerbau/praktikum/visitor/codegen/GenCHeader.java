@@ -154,6 +154,12 @@ public class GenCHeader extends CodeGenVisitor<Void> {
     }
 
     @Override
+    public Void visit(StructDef structDef) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Void visit(Prog prog) {
         var outputFileName = outFilePath().getFileName().toString();
         var guardName = outputFileName.replace('.', '_').toUpperCase();
