@@ -2,5 +2,5 @@
 **/gen
 **---LOCAL**
 **.env
-lib/junit-jupiter-api-5.11.3-sources.jar
+lib/**/*-sources.jar
 /build
