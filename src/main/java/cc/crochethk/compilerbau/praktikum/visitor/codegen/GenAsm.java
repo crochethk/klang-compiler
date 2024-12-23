@@ -6,7 +6,6 @@ import static cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpec
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +20,6 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.SectionBuilder;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
-import utils.PathUtils;
 
 public class GenAsm extends CodeGenVisitor<Void> {
     private static final String FILE_EXT = ".s";
@@ -38,11 +36,8 @@ public class GenAsm extends CodeGenVisitor<Void> {
     /** Function argument registers */
     private final Register[] regs = { rdi, rsi, rdx, rcx, r8, r9 };
 
-    public GenAsm(String outputDir, String packageName, String className) throws IOException {
+    public GenAsm(String outputDir, String packageName, String className) {
         super(outputDir, packageName, className);
-
-        var filePath = outFilePath();
-        Files.createDirectories(PathUtils.getParentOrEmpty(filePath));
     }
 
     @Override

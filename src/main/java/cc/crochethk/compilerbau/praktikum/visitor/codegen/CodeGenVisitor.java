@@ -1,8 +1,11 @@
 package cc.crochethk.compilerbau.praktikum.visitor.codegen;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
+import utils.PathUtils;
 
 public abstract class CodeGenVisitor<T> implements Visitor<T> {
     protected String outDir;
@@ -19,6 +22,12 @@ public abstract class CodeGenVisitor<T> implements Visitor<T> {
         this.outDir = outputDir;
         this.packageName = packageName;
         this.className = className;
+        var filePath = outFilePath();
+        try {
+            Files.createDirectories(PathUtils.getParentOrEmpty(filePath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
