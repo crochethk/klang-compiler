@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
 DEPENDENCIES=('lib/antlr4-4.13.2-complete.jar')
-DEV_DEPENDENCIES=(\
-    "${DEPENDENCIES[@]}"                                \
-    'lib/junit-jupiter-api-5.11.3.jar'                  \
-    'lib/junit-platform-console-standalone-1.11.3.jar'  \
+DEV_DEPENDENCIES=(          \
+    "${DEPENDENCIES[@]}"    \
+    'lib/junit5/junit-platform-console-standalone-1.11.4.jar'          \
 )
 
 BUILD_ARTIFACTS_BASE_DIR="./build"

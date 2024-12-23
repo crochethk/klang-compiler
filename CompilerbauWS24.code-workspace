@@ -18,9 +18,15 @@
             "src/test/java",
         ],
         "java.project.outputPath": "build/dev/classes",
-        "java.project.referencedLibraries": [
-            "lib/**/*.jar"
-        ],
+        "java.project.referencedLibraries": {
+            "include": [
+                "lib/**/*.jar"
+            ],
+            "sources": {
+                "lib/junit5/junit-platform-console-standalone-1.11.4.jar": //
+                "lib/junit5/junit-jupiter-api-5.11.4-sources.jar"
+            }
+        },
         "antlr4.generation": {
             "mode": "external",
             "listeners": true,

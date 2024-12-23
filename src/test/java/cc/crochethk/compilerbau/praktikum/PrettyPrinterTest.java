@@ -1,18 +1,17 @@
 package cc.crochethk.compilerbau.praktikum;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Nested;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.I64Lit;
 import cc.crochethk.compilerbau.praktikum.visitor.PrettyPrinter;
 import utils.SourcePos;
-
-import org.junit.jupiter.api.Nested;
 
 public class PrettyPrinterTest {
     @Nested
