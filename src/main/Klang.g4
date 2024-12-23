@@ -1,4 +1,4 @@
-grammar L1;
+grammar Klang;
 
 // Creates import of the used types in the generated java source,
 // so that we can use it in the parser rules without further ado.
@@ -126,7 +126,17 @@ LIT_INTEGER: DIGIT+;
 LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
 
-LIT_STRING: '"' .*? '"';
+/**
+ * String literal.
+ * - '\' starts an escape sequence (which is evaluated later)
+ * - SPECIAL_CHARs must be escaped using '\' in order to get their literal
+ * - Multiline strings are allowed without further ado
+ */
+LIT_STRING: DQUOTE (ESCAPE_SEQ | NOT_SPECIAL_CHAR)* DQUOTE;
+/** "\" escapes any character */
+fragment ESCAPE_SEQ: '\\' .;
+fragment NOT_SPECIAL_CHAR: ~["\\];
+DQUOTE: '"';
 
 TRUE: 'true';
 FALSE: 'false';
