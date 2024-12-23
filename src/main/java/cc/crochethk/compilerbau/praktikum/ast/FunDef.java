@@ -7,8 +7,6 @@ import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
 
 public class FunDef extends Node {
-    public static final String KW_FUN_LEX = "fn";
-
     public String name;
     public TypeNode returnType;
     public List<Parameter> params;

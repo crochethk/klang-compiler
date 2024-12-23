@@ -201,7 +201,7 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(FunDef funDef) {
         // Signature
-        write(FunDef.KW_FUN_LEX);
+        write("fn");
         write(" ");
         write(funDef.name);
         write("(");
