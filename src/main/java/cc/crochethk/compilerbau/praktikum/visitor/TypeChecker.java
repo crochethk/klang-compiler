@@ -1,8 +1,10 @@
 package cc.crochethk.compilerbau.praktikum.visitor;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
@@ -302,14 +304,29 @@ public class TypeChecker implements Visitor<Type> {
 
     @Override
     public Type visit(StructDef structDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        Set<String> fnames = new HashSet<>();
+        structDef.fields.forEach(f -> {
+            if (!fnames.add(f.name())) {
+                reportError(structDef, "Duplicate field '" + structDef.name + "." + f.name() + "'");
+            }
+            f.type().accept(this);
+        });
+        return null;
     }
 
     private Map<String, FunDef> funDefs = new HashMap<>();
+    private Map<String, StructDef> structDefs = new HashMap<>();
 
     @Override
     public Type visit(Prog prog) {
+        prog.structDefs.forEach(structDef -> {
+            var previous = structDefs.put(structDef.name, structDef);
+            if (previous != null) {
+                reportError(structDef, "Struct type '" + structDef.name + "' defined multiple times");
+            }
+            structDef.accept(this);
+        });
+
         // Before traversiing the tree, we need to make funDefs available for other "visit"s
         prog.funDefs.forEach(funDef -> {
             var previous = funDefs.put(funDef.name, funDef);
@@ -317,9 +334,7 @@ public class TypeChecker implements Visitor<Type> {
                 reportError(funDef, "Function '" + funDef.name + "' defined multiple times");
             }
 
-            // Enables call to fun whose definition was not evaluated yet
-            // alternativels we could do ' Type.of(returnType,"")' where applicable 
-            // instead of relying on theType...
+            // Enables call to fun whose body was not checked yet
             funDef.params.forEach(p -> p.type().accept(this));
             funDef.returnType.accept(this);
         });
