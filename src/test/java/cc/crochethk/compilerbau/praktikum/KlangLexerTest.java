@@ -400,6 +400,14 @@ public class KlangLexerTest {
                     getTokenTypesFromText("->>"));
         }
 
+        @Test
+        void testBuiltinTypeTokens() {
+            assertEquals(List.of(KlangLexer.KW_FUN, KlangLexer.T_I64,
+                    KlangLexer.LPAR, KlangLexer.RPAR, KlangLexer.IDENT, KlangLexer.LBRACE,
+                    KlangLexer.T_STRING, KlangLexer.COLON, KlangLexer.T_F64, KlangLexer.RBRACE, KlangLexer.EOF),
+                    getTokenTypesFromText("fn i64()foo{string:f64}"));
+
+        }
     }
 
     @Nested

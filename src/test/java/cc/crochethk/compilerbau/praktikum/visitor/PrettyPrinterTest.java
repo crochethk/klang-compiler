@@ -20,13 +20,12 @@ public class PrettyPrinterTest {
     @BeforeEach
     void setUp() {
         pp = new PrettyPrinter();
-        System.out.println("test");
     }
 
     @Nested
     class StructDefTests {
-        private Parameter param(String paramName, String typeName) {
-            return new Parameter(paramName, new TypeNode(srcPosMock, typeName));
+        private Parameter param(String paramName, String typeName, boolean isBuiltin) {
+            return new Parameter(paramName, new TypeNode(srcPosMock, typeName, isBuiltin));
         }
 
         @Test
@@ -38,7 +37,7 @@ public class PrettyPrinterTest {
         @Test
         void oneFieldStruct() {
             assertEquals("struct _Other {\n  a_value: i64,\n}\n", pp.visit(
-                    new StructDef(srcPosMock, "_Other", List.of(param("a_value", "i64"))))
+                    new StructDef(srcPosMock, "_Other", List.of(param("a_value", "i64", true))))
                     .toString());
         }
 
@@ -47,8 +46,8 @@ public class PrettyPrinterTest {
             assertEquals(
                     "struct structuredData {\n  one: f64,\n  two: string,\n  thr33: i64,\n  four: OtherStruct,\n}\n",
                     pp.visit(new StructDef(srcPosMock, "structuredData", List.of(
-                            param("one", "f64"), param("two", "string"),
-                            param("thr33", "i64"), param("four", "OtherStruct")))).toString());
+                            param("one", "f64", true), param("two", "string", true),
+                            param("thr33", "i64", true), param("four", "OtherStruct", false)))).toString());
         }
     }
 

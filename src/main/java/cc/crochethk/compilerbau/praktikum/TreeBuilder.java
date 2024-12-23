@@ -307,12 +307,12 @@ public class TreeBuilder extends KlangBaseListener {
     @Override
     public void exitType(KlangParser.TypeContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.primitiveType() != null) {
-            var ttext = ctx.primitiveType().getText();
-            ctx.result = new TypeNode(srcPos, ttext);
-        } else if (ctx.refType() != null) {
-            var ttext = ctx.refType().getText();
-            ctx.result = new TypeNode(srcPos, ttext);
+        if (ctx.builtinType() != null) {
+            var ttext = ctx.builtinType().getText();
+            ctx.result = new TypeNode(srcPos, ttext, true);
+        } else if (ctx.customType() != null) {
+            var ttext = ctx.customType().getText();
+            ctx.result = new TypeNode(srcPos, ttext, false);
         } else {
             throw new UnhandledAlternativeException(srcPos, "type", ctx.getText());
         }
@@ -327,7 +327,7 @@ public class TreeBuilder extends KlangBaseListener {
     public void exitFunctionDef(KlangParser.FunctionDefContext ctx) {
         var srcPos = getSourcePos(ctx);
         var name = ctx.name.getText();
-        var returnType = ctx.type() != null ? ctx.type().result : new TypeNode(srcPos, "void");
+        var returnType = ctx.type() != null ? ctx.type().result : new TypeNode(srcPos, "void", true);
         List<Parameter> params = ctx.param().stream().map(p -> p.result).toList();
         var body = ctx.funBody.result;
         ctx.result = new FunDef(srcPos, name, params, returnType, body);

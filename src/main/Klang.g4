@@ -26,9 +26,9 @@ param
 	returns[Parameter result]: name=IDENT COLON type;
 
 type
-	returns[TypeNode result]: primitiveType | refType;
-primitiveType: numericType | T_BOOL | T_VOID;
-refType: T_STRING | IDENT;
+	returns[TypeNode result]: builtinType | customType;
+builtinType: numericType | T_BOOL | T_VOID | T_STRING;
+customType: IDENT;
 
 statementList
 	returns[StatementList result]: statement*;

@@ -6,10 +6,12 @@ import utils.SourcePos;
 public class TypeNode extends Node {
     public String typeToken;
     // public String packageToken;
+    public boolean isBuiltin;
 
-    public TypeNode(SourcePos srcPos, String typeToken) {
+    public TypeNode(SourcePos srcPos, String typeToken, boolean isBuiltinType) {
         super(srcPos);
         this.typeToken = typeToken;
+        this.isBuiltin = isBuiltinType;
     }
 
     @Override
