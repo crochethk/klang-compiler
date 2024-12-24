@@ -256,7 +256,11 @@ public class TypeChecker implements Visitor<Type> {
 
     @Override
     public Type visit(TypeNode type) {
+        // TODO handle non-default packages
         type.theType = Type.of(type.typeToken, "" /*default package */);
+        if (!type.isBuiltin && !structDefs.containsKey(type.typeToken)) {
+            reportError(type, "Unknown type '" + type.typeToken + "'");
+        }
         return type.theType;
     }
 
@@ -304,6 +308,8 @@ public class TypeChecker implements Visitor<Type> {
 
     @Override
     public Type visit(StructDef structDef) {
+        //TODO handle custom package
+        structDef.theType = Type.of(structDef.name, "");
         Set<String> fnames = new HashSet<>();
         structDef.fields.forEach(f -> {
             if (!fnames.add(f.name())) {
