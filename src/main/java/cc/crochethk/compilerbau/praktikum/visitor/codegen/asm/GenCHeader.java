@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum.visitor.codegen;
+package cc.crochethk.compilerbau.praktikum.visitor.codegen.asm;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -8,6 +8,7 @@ import java.nio.file.Path;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.CodeGenVisitor;
 
 /** Generates a C header file containing all function signatures of the programs FunDef nodes. */
 public class GenCHeader extends CodeGenVisitor<Void> {
@@ -150,6 +151,7 @@ public class GenCHeader extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(StructDef structDef) {
+        //TODO define auto-constructors/destructors
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
