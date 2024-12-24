@@ -23,7 +23,6 @@ public class PrettyPrinter implements Visitor<Writer> {
     @Override
     public Writer visit(I64Lit i64Lit) {
         write(Long.toString(i64Lit.value));
-        // TODO this could go into NumberLiteral base class
         if (i64Lit.hasTypeAnnotation)
             write(" as i64");
         return writer;
@@ -234,8 +233,24 @@ public class PrettyPrinter implements Visitor<Writer> {
 
     @Override
     public Writer visit(StructDef structDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        write("struct ");
+        write(structDef.name);
+        write(" {");
+        if (!structDef.fields.isEmpty()) {
+            indent_level++;
+            for (var p : structDef.fields) {
+                write_indent();
+                write(p.name());
+                write(": ");
+                p.type().accept(this);
+                write(",");
+            }
+            indent_level--;
+            write_indent();
+        }
+        write("}");
+        write_indent();
+        return writer;
     }
 
     @Override
