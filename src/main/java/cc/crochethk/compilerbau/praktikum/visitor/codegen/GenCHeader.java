@@ -4,12 +4,10 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
-import utils.PathUtils;
 
 /** Generates a C header file containing all function signatures of the programs FunDef nodes. */
 public class GenCHeader extends CodeGenVisitor<Void> {
@@ -18,10 +16,7 @@ public class GenCHeader extends CodeGenVisitor<Void> {
 
     public GenCHeader(String outputDir, String packageName, String className) throws IOException {
         super(outputDir, packageName, className);
-
-        var filePath = outFilePath();
-        Files.createDirectories(PathUtils.getParentOrEmpty(filePath));
-        writer = new BufferedWriter(new FileWriter(filePath.toFile()));
+        writer = new BufferedWriter(new FileWriter(outFilePath().toFile()));
     }
 
     @Override
