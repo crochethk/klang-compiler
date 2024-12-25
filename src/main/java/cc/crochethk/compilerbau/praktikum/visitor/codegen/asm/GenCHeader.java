@@ -105,16 +105,7 @@ public class GenCHeader extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(TypeNode type) {
-        // Map to the corresponding C type
-        var ctype = switch (type.typeToken) {
-            case "bool" -> "bool";
-            case "void" -> "void";
-            case "i64" -> "int64_t";
-            case "f64" -> "double";
-            case "string" -> "const char*";
-            default -> "void*"; // Fallback for user-defined or unknown types
-        };
-        scb.write(ctype);
+        scb.write(type.theType.cTypeName());
         return null;
     }
 
