@@ -138,9 +138,21 @@ public class GenCHeader extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(StructDef structDef) {
-        //TODO define auto-constructors/destructors
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        scb.write("\nstruct ");
+        scb.write(structDef.name);
+        scb.write(" {");
+        for (int i = 0; i < structDef.fields.size(); i++) {
+            scb.writeIndented("");
+            var f = structDef.fields.get(i);
+            // Write field type and name
+            f.type().accept(this);
+            scb.write(" ", f.name());
+            scb.write(";");
+        }
+        if (!structDef.fields.isEmpty())
+            scb.write("\n");
+        scb.write("};\n");
+        return null;
     }
 
     @Override
@@ -152,7 +164,14 @@ public class GenCHeader extends CodeGenVisitor<Void> {
         scb.write("\n#define ", guardName, "\n");
         scb.write("\n#include <stdint.h>");
         scb.write("\n#include <stdbool.h>", "\n");
+
+        // Declare structs
+        prog.structDefs.forEach(st -> scb.write("\nstruct ", st.name, ";"));
+        scb.write("\n");
         prog.funDefs.forEach(f -> f.accept(this));
+        // Write actual struct definitions
+        prog.structDefs.forEach(st -> st.accept(this));
+
         scb.write("\n#endif // ", guardName, "\n");
 
         try (var w = new FileWriter(outFilePath().toFile())) {
