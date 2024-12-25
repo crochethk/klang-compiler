@@ -1,9 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.visitor.codegen.asm;
 
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.file.Path;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
@@ -13,11 +11,11 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.CodeGenVisitor;
 /** Generates a C header file containing all function signatures of the programs FunDef nodes. */
 public class GenCHeader extends CodeGenVisitor<Void> {
     private static final String FILE_EXT = ".h";
-    private Writer writer;
+    private SourceCodeBuilder scb;
 
     public GenCHeader(String outputDir, String packageName, String className) throws IOException {
         super(outputDir, packageName, className);
-        writer = new BufferedWriter(new FileWriter(outFilePath().toFile()));
+        scb = new SourceCodeBuilder("  ");
     }
 
     @Override
@@ -116,36 +114,34 @@ public class GenCHeader extends CodeGenVisitor<Void> {
             case "string" -> "const char*";
             default -> "void*"; // Fallback for user-defined or unknown types
         };
-        write(ctype);
+        scb.write(ctype);
         return null;
     }
 
     @Override
     public Void visit(FunDef funDef) {
-        write("\n");
+        scb.write("\n");
         // Write return type
         funDef.returnType.accept(this);
-        write(" ");
+        scb.write(" ");
 
         // Write function name
-        write(funDef.name);
-        write("(");
+        scb.write(funDef.name, "(");
 
         // Add parameters
         if (funDef.params.isEmpty()) {
-            write("void");
+            scb.write("void");
         } else {
             for (int i = 0; i < funDef.params.size(); i++) {
                 var p = funDef.params.get(i);
                 // Write parameter type and name
                 p.type().accept(this);
-                write(" ");
-                write(p.name());
+                scb.write(" ", p.name());
                 if (i < funDef.params.size() - 1)
-                    write(", ");
+                    scb.write(", ");
             }
         }
-        write(");");
+        scb.write(");");
         return null;
     }
 
@@ -160,16 +156,16 @@ public class GenCHeader extends CodeGenVisitor<Void> {
     public Void visit(Prog prog) {
         var outputFileName = outFilePath().getFileName().toString();
         var guardName = outputFileName.replace('.', '_').toUpperCase();
-        write("// Auto-generated C header file");
-        write("\n#ifndef " + guardName);
-        write("\n#define " + guardName + "\n");
-        write("\n#include <stdint.h>");
-        write("\n#include <stdbool.h>\n");
+        scb.write("// Auto-generated C header file");
+        scb.write("\n#ifndef ", guardName);
+        scb.write("\n#define ", guardName, "\n");
+        scb.write("\n#include <stdint.h>");
+        scb.write("\n#include <stdbool.h>", "\n");
         prog.funDefs.forEach(f -> f.accept(this));
-        write("\n#endif // " + guardName + "\n");
+        scb.write("\n#endif // ", guardName, "\n");
 
-        try {
-            writer.close();
+        try (var w = new FileWriter(outFilePath().toFile())) {
+            w.write(scb.toString());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -179,13 +175,5 @@ public class GenCHeader extends CodeGenVisitor<Void> {
     @Override
     public Void visit(EmptyNode emptyNode) {
         return null;
-    }
-
-    private void write(String s) {
-        try {
-            writer.write(s);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
