@@ -3,9 +3,9 @@ package cc.crochethk.compilerbau.praktikum.visitor.codegen;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
-import utils.PathUtils;
 
 public abstract class CodeGenVisitor<T> implements Visitor<T> {
     protected String outDir;
@@ -22,17 +22,16 @@ public abstract class CodeGenVisitor<T> implements Visitor<T> {
         this.outDir = outputDir;
         this.packageName = packageName;
         this.className = className;
-        var filePath = outFilePath();
         try {
-            Files.createDirectories(PathUtils.getParentOrEmpty(filePath));
+            Files.createDirectories(Path.of(outputDir));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
-    * Returns the path of the generated file. Note that this does _not_ imply
-    * whether the file actually exists or generating code succeeded.
+    * Returns a list of paths of the generated files. Note that this does _not_ imply
+    * whether the files actually exists or generating code succeeded.
     */
-    public abstract Path outFilePath();
+    public abstract List<Path> outFilePaths();
 }

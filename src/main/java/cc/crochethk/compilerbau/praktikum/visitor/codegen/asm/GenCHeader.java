@@ -3,6 +3,7 @@ package cc.crochethk.compilerbau.praktikum.visitor.codegen.asm;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
@@ -10,7 +11,8 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.CodeGenVisitor;
 
 /** Generates a C header file containing all function signatures of the programs FunDef nodes. */
 public class GenCHeader extends CodeGenVisitor<Void> {
-    private static final String FILE_EXT = ".h";
+    private static final String EXT_H = ".h";
+    private static final String EXT_C = ".c";
     private SourceCodeBuilder header;
     private SourceCodeBuilder ccode;
 
@@ -21,8 +23,11 @@ public class GenCHeader extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Path outFilePath() {
-        return Path.of(outFilePathNoExt() + FILE_EXT);
+    public List<Path> outFilePaths() {
+        var ofpne = outFilePathNoExt();
+        var h = Path.of(ofpne + EXT_H);
+        var c = Path.of(ofpne + EXT_C);
+        return List.of(h, c);
     }
 
     private String outFilePathNoExt() {
@@ -167,8 +172,7 @@ public class GenCHeader extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(Prog prog) {
-        var outputFileName = outFilePath().getFileName().toString();
-        var guardName = outputFileName.replace('.', '_').toUpperCase();
+        var guardName = fileNameNoExt().concat(EXT_H).replace('.', '_').toUpperCase();
         // H preamble
         header.write("// Auto-generated C header file");
         header.write("\n#ifndef ", guardName);
@@ -177,7 +181,7 @@ public class GenCHeader extends CodeGenVisitor<Void> {
         header.write("\n#include <stdbool.h>", "\n");
 
         // C preamble
-        ccode.write("#include \"", fileNameNoExt(), ".h\"", "\n");
+        ccode.write("#include \"", fileNameNoExt(), EXT_H, "\"", "\n");
 
         // Declare structs in header
         prog.structDefs.forEach(st -> header.write("\nstruct ", st.name, ";"));
@@ -192,10 +196,10 @@ public class GenCHeader extends CodeGenVisitor<Void> {
 
         // Dump source code to files
         try {
-            var h = new FileWriter(outFilePathNoExt() + ".h");
+            var h = new FileWriter(outFilePathNoExt() + EXT_H);
             h.write(header.toString());
             h.close();
-            var c = new FileWriter(outFilePathNoExt() + ".c");
+            var c = new FileWriter(outFilePathNoExt() + EXT_C);
             c.write(ccode.toString());
             c.close();
         } catch (IOException e) {
