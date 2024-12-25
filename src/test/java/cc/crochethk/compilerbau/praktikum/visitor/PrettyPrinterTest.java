@@ -30,24 +30,24 @@ public class PrettyPrinterTest {
 
         @Test
         void emptyStruct() {
-            assertEquals("struct FooBar {}\n", pp.visit(new StructDef(srcPosMock,
-                    "FooBar", Collections.emptyList())).toString());
+            pp.visit(new StructDef(srcPosMock, "FooBar", Collections.emptyList()));
+            assertEquals("struct FooBar {}\n", pp.scb.toString());
         }
 
         @Test
         void oneFieldStruct() {
-            assertEquals("struct _Other {\n  a_value: i64,\n}\n", pp.visit(
-                    new StructDef(srcPosMock, "_Other", List.of(param("a_value", "i64", true))))
-                    .toString());
+            pp.visit(new StructDef(srcPosMock, "_Other", List.of(param("a_value", "i64", true))));
+            assertEquals("struct _Other {\n  a_value: i64,\n}\n", pp.scb.toString());
         }
 
         @Test
         void multipleFieldsStruct() {
+            pp.visit(new StructDef(srcPosMock, "structuredData", List.of(
+                    param("one", "f64", true), param("two", "string", true),
+                    param("thr33", "i64", true), param("four", "OtherStruct", false))));
             assertEquals(
                     "struct structuredData {\n  one: f64,\n  two: string,\n  thr33: i64,\n  four: OtherStruct,\n}\n",
-                    pp.visit(new StructDef(srcPosMock, "structuredData", List.of(
-                            param("one", "f64", true), param("two", "string", true),
-                            param("thr33", "i64", true), param("four", "OtherStruct", false)))).toString());
+                    pp.scb.toString());
         }
     }
 
@@ -55,34 +55,32 @@ public class PrettyPrinterTest {
     class LoopStatTests {
         @Test
         void testEmptyBody() {
-            assertEquals("loop {}", pp.visit(new LoopStat(srcPosMock,
-                    new StatementList(srcPosMock, Collections.emptyList()))).toString());
+            pp.visit(new LoopStat(srcPosMock,
+                    new StatementList(srcPosMock, Collections.emptyList())));
+            assertEquals("loop {}", pp.scb.toString());
         }
 
         @Test
         void testSingleStatment() {
-            assertEquals("loop {\n  return 42;\n}", pp.visit(new LoopStat(srcPosMock,
+            pp.visit(new LoopStat(srcPosMock,
                     new StatementList(srcPosMock, List.of(
-                            new ReturnStat(srcPosMock, new I64Lit(srcPosMock, 42, false))))))
-                    .toString());
+                            new ReturnStat(srcPosMock, new I64Lit(srcPosMock, 42, false))))));
+            assertEquals("loop {\n  return 42;\n}",
+                    pp.scb.toString());
         }
 
         @Test
         void testMultiStatment() {
             var assStat = new VarAssignStat(srcPosMock,
-                    "counter",
-                    new BinOpExpr(srcPosMock,
-                            new Var(srcPosMock, "counter"),
-                            BinOpExpr.BinaryOp.add,
-                            new I64Lit(srcPosMock, 1, false)));
+                    "counter", new BinOpExpr(srcPosMock, new Var(srcPosMock, "counter"),
+                            BinOpExpr.BinaryOp.add, new I64Lit(srcPosMock, 1, false)));
             var ifelse = new IfElseStat(srcPosMock,
                     new FunCall(srcPosMock, "maxReached", Collections.emptyList()),
-                    new BreakStat(srcPosMock),
-                    new EmptyNode(srcPosMock));
+                    new BreakStat(srcPosMock), new EmptyNode(srcPosMock));
+
+            pp.visit(new LoopStat(srcPosMock, new StatementList(srcPosMock, List.of(assStat, ifelse))));
             assertEquals("loop {\n  counter = (counter + 1);\n  if maxReached() {\n    break;\n  } else {}\n}",
-                    pp.visit(new LoopStat(srcPosMock, new StatementList(srcPosMock, List.of(
-                            assStat, ifelse))))
-                            .toString());
+                    pp.scb.toString());
         }
     }
 }

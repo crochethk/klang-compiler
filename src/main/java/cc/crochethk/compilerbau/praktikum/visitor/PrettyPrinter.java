@@ -6,14 +6,16 @@ import java.io.Writer;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.SourceCodeBuilder;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 
-public class PrettyPrinter implements Visitor<Writer> {
-    Writer writer;
-    private int indent_level = 0;
+public class PrettyPrinter implements Visitor<Void> {
+    public Writer writer;
+    SourceCodeBuilder scb;
 
     public PrettyPrinter(Writer out) {
         this.writer = out;
+        scb = new SourceCodeBuilder("  ", 0);
     }
 
     public PrettyPrinter() {
@@ -21,268 +23,259 @@ public class PrettyPrinter implements Visitor<Writer> {
     }
 
     @Override
-    public Writer visit(I64Lit i64Lit) {
-        write(Long.toString(i64Lit.value));
+    public Void visit(I64Lit i64Lit) {
+        scb.write(Long.toString(i64Lit.value));
         if (i64Lit.hasTypeAnnotation)
-            write(" as i64");
-        return writer;
+            scb.write(" as i64");
+        return null;
     }
 
     @Override
-    public Writer visit(F64Lit f64Lit) {
-        write(Double.toString(f64Lit.value));
+    public Void visit(F64Lit f64Lit) {
+        scb.write(Double.toString(f64Lit.value));
         if (f64Lit.hasTypeAnnotation)
-            write(" as f64");
-        return writer;
+            scb.write(" as f64");
+        return null;
     }
 
     @Override
-    public Writer visit(BoolLit boolLit) {
+    public Void visit(BoolLit boolLit) {
         var lex = boolLit.value ? BoolLit.TRUE_LEX : BoolLit.FALSE_LEX;
-        return write(lex);
+        scb.write(lex);
+        return null;
     }
 
     @Override
-    public Writer visit(StringLit stringLit) {
-        write("\"");
-        write(stringLit.value);
-        return write("\"");
+    public Void visit(StringLit stringLit) {
+        scb.write("\"", stringLit.value, "\"");
+        return null;
     }
 
     @Override
-    public Writer visit(Var var) {
-        return write(var.name);
+    public Void visit(Var var) {
+        scb.write(var.name);
+        return null;
     }
 
     @Override
-    public Writer visit(FunCall funCall) {
-        write(funCall.name);
-        write("(");
+    public Void visit(FunCall funCall) {
+        scb.write(funCall.name);
+        scb.write("(");
         for (int i = 0; i < funCall.args.size(); i++) {
             funCall.args.get(i).accept(this);
             if (i < funCall.args.size() - 1)
-                write(", ");
+                scb.write(", ");
         }
-        return write(")");
+        scb.write(")");
+        return null;
     }
 
     @Override
-    public Writer visit(BinOpExpr binOpExpr) {
-        write("(");
+    public Void visit(BinOpExpr binOpExpr) {
+        scb.write("(");
         binOpExpr.lhs.accept(this);
 
         if (binOpExpr.op != BinaryOp.pow)
-            write(" ");
-        write(binOpExpr.op.toLexeme());
+            scb.write(" ");
+        scb.write(binOpExpr.op.toLexeme());
         if (binOpExpr.op != BinaryOp.pow)
-            write(" ");
+            scb.write(" ");
 
         binOpExpr.rhs.accept(this);
-        write(")");
-        return writer;
+        scb.write(")");
+        return null;
     }
 
     @Override
-    public Writer visit(UnaryOpExpr unaryOpExpr) {
-        write("(");
+    public Void visit(UnaryOpExpr unaryOpExpr) {
+        scb.write("(");
         var op_lex = unaryOpExpr.op.toLexeme();
         switch (unaryOpExpr.op.side) {
             case left -> {
-                write(op_lex);
+                scb.write(op_lex);
                 unaryOpExpr.operand.accept(this);
             }
             case right -> {
                 unaryOpExpr.operand.accept(this);
-                write(op_lex);
+                scb.write(op_lex);
             }
         }
-        return write(")");
+        scb.write(")");
+        return null;
     }
 
     @Override
-    public Writer visit(TernaryConditionalExpr ternaryConditionalExpr) {
+    public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
         ternaryConditionalExpr.condition.accept(this);
-        write(" ? ");
+        scb.write(" ? ");
         ternaryConditionalExpr.then.accept(this);
-        write(" : ");
+        scb.write(" : ");
         return ternaryConditionalExpr.otherwise.accept(this);
     }
 
     @Override
-    public Writer visit(VarDeclareStat varDeclareStat) {
-        write("let ");
-        write(varDeclareStat.varName);
-        write(": ");
+    public Void visit(VarDeclareStat varDeclareStat) {
+        scb.write("let ", varDeclareStat.varName, ": ");
         varDeclareStat.declaredType.accept(this);
-        return writeSemi();
+        scb.write(";");
+        return null;
     }
 
     @Override
-    public Writer visit(VarAssignStat varAssignStat) {
-        write(varAssignStat.targetVarName);
-        write(" = ");
+    public Void visit(VarAssignStat varAssignStat) {
+        scb.write(varAssignStat.targetVarName, " = ");
         varAssignStat.expr.accept(this);
-        return writeSemi();
+        scb.write(";");
+        return null;
     }
 
     @Override
-    public Writer visit(IfElseStat ifElseStat) {
-        write("if ");
+    public Void visit(IfElseStat ifElseStat) {
+        scb.write("if ");
         ifElseStat.condition.accept(this);
-        write(" {");
+        scb.write(" {");
         if (!ifElseStat.then.isEmpty()) {
-            indent_level++;
-            write_indent();
+            scb.increaseIndent();
+            scb.writeIndent();
             ifElseStat.then.accept(this);
-            indent_level--;
-            write_indent();
+            scb.decreaseIndent();
+            scb.writeIndent();
         }
-        write("}");
-        write(" else {");
+        scb.write("} else {");
 
         if (!ifElseStat.otherwise.isEmpty()) {
-            indent_level++;
-            write_indent();
+            scb.increaseIndent();
+            scb.writeIndent();
             ifElseStat.otherwise.accept(this);
-            indent_level--;
-            write_indent();
+            scb.decreaseIndent();
+            scb.writeIndent();
         }
-        return write("}");
+        scb.write("}");
+        return null;
     }
 
     @Override
-    public Writer visit(LoopStat loopStat) {
-        write("loop");
-        write(" {");
+    public Void visit(LoopStat loopStat) {
+        scb.write("loop {");
         if (!loopStat.body.isEmpty()) {
-            indent_level++;
-            write_indent();
+            scb.increaseIndent();
+            scb.writeIndent();
             loopStat.body.accept(this);
-            indent_level--;
-            write_indent();
+            scb.decreaseIndent();
+            scb.writeIndent();
         }
-        return write("}");
+        scb.write("}");
+        return null;
     }
 
     @Override
-    public Writer visit(StatementList statementList) {
+    public Void visit(StatementList statementList) {
         var statList = statementList.statements;
         for (int i = 0; i < statList.size(); i++) {
             var s = statList.get(i);
             s.accept(this);
             if (!s.isEmpty() && i < statList.size() - 1)
-                write_indent();
+                scb.writeIndent();
         }
-        return writer;
+        return null;
     }
 
     @Override
-    public Writer visit(ReturnStat returnStat) {
-        write("return");
+    public Void visit(ReturnStat returnStat) {
+        scb.write("return");
         if (!returnStat.isEmpty()) {
-            write(" ");
+            scb.write(" ");
         }
         returnStat.expr.accept(this);
-        return writeSemi();
+        scb.write(";");
+        return null;
     }
 
     @Override
-    public Writer visit(BreakStat breakStat) {
-        write("break");
-        return writeSemi();
+    public Void visit(BreakStat breakStat) {
+        scb.write("break");
+        scb.write(";");
+        return null;
     }
 
     @Override
-    public Writer visit(TypeNode type) {
-        return write(type.typeToken);
+    public Void visit(TypeNode type) {
+        scb.write(type.typeToken);
+        return null;
     }
 
     @Override
-    public Writer visit(FunDef funDef) {
+    public Void visit(FunDef funDef) {
         // Signature
-        write("fn");
-        write(" ");
-        write(funDef.name);
-        write("(");
-
+        scb.write("fn ", funDef.name, "(");
         for (var p : funDef.params) {
-            write(p.name());
-            write(": ");
+            scb.write(p.name(), ": ");
             p.type().accept(this);
-            write(", ");
+            scb.write(", ");
         }
-        write(")");
+        scb.write(")");
         if (!funDef.returnType.typeToken.equals("void")) {
-            write(" -> ");
+            scb.write(" -> ");
             funDef.returnType.accept(this);
         }
 
         // Body
-        write(" {");
+        scb.write(" {");
         if (!funDef.body.isEmpty()) {
-            indent_level++;
-            write_indent();
+            scb.increaseIndent();
+            scb.writeIndent();
             funDef.body.accept(this);
-            indent_level--;
-            write_indent();
+            scb.decreaseIndent();
+            scb.writeIndent();
         }
-        write("}");
-        write_indent();
-        return writer;
+        scb.write("}");
+        scb.writeIndent();
+        return null;
     }
 
     @Override
-    public Writer visit(StructDef structDef) {
-        write("struct ");
-        write(structDef.name);
-        write(" {");
+    public Void visit(StructDef structDef) {
+        scb.write("struct ", structDef.name, " {");
         if (!structDef.fields.isEmpty()) {
-            indent_level++;
+            scb.increaseIndent();
             for (var p : structDef.fields) {
-                write_indent();
-                write(p.name());
-                write(": ");
+                scb.writeIndent();
+                scb.write(p.name(), ": ");
                 p.type().accept(this);
-                write(",");
+                scb.write(",");
             }
-            indent_level--;
-            write_indent();
+            scb.decreaseIndent();
+            scb.writeIndent();
         }
-        write("}");
-        write_indent();
-        return writer;
+        scb.write("}");
+        scb.writeIndent();
+        return null;
     }
 
     @Override
-    public Writer visit(Prog prog) {
+    public Void visit(Prog prog) {
+        for (int i = 0; i < prog.structDefs.size(); i++) {
+            prog.structDefs.get(i).accept(this);
+            if (i < prog.structDefs.size() - 1)
+                scb.writeIndent();
+        }
+
         for (int i = 0; i < prog.funDefs.size(); i++) {
             prog.funDefs.get(i).accept(this);
             if (i < prog.funDefs.size() - 1)
-                write_indent();
+                scb.writeIndent();
         }
-        return writer;
+
+        try {
+            writer.write(scb.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
     @Override
-    public Writer visit(EmptyNode emptyNode) {
-        return writer;
-    }
-
-    private void write_indent() {
-        write("\n");
-        write("  ".repeat(indent_level));
-    }
-
-    private Writer writeSemi() {
-        return write(";");
-    }
-
-    private Writer write(String s) {
-        try {
-            writer.write(s);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return writer;
+    public Void visit(EmptyNode emptyNode) {
+        return null;
     }
 }
