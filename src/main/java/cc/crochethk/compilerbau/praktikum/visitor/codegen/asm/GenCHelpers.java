@@ -18,13 +18,14 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.CodeGenVisitor;
 public class GenCHelpers extends CodeGenVisitor<Void> {
     private static final String EXT_H = ".h";
     private static final String EXT_C = ".c";
+    private static final String INDENT_SEQ = "  ";
     private SourceCodeBuilder header;
     private SourceCodeBuilder ccode;
 
     public GenCHelpers(String outputDir, String packageName, String className) throws IOException {
         super(outputDir, packageName, className);
-        header = new SourceCodeBuilder("  ");
-        ccode = new SourceCodeBuilder("  ");
+        header = new SourceCodeBuilder(INDENT_SEQ);
+        ccode = new SourceCodeBuilder(INDENT_SEQ);
     }
 
     @Override
@@ -125,35 +126,40 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(TypeNode type) {
-        header.write(type.theType.cTypeName());
+        header.write(formatTypeNode(type));
         return null;
     }
 
     @Override
     public Void visit(FunDef funDef) {
         header.write("\n");
-        // Write return type
+        // Write function signature
         funDef.returnType.accept(this);
         header.write(" ");
+        header.write(funDef.name, "(", formatParams(funDef.params), ");");
+        return null;
+    }
 
-        // Write function name
-        header.write(funDef.name, "(");
-
-        // Add parameters
-        if (funDef.params.isEmpty()) {
-            header.write("void");
+    private String formatParams(List<Parameter> params) {
+        StringBuilder sb = new StringBuilder();
+        if (params.isEmpty()) {
+            sb.append("void");
         } else {
-            for (int i = 0; i < funDef.params.size(); i++) {
-                var p = funDef.params.get(i);
+            for (int i = 0; i < params.size(); i++) {
+                var p = params.get(i);
                 // Write parameter type and name
-                p.type().accept(this);
-                header.write(" ", p.name());
-                if (i < funDef.params.size() - 1)
-                    header.write(", ");
+                sb.append(formatTypeNode(p.type()));
+                sb.append(" ");
+                sb.append(p.name());
+                if (i < params.size() - 1)
+                    sb.append(", ");
             }
         }
-        header.write(");");
-        return null;
+        return sb.toString();
+    }
+
+    private String formatTypeNode(TypeNode type) {
+        return type.theType.cTypeName();
     }
 
     @Override
