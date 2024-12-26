@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.visitor.codegen.asm;
 
+import cc.crochethk.compilerbau.praktikum.visitor.SourceCodeBuilder;
+
 /**
  * Base class representing a section of the program (e.g. ".text").
  * 

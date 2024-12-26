@@ -1,7 +1,11 @@
-package cc.crochethk.compilerbau.praktikum.visitor.codegen.asm;
+package cc.crochethk.compilerbau.praktikum.visitor;
 
 /**
  * Base class for writing string based source code.
+ * The indentation symbol can be customized and indentation level is managed.
+ * Methods are provided to for writing one or more strings at once, with or
+ * without indentation.
+ * 
  * The result can be retrieved using "toString()".
  */
 public class SourceCodeBuilder {
