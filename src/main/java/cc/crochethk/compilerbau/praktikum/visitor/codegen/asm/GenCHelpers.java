@@ -8,6 +8,7 @@ import java.util.List;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.visitor.SourceCodeBuilder;
+import cc.crochethk.compilerbau.praktikum.visitor.Type;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.CodeGenVisitor;
 
 /**
@@ -164,6 +165,7 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(StructDef structDef) {
+        // write actual struct definition
         header.write("\nstruct ");
         header.write(structDef.name);
         header.write(" {");
@@ -192,14 +194,98 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
         header.write("\n#include <stdbool.h>", "\n");
 
         // C preamble
+        ccode.write("\n#include <stdio.h>", "\n");
+        ccode.write("\n#include <stdlib.h>", "\n");
+        ccode.write("\n#include <string.h>", "\n");
         ccode.write("#include \"", fileNameNoExt(), EXT_H, "\"", "\n");
 
-        // Declare structs in header
+        // Declare structs
         prog.structDefs.forEach(st -> header.write("\nstruct ", st.name, ";"));
         header.write("\n");
 
-        // Declare and define funcitons
+        // Declare struct auto-methods
+        // - Methodnames: <packageName>$$<ProgName>$<StructName>$<methName>
+        prog.structDefs.forEach(st -> {
+            // constructor
+            writeConstructorSignature(header, st);
+            header.write(";");
+
+            // destructor
+            writeDestructorSignature(header, st);
+            header.write(";");
+
+            // to_string
+            writeToStringSignature(header, st);
+            header.write(";");
+
+            header.write("\n");
+        });
+
+        // Generate auto-methods definitions
+        prog.structDefs.forEach(st -> {
+            var thisPtrT = st.theType.cTypeName();
+            // constructor
+            writeConstructorSignature(ccode, st);
+            ccode.write(" {");
+            ccode.writeIndented(thisPtrT, " this = (", thisPtrT, ")malloc(sizeof(*this));");
+            for (int i = 0; i < st.fields.size(); i++) {
+                var f = st.fields.get(i);
+                ccode.writeIndented("this->", f.name(), " = ", f.name(), ";");
+            }
+            ccode.writeIndented("return this;");
+            ccode.write("\n}\n");
+
+            // destructor
+            writeDestructorSignature(ccode, st);
+            ccode.write(" {");
+            ccode.writeIndented("free(this);");
+            ccode.write("\n}\n");
+
+            // to_string
+            writeToStringSignature(ccode, st);
+            ccode.write(" {");
+            ccode.writeIndented("char* r = strdup(\"", st.name, "(\");");
+            if (!st.fields.isEmpty()) {
+                ccode.writeIndented("char* fStr;");
+                ccode.writeIndented("char* tmpRes;");
+                for (var it = st.fields.iterator(); it.hasNext();) {
+                    var f = it.next();
+                    // Put current field's stringified value to "fStr"
+                    if (f.type().theType.isReference()) {
+                        ccode.writeIndented("fStr = ");
+                        if (f.type().theType == Type.STRING_T) {
+                            ccode.write("strdup(this->", f.name(), ");");
+                        } else {
+                            writeCFullClassName(ccode);
+                            ccode.write("$", f.type().typeToken, "$to_string(this->", f.name(), ");");
+                        }
+                    } else {
+                        ccode.writeIndented("fStr = malloc(22);");
+                        ccode.writeIndented("sprintf(fStr,\"%ld\", this->", f.name(), ");");
+                    }
+
+                    // "+3" for the ", " or ")" suffix after each field (I guess)
+                    ccode.writeIndented("tmpRes = malloc(strlen(r)+strlen(fStr)+3);");
+                    ccode.writeIndented("tmpRes[0] = '\\0';"); // set strlen to 0
+                    ccode.writeIndented("tmpRes = strcat(tmpRes,r);"); // copy current result
+                    ccode.writeIndented("tmpRes = strcat(tmpRes,fStr);"); // append field value
+                    ccode.writeIndented("tmpRes = strcat(tmpRes,", (it.hasNext() ? "\", \"" : "\"\""), ");");
+                    ccode.writeIndented("free(r);");
+                    ccode.writeIndented("free(fStr);");
+                    ccode.writeIndented("r = tmpRes;");
+                }
+            }
+            ccode.writeIndented("r = strcat(r, \")\");");
+            ccode.writeIndented("return r;");
+
+            ccode.write("\n}\n");
+            ccode.write("\n");
+        });
+
+        // Declare static funcitons
         prog.funDefs.forEach(f -> f.accept(this));
+        header.write("\n");
+
         // Declare and define structs
         prog.structDefs.forEach(st -> st.accept(this));
 
@@ -222,5 +308,27 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
     @Override
     public Void visit(EmptyNode emptyNode) {
         return null;
+    }
+
+    private void writeCFullClassName(SourceCodeBuilder scb) {
+        scb.write(packageName, "$$", className);
+    }
+
+    private void writeConstructorSignature(SourceCodeBuilder scb, StructDef st) {
+        scb.write("\n", st.theType.cTypeName(), " ");
+        writeCFullClassName(scb);
+        scb.write("$", st.name, "$new(", formatParams(st.fields), ")");
+    }
+
+    private void writeDestructorSignature(SourceCodeBuilder scb, StructDef st) {
+        scb.write("\nvoid ");
+        writeCFullClassName(scb);
+        scb.write("$", st.name, "$dispose(", st.theType.cTypeName(), " this)");
+    }
+
+    private void writeToStringSignature(SourceCodeBuilder scb, StructDef st) {
+        scb.write("\nchar* ");
+        writeCFullClassName(scb);
+        scb.write("$", st.name, "$to_string(", st.theType.cTypeName(), " this)");
     }
 }
