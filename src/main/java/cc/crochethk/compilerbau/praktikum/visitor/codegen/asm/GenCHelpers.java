@@ -10,14 +10,18 @@ import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.visitor.SourceCodeBuilder;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.CodeGenVisitor;
 
-/** Generates a C header file containing all function signatures of the programs FunDef nodes. */
-public class GenCHeader extends CodeGenVisitor<Void> {
+/**
+ * Generates C files (.h, .c) containing all function signatures  of the programs
+ * FunDef nodes for easier external usage, as well as auto-generated functions for
+ * structs.
+ */
+public class GenCHelpers extends CodeGenVisitor<Void> {
     private static final String EXT_H = ".h";
     private static final String EXT_C = ".c";
     private SourceCodeBuilder header;
     private SourceCodeBuilder ccode;
 
-    public GenCHeader(String outputDir, String packageName, String className) throws IOException {
+    public GenCHelpers(String outputDir, String packageName, String className) throws IOException {
         super(outputDir, packageName, className);
         header = new SourceCodeBuilder("  ");
         ccode = new SourceCodeBuilder("  ");

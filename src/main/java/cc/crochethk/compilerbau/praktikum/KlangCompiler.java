@@ -25,7 +25,7 @@ import cc.crochethk.compilerbau.praktikum.visitor.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.GenCHeader;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.GenCHelpers;
 import utils.PathUtils;
 
 public class KlangCompiler {
@@ -79,9 +79,9 @@ public class KlangCompiler {
             ast.accept(codeGenerator);
 
             // Generate C helper files
-            var headerGen = new GenCHeader(outputDir, packageName, className);
-            printGeneratingFilesMessage(indent, headerGen.outFilePaths());
-            ast.accept(headerGen);
+            var cHelpersGen = new GenCHelpers(outputDir, packageName, className);
+            printGeneratingFilesMessage(indent, cHelpersGen.outFilePaths());
+            ast.accept(cHelpersGen);
         } else {
             System.out.println(indent + "No assembly generated (disabled).");
         }
