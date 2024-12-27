@@ -1,8 +1,11 @@
 /* file: minunit.h */
+#include <string.h>
 
 #define mu_assert(description, test) do { if (!(test)) return description; } while (0)
 
 #define mu_asserteq(expected, actual) do { if (expected != actual) return #expected " != " #actual; } while (0)
+
+#define mu_assertstreq(expected, actual) do { if (strcmp(expected, actual) != 0) return #expected " != " #actual; } while (0)
 
 /**
  * Runs all tests given as "char* (*tests[])(void)" (array of funptr with return char*)
