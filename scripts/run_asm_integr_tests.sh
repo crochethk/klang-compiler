@@ -26,9 +26,9 @@ fi
 src_file_compile_dir="${work_dir}/code_gen"
 
 # Iterate over each file in TEST_FILE_DIR with prefix "test_" and extension ".c"
-for test_file in ${TEST_FILE_DIR}/test_*.c; do
+for test_file in "${TEST_FILE_DIR}/test_"*.c; do
     # Extract the file name without extension
-    test_file_name_no_ext=$(basename $test_file .c)
+    test_file_name_no_ext=$(basename "$test_file" .c)
     src_file_name_no_ext="asm_${test_file_name_no_ext}"
 
     echo "--- Testfile: '${test_file}'"
@@ -46,7 +46,7 @@ for test_file in ${TEST_FILE_DIR}/test_*.c; do
     # Compile the test, linking it with the assembly file using gcc
     echo "Compiling and linking '$test_file' and 'tests.${src_file_name_no_ext}.s'"
     mkdir -p "$C_BIN_DIR"
-    gcc -o "${C_BIN_DIR}/${test_file_name_no_ext}" "${test_file}" "${src_file_compile_dir}/tests.${src_file_name_no_ext}.s"
+    gcc -o "${C_BIN_DIR}/${test_file_name_no_ext}" "${test_file}" "${src_file_compile_dir}/tests.${src_file_name_no_ext}.s" "${src_file_compile_dir}/tests.${src_file_name_no_ext}.c"
     if [ $? -ne 0 ]; then
         echo -e ">>> ERROR. Test skipped!\n"
         continue
