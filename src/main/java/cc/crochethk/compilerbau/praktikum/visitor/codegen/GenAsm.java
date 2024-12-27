@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
@@ -41,8 +42,8 @@ public class GenAsm extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Path outFilePath() {
-        return Path.of(outDir, packageName + "." + className + FILE_EXT);
+    public List<Path> outFilePaths() {
+        return List.of(Path.of(outDir, packageName + "." + className + FILE_EXT));
     }
 
     @Override
@@ -328,7 +329,7 @@ public class GenAsm extends CodeGenVisitor<Void> {
     public Void visit(Prog prog) {
         prog.funDefs.forEach(f -> f.accept(this));
 
-        var filePath = outFilePath();
+        var filePath = outFilePaths().get(0);
         try (var w = new FileWriter(filePath.toFile())) {
             w.write("\t.file\t\"" + filePath.getFileName().toString() + "\"");
 

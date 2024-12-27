@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -23,8 +24,8 @@ import cc.crochethk.compilerbau.praktikum.ast.Node;
 import cc.crochethk.compilerbau.praktikum.visitor.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenCHeader;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.GenCHelpers;
 import utils.PathUtils;
 
 public class KlangCompiler {
@@ -47,8 +48,9 @@ public class KlangCompiler {
 
         // PrettyPrint
         if (PRETTY_PRINT_AST) {
-            var w = ast.accept(new PrettyPrinter());
-            System.out.println(w.toString());
+            var pp = new PrettyPrinter();
+            ast.accept(new PrettyPrinter());
+            System.out.println(pp.writer.toString());
         }
 
         // Type checking
@@ -60,7 +62,7 @@ public class KlangCompiler {
         System.out.println("Java Byte Code:");
         if (GENERATE_JBC) {
             var codeGenerator = new GenJBC(outputDir, packageName, className);
-            System.out.println(indent + "Generating '" + codeGenerator.outFilePath() + "'...");
+            printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
 
             runWithSuccessCheck(() -> ast.accept(codeGenerator), indent);
 
@@ -73,18 +75,26 @@ public class KlangCompiler {
         System.out.println("GNU Assembly Code:");
         if (GENERATE_ASM) {
             var codeGenerator = new GenAsm(outputDir, packageName, className);
-            System.out.println(indent + "Generating '" + codeGenerator.outFilePath() + "'...");
+            printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
             ast.accept(codeGenerator);
 
-            // Generate header
-            var headerGen = new GenCHeader(outputDir, packageName, className);
-            System.out.println(indent + "Generating '" + headerGen.outFilePath() + "'...");
-            ast.accept(headerGen);
-
+            // Generate C helper files
+            var cHelpersGen = new GenCHelpers(outputDir, packageName, className);
+            printGeneratingFilesMessage(indent, cHelpersGen.outFilePaths());
+            ast.accept(cHelpersGen);
         } else {
             System.out.println(indent + "No assembly generated (disabled).");
         }
         System.out.println();
+    }
+
+    private static void printGeneratingFilesMessage(String indent, List<Path> paths) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(indent + "Generating...");
+        for (var p : paths) {
+            sb.append("\n" + indent.repeat(2) + "'" + p + "'");
+        }
+        System.out.println(sb.toString());
     }
 
     /**
