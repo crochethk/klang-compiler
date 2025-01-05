@@ -152,18 +152,18 @@ public class CommandLineParser {
         }
     }
 
-    public String getValue(String key) {
-        if (!argumentDefinitions.containsKey(key)) {
-            throw new IllegalArgumentException("Argument not found: " + key);
+    public String getValue(String argName) {
+        if (!argumentDefinitions.containsKey(argName)) {
+            throw new IllegalArgumentException("Argument not found: " + argName);
         }
-        return parsedArguments.get(key);
+        return parsedArguments.get(argName);
     }
 
-    public boolean hasFlag(String key) {
-        if (!argumentDefinitions.containsKey(key)) {
-            throw new IllegalArgumentException("Flag not found: " + key);
+    public boolean hasFlag(String flagName) {
+        if (!argumentDefinitions.containsKey(flagName)) {
+            throw new IllegalArgumentException("Flag not found: " + flagName);
         }
-        String value = parsedArguments.get(key);
+        String value = parsedArguments.get(flagName);
         return value != null && value.equals("true");
     }
 
