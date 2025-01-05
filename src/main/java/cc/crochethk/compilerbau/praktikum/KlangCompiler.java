@@ -29,11 +29,8 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.GenCHelpers;
 import utils.PathUtils;
 
 public class KlangCompiler {
-    /** Compiler config that overrides defaults if present */
-    static String DOTENV_FILE = "klangc.env";
-
-    // Default compiler config
-    // These are overridden by the .env file (if present)
+    // Default compiler args
+    static String OUT_DIR = "./out";
     static boolean VISUALIZE_PARSETREE = false;
     static boolean BUILD_AST = true;
     static boolean PRETTY_PRINT_AST = false;
@@ -121,45 +118,8 @@ public class KlangCompiler {
         return new KlangLexer(CharStreams.fromReader(inputText));
     }
 
-    /**
-     * - we assume, the invoker is in the source root folder.
-     *      - so fullClassName is inferred from the file's relative path
-     * 
-     * - either args must be specified as follows 
-     *      or a klangc.env must exist containing values for at least
-     *          OUTDIR and SOURCEFILE
-     * 
-     * - Arguments:
-     *      - args[0]: output directory for generated files 
-     *      - args[1..]: paths to source files __relative to current dir__
-     * 
-     */
     public static void main(String[] args) throws IOException {
-        var dotEnv = utils.Env.readEnvVarFile(DOTENV_FILE);
-        VISUALIZE_PARSETREE = Boolean.parseBoolean(
-                dotEnv.getProperty("VISUALIZE_PARSETREE", String.valueOf(VISUALIZE_PARSETREE)));
-        BUILD_AST = Boolean.parseBoolean(
-                dotEnv.getProperty("BUILD_AST", String.valueOf(BUILD_AST)));
-        PRETTY_PRINT_AST = Boolean.parseBoolean(
-                dotEnv.getProperty("PRETTY_PRINT_AST", String.valueOf(PRETTY_PRINT_AST)));
-        TYPECHECK = Boolean.parseBoolean(
-                dotEnv.getProperty("TYPECHECK", String.valueOf(TYPECHECK)));
-        GENERATE_JBC = Boolean.parseBoolean(
-                dotEnv.getProperty("GENERATE_JBC", String.valueOf(GENERATE_JBC)));
-        GENERATE_ASM = Boolean.parseBoolean(
-                dotEnv.getProperty("GENERATE_ASM", String.valueOf(GENERATE_ASM)));
-
-        switch (args.length) {
-            case 0 -> args = new String[] { dotEnv.getProperty("OUTDIR"), dotEnv.getProperty("SOURCEFILE") };
-            case 1 -> {
-                System.out.println("Error: Expected either 0 or at least 2 arguments");
-                System.exit(1);
-            }
-            default -> {
-            }
-        }
-
-        var outputDir = args[0];
+        var outputDir = OUT_DIR;
         var filePaths = Arrays.asList(args).stream().skip(1).map(src -> Path.of(src)).toList();
         for (var fp : filePaths) {
             var file = fp.toFile();

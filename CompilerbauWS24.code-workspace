@@ -46,7 +46,6 @@
             "mike-lischke.vscode-antlr4",
             "vscjava.vscode-java-pack",
             "aaron-bond.better-comments",
-            "mikestead.dotenv"
         ]
     },
 }
