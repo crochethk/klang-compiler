@@ -26,27 +26,18 @@ import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.GenCHelpers;
+import lombok.Builder;
 import utils.PathUtils;
 
 public class KlangCompiler {
-    // Default compiler args
-    static String DEFAULT_OUT_DIR = "./out";
-    static boolean DEFAULT_VISUALIZE_PARSETREE = false;
-    static boolean DEFAULT_BUILD_AST = true;
-    static boolean DEFAULT_PRETTY_PRINT_AST = false;
-    static boolean DEFAULT_TYPECHECK = true;
-    static boolean DEFAULT_GENERATE_JBC = true;
-    static boolean DEFAULT_GENERATE_ASM = true;
+    private KlangCompilerConfig cfg;
 
-    private String outputDir;
-    private boolean visualizeParseTree;
-    private boolean buildAst;
-    private boolean prettyPrintAst;
-    private boolean typeCheck;
-    private boolean generateJbc;
-    private boolean generateAsm;
+    public KlangCompiler(KlangCompilerConfig config) {
+        this.cfg = config;
+    }
 
-    public KlangCompiler(
+    @Builder
+    static record KlangCompilerConfig(
             String outputDir,
             boolean visualizeParseTree,
             boolean buildAst,
@@ -54,13 +45,18 @@ public class KlangCompiler {
             boolean typeCheck,
             boolean generateJbc,
             boolean generateAsm) {
-        this.outputDir = outputDir;
-        this.visualizeParseTree = visualizeParseTree;
-        this.buildAst = buildAst;
-        this.prettyPrintAst = prettyPrintAst;
-        this.typeCheck = typeCheck;
-        this.generateJbc = generateJbc;
-        this.generateAsm = generateAsm;
+        public static class KlangCompilerConfigBuilder {
+            KlangCompilerConfigBuilder() {
+                // Default compiler configuration
+                outputDir = "./out";
+                visualizeParseTree = false;
+                buildAst = true;
+                prettyPrintAst = false;
+                typeCheck = true;
+                generateJbc = true;
+                generateAsm = true;
+            }
+        }
     }
 
     public void compile(Reader inputCode, String packageName, String className)
@@ -69,21 +65,21 @@ public class KlangCompiler {
         var indent = " ".repeat(4);
 
         // PrettyPrint
-        if (prettyPrintAst) {
+        if (cfg.prettyPrintAst()) {
             var pp = new PrettyPrinter();
             ast.accept(new PrettyPrinter());
             System.out.println(pp.writer.toString());
         }
 
         // Type checking
-        if (typeCheck) {
+        if (cfg.typeCheck()) {
             ast.accept(new TypeChecker());
         }
 
         // Java Byte Code generation
         System.out.println("Java Byte Code:");
-        if (generateJbc) {
-            var codeGenerator = new GenJBC(outputDir, packageName, className);
+        if (cfg.generateJbc()) {
+            var codeGenerator = new GenJBC(cfg.outputDir(), packageName, className);
             printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
 
             runWithSuccessCheck(() -> ast.accept(codeGenerator), indent);
@@ -95,13 +91,13 @@ public class KlangCompiler {
 
         // GNU Assembly generation
         System.out.println("GNU Assembly Code:");
-        if (generateAsm) {
-            var codeGenerator = new GenAsm(outputDir, packageName, className);
+        if (cfg.generateAsm()) {
+            var codeGenerator = new GenAsm(cfg.outputDir(), packageName, className);
             printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
             ast.accept(codeGenerator);
 
             // Generate C helper files
-            var cHelpersGen = new GenCHelpers(outputDir, packageName, className);
+            var cHelpersGen = new GenCHelpers(cfg.outputDir(), packageName, className);
             printGeneratingFilesMessage(indent, cHelpersGen.outFilePaths());
             ast.accept(cHelpersGen);
         } else {
@@ -127,11 +123,11 @@ public class KlangCompiler {
         var lexer = applyLexer(inputCode);
         var parser = new KlangParser(new CommonTokenStream(lexer));
         var antlrTree = parser.start();
-        if (visualizeParseTree) {
+        if (cfg.visualizeParseTree()) {
             showAstVisualization(parser, antlrTree);
         }
 
-        if (buildAst) {
+        if (cfg.buildAst()) {
             var treeBuilder = new TreeBuilder();
             // var treeBuilder = new TestParseTreeListener();
             ParseTreeWalker.DEFAULT.walk(treeBuilder, antlrTree);
@@ -144,22 +140,8 @@ public class KlangCompiler {
     }
 
     public static void main(String[] args) {
-        var outputDir = DEFAULT_OUT_DIR;
-        var visualizeParseTree = DEFAULT_VISUALIZE_PARSETREE;
-        var buildAst = DEFAULT_BUILD_AST;
-        var prettyPrintAst = DEFAULT_PRETTY_PRINT_AST;
-        var typeCheck = DEFAULT_TYPECHECK;
-        var generateJbc = DEFAULT_GENERATE_JBC;
-        var generateAsm = DEFAULT_GENERATE_ASM;
-
-        var compiler = new KlangCompiler(
-                outputDir,
-                visualizeParseTree,
-                buildAst,
-                prettyPrintAst,
-                typeCheck,
-                generateJbc,
-                generateAsm);
+        var config = KlangCompilerConfig.builder().build();
+        var compiler = new KlangCompiler(config);
         var filePaths = Arrays.asList(args).stream().skip(1).map(src -> Path.of(src)).toList();
         for (var fp : filePaths) {
             var file = fp.toFile();
