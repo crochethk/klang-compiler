@@ -2,7 +2,7 @@
     "folders": [
         // Add one path per JAVA project
         {
-            "name": "praktikum",
+            "name": "klang compiler",
             "path": "."
         },
     ],
