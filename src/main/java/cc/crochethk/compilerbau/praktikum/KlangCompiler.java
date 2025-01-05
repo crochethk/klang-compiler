@@ -30,34 +30,59 @@ import utils.PathUtils;
 
 public class KlangCompiler {
     // Default compiler args
-    static String OUT_DIR = "./out";
-    static boolean VISUALIZE_PARSETREE = false;
-    static boolean BUILD_AST = true;
-    static boolean PRETTY_PRINT_AST = false;
-    static boolean TYPECHECK = true;
-    static boolean GENERATE_JBC = true;
-    static boolean GENERATE_ASM = true;
+    static String DEFAULT_OUT_DIR = "./out";
+    static boolean DEFAULT_VISUALIZE_PARSETREE = false;
+    static boolean DEFAULT_BUILD_AST = true;
+    static boolean DEFAULT_PRETTY_PRINT_AST = false;
+    static boolean DEFAULT_TYPECHECK = true;
+    static boolean DEFAULT_GENERATE_JBC = true;
+    static boolean DEFAULT_GENERATE_ASM = true;
 
-    public static void compile(Reader inputCode, String outputDir, String packageName, String className)
+    private String outputDir;
+    private boolean visualizeParseTree;
+    private boolean buildAst;
+    private boolean prettyPrintAst;
+    private boolean typeCheck;
+    private boolean generateJbc;
+    private boolean generateAsm;
+
+    public KlangCompiler(
+            String outputDir,
+            boolean visualizeParseTree,
+            boolean buildAst,
+            boolean prettyPrintAst,
+            boolean typeCheck,
+            boolean generateJbc,
+            boolean generateAsm) {
+        this.outputDir = outputDir;
+        this.visualizeParseTree = visualizeParseTree;
+        this.buildAst = buildAst;
+        this.prettyPrintAst = prettyPrintAst;
+        this.typeCheck = typeCheck;
+        this.generateJbc = generateJbc;
+        this.generateAsm = generateAsm;
+    }
+
+    public void compile(Reader inputCode, String packageName, String className)
             throws IOException {
-        var ast = buildAST(inputCode);
+        var ast = buildAst(inputCode);
         var indent = " ".repeat(4);
 
         // PrettyPrint
-        if (PRETTY_PRINT_AST) {
+        if (prettyPrintAst) {
             var pp = new PrettyPrinter();
             ast.accept(new PrettyPrinter());
             System.out.println(pp.writer.toString());
         }
 
         // Type checking
-        if (TYPECHECK) {
+        if (typeCheck) {
             ast.accept(new TypeChecker());
         }
 
         // Java Byte Code generation
         System.out.println("Java Byte Code:");
-        if (GENERATE_JBC) {
+        if (generateJbc) {
             var codeGenerator = new GenJBC(outputDir, packageName, className);
             printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
 
@@ -70,7 +95,7 @@ public class KlangCompiler {
 
         // GNU Assembly generation
         System.out.println("GNU Assembly Code:");
-        if (GENERATE_ASM) {
+        if (generateAsm) {
             var codeGenerator = new GenAsm(outputDir, packageName, className);
             printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
             ast.accept(codeGenerator);
@@ -98,15 +123,15 @@ public class KlangCompiler {
      * Builds the Abstract Syntax Tree from the given input source code and
      * returns its root node.
      */
-    private static Node buildAST(Reader inputCode) throws IOException {
+    private Node buildAst(Reader inputCode) throws IOException {
         var lexer = applyLexer(inputCode);
         var parser = new KlangParser(new CommonTokenStream(lexer));
         var antlrTree = parser.start();
-        if (VISUALIZE_PARSETREE) {
+        if (visualizeParseTree) {
             showAstVisualization(parser, antlrTree);
         }
 
-        if (BUILD_AST) {
+        if (buildAst) {
             var treeBuilder = new TreeBuilder();
             // var treeBuilder = new TestParseTreeListener();
             ParseTreeWalker.DEFAULT.walk(treeBuilder, antlrTree);
@@ -114,24 +139,37 @@ public class KlangCompiler {
         return antlrTree.result;
     }
 
-    static Lexer applyLexer(Reader inputText) throws IOException {
+    private static Lexer applyLexer(Reader inputText) throws IOException {
         return new KlangLexer(CharStreams.fromReader(inputText));
     }
 
-    public static void main(String[] args) throws IOException {
-        var outputDir = OUT_DIR;
+    public static void main(String[] args) {
+        var outputDir = DEFAULT_OUT_DIR;
+        var visualizeParseTree = DEFAULT_VISUALIZE_PARSETREE;
+        var buildAst = DEFAULT_BUILD_AST;
+        var prettyPrintAst = DEFAULT_PRETTY_PRINT_AST;
+        var typeCheck = DEFAULT_TYPECHECK;
+        var generateJbc = DEFAULT_GENERATE_JBC;
+        var generateAsm = DEFAULT_GENERATE_ASM;
+
+        var compiler = new KlangCompiler(
+                outputDir,
+                visualizeParseTree,
+                buildAst,
+                prettyPrintAst,
+                typeCheck,
+                generateJbc,
+                generateAsm);
         var filePaths = Arrays.asList(args).stream().skip(1).map(src -> Path.of(src)).toList();
         for (var fp : filePaths) {
             var file = fp.toFile();
-            var reader = new FileReader(file);
 
             var fpBase = PathUtils.getParentOrEmpty(fp);
             var packageName = fpBase.toString().replace(File.separator, ".");
             var className = PathUtils.getFileNameNoExt(fp);
 
-            try {
-                compile(reader, outputDir, packageName, className);
-                reader.close();
+            try (var reader = new FileReader(file)) {
+                compiler.compile(reader, packageName, className);
                 System.out.println("All tasks finished successfully.");
             } catch (Exception e) {
                 System.out.println("Errors occured while processing compilation tasks.");
