@@ -15,11 +15,13 @@ public class CommandLineParser {
     private final Map<String, Argument> argumentDefinitions;
     private final Map<String, String> parsedArguments;
     private final List<String> trailingArgs;
+    private final boolean withTrailingArgs;
 
-    private CommandLineParser(ArgumentBuilder builder, String[] args) {
+    private CommandLineParser(ArgumentBuilder builder, String[] args, boolean withTrailingArgs) {
         this.argumentDefinitions = builder.arguments;
         this.parsedArguments = new HashMap<>();
         this.trailingArgs = new ArrayList<>();
+        this.withTrailingArgs = withTrailingArgs;
         parseAndValidate(args);
         applyDefaults();
     }
@@ -29,6 +31,7 @@ public class CommandLineParser {
 
     public static class ArgumentBuilder {
         private final Map<String, Argument> arguments = new HashMap<>();
+        private boolean withTrailingArgs = false;
 
         public ArgumentBuilder requiredArg(String name) {
             arguments.put(name, new Argument(name, true, true, null));
@@ -50,8 +53,14 @@ public class CommandLineParser {
             return this;
         }
 
+        /** Require one or more unnamed trailing arguments. */
+        public ArgumentBuilder withTrailingArgs() {
+            this.withTrailingArgs = true;
+            return this;
+        }
+
         public CommandLineParser parse(String[] args) {
-            return new CommandLineParser(this, args);
+            return new CommandLineParser(this, args, withTrailingArgs);
         }
     }
 
@@ -64,6 +73,10 @@ public class CommandLineParser {
 
             // Check if we've hit the trailing arguments delimiter
             if (current.equals("--")) {
+                if (!withTrailingArgs) {
+                    throw new IllegalArgumentException("No trailing arguments allowed");
+                }
+
                 // Add all remaining arguments as trailing args
                 for (int j = i + 1; j < args.length; j++) {
                     trailingArgs.add(args[j]);
@@ -74,6 +87,9 @@ public class CommandLineParser {
             // If we haven't started trailing args and this isn't a flag
             if (!current.startsWith("-")) {
                 reachedTrailingArgs = true;
+                if (!withTrailingArgs) {
+                    throw new IllegalArgumentException("No trailing arguments allowed");
+                }
                 trailingArgs.add(current);
                 continue;
             }
@@ -117,6 +133,11 @@ public class CommandLineParser {
         if (!missingArgs.isEmpty()) {
             throw new IllegalArgumentException(
                     "Missing required arguments: " + String.join(", ", missingArgs));
+        }
+
+        if (withTrailingArgs && trailingArgs.isEmpty()) {
+            throw new IllegalArgumentException("Missing required trailing arguments");
+
         }
     }
 
