@@ -26,42 +26,49 @@ import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.GenCHelpers;
+import lombok.Builder;
+import utils.CommandLineParser;
 import utils.PathUtils;
 
 public class KlangCompiler {
-    /** Compiler config that overrides defaults if present */
-    static String DOTENV_FILE = "klangc.env";
+    private KlangCompilerConfig cfg;
 
-    // Default compiler config
-    // These are overridden by the .env file (if present)
-    static boolean VISUALIZE_PARSETREE = false;
-    static boolean BUILD_AST = true;
-    static boolean PRETTY_PRINT_AST = false;
-    static boolean TYPECHECK = true;
-    static boolean GENERATE_JBC = true;
-    static boolean GENERATE_ASM = true;
+    public KlangCompiler(KlangCompilerConfig config) {
+        this.cfg = config;
+    }
 
-    public static void compile(Reader inputCode, String outputDir, String packageName, String className)
+    @Builder
+    static record KlangCompilerConfig(
+            String outputDir,
+            boolean showParseTree,
+            boolean buildAst,
+            boolean prettyPrintAst,
+            boolean typeCheck,
+            boolean generateJbc,
+            boolean generateAsm) {
+    }
+
+    public void compile(Reader inputCode, String packageName, String className)
             throws IOException {
-        var ast = buildAST(inputCode);
+        var ast = buildAst(inputCode);
         var indent = " ".repeat(4);
 
         // PrettyPrint
-        if (PRETTY_PRINT_AST) {
+        if (cfg.prettyPrintAst()) {
             var pp = new PrettyPrinter();
             ast.accept(new PrettyPrinter());
             System.out.println(pp.writer.toString());
         }
 
         // Type checking
-        if (TYPECHECK) {
+        if (cfg.typeCheck()) {
             ast.accept(new TypeChecker());
         }
 
         // Java Byte Code generation
         System.out.println("Java Byte Code:");
-        if (GENERATE_JBC) {
-            var codeGenerator = new GenJBC(outputDir, packageName, className);
+        if (cfg.generateJbc()) {
+            var codeGenerator = new GenJBC(cfg.outputDir(), packageName, className);
             printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
 
             runWithSuccessCheck(() -> ast.accept(codeGenerator), indent);
@@ -73,13 +80,13 @@ public class KlangCompiler {
 
         // GNU Assembly generation
         System.out.println("GNU Assembly Code:");
-        if (GENERATE_ASM) {
-            var codeGenerator = new GenAsm(outputDir, packageName, className);
+        if (cfg.generateAsm()) {
+            var codeGenerator = new GenAsm(cfg.outputDir(), packageName, className);
             printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
             ast.accept(codeGenerator);
 
             // Generate C helper files
-            var cHelpersGen = new GenCHelpers(outputDir, packageName, className);
+            var cHelpersGen = new GenCHelpers(cfg.outputDir(), packageName, className);
             printGeneratingFilesMessage(indent, cHelpersGen.outFilePaths());
             ast.accept(cHelpersGen);
         } else {
@@ -101,15 +108,15 @@ public class KlangCompiler {
      * Builds the Abstract Syntax Tree from the given input source code and
      * returns its root node.
      */
-    private static Node buildAST(Reader inputCode) throws IOException {
+    private Node buildAst(Reader inputCode) throws IOException {
         var lexer = applyLexer(inputCode);
         var parser = new KlangParser(new CommonTokenStream(lexer));
         var antlrTree = parser.start();
-        if (VISUALIZE_PARSETREE) {
-            showAstVisualization(parser, antlrTree);
+        if (cfg.showParseTree()) {
+            showParseTreeVisualization(parser, antlrTree);
         }
 
-        if (BUILD_AST) {
+        if (cfg.buildAst()) {
             var treeBuilder = new TreeBuilder();
             // var treeBuilder = new TestParseTreeListener();
             ParseTreeWalker.DEFAULT.walk(treeBuilder, antlrTree);
@@ -117,61 +124,93 @@ public class KlangCompiler {
         return antlrTree.result;
     }
 
-    static Lexer applyLexer(Reader inputText) throws IOException {
+    private static Lexer applyLexer(Reader inputText) throws IOException {
         return new KlangLexer(CharStreams.fromReader(inputText));
     }
 
-    /**
-     * - we assume, the invoker is in the source root folder.
-     *      - so fullClassName is inferred from the file's relative path
-     * 
-     * - either args must be specified as follows 
-     *      or a klangc.env must exist containing values for at least
-     *          OUTDIR and SOURCEFILE
-     * 
-     * - Arguments:
-     *      - args[0]: output directory for generated files 
-     *      - args[1..]: paths to source files __relative to current dir__
-     * 
-     */
-    public static void main(String[] args) throws IOException {
-        var dotEnv = utils.Env.readEnvVarFile(DOTENV_FILE);
-        VISUALIZE_PARSETREE = Boolean.parseBoolean(
-                dotEnv.getProperty("VISUALIZE_PARSETREE", String.valueOf(VISUALIZE_PARSETREE)));
-        BUILD_AST = Boolean.parseBoolean(
-                dotEnv.getProperty("BUILD_AST", String.valueOf(BUILD_AST)));
-        PRETTY_PRINT_AST = Boolean.parseBoolean(
-                dotEnv.getProperty("PRETTY_PRINT_AST", String.valueOf(PRETTY_PRINT_AST)));
-        TYPECHECK = Boolean.parseBoolean(
-                dotEnv.getProperty("TYPECHECK", String.valueOf(TYPECHECK)));
-        GENERATE_JBC = Boolean.parseBoolean(
-                dotEnv.getProperty("GENERATE_JBC", String.valueOf(GENERATE_JBC)));
-        GENERATE_ASM = Boolean.parseBoolean(
-                dotEnv.getProperty("GENERATE_ASM", String.valueOf(GENERATE_ASM)));
+    public static void main(String[] args) {
+        final String USAGE_INFO = """
+                Usage: java --enable-preview -jar klangc.jar [OPTION | FLAG]... [--] FILE...
+                Default: {...} --outdir ./out --build-ast --typecheck --jbc --asm FILE...
 
-        switch (args.length) {
-            case 0 -> args = new String[] { dotEnv.getProperty("OUTDIR"), dotEnv.getProperty("SOURCEFILE") };
-            case 1 -> {
-                System.out.println("Error: Expected either 0 or at least 2 arguments");
-                System.exit(1);
-            }
-            default -> {
-            }
+                    FILE...                 One or more source files to compile.
+                Options:
+                    --output <dir>          Output directory for generated files. (default: './out')
+                Flags:
+                    --help                  Print this usage information.
+                    --show-parsetree        Visualize the parsetree generated by antlr. (default: false)
+                    --build-ast             Transform parsetree to custom AST. (default: true)
+                    --pretty-print-ast      Convert the AST back to sourcecode and print it to the console. (default: false)
+                    --typecheck             Perform type check. (default: true)
+                    --jbc                   Generate Java Byte Code. (default: true)
+                    --asm                   Generate GNI Assembly. (default: true)
+
+                Note:
+                It is assumed that the invoker's workind directory is the source root folder,
+                since the package name is inferred from the file's relative path.
+                Therefore a file './tests/somePackage/source.k' will be considered in the package 'tests.somePackage'.
+                Also "../" is not allowed in the sourcefile path and might throw.""";
+
+        // Names of options and flags
+        final String optOutDir = "output";
+        final String flagHelp = "help";
+        final String flagShowParseTree = "show-parsetree";
+        final String flagBuildAst = "build-ast";
+        final String flagPrettyPrintAst = "pretty-print-ast";
+        final String flagTypeCheck = "typecheck";
+        final String flagJbc = "jbc";
+        final String flagAsm = "asm";
+
+        // Setup parser and parse args
+        CommandLineParser parser = null;
+        try {
+            parser = new CommandLineParser.ArgumentBuilder()
+                    .flag(flagHelp, false)
+                    // --- Default compiler configuration ---
+                    .optionalArg(optOutDir, "./out")
+                    .flag(flagShowParseTree, false)
+                    .flag(flagBuildAst, true)
+                    .flag(flagPrettyPrintAst, false)
+                    .flag(flagTypeCheck, true)
+                    .flag(flagJbc, true)
+                    .flag(flagAsm, true)
+                    .withTrailingArgs()
+                    .parse(args);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: " + e.getMessage());
+            System.err.println(USAGE_INFO);
+            System.exit(1);
         }
 
-        var outputDir = args[0];
-        var filePaths = Arrays.asList(args).stream().skip(1).map(src -> Path.of(src)).toList();
+        if (parser.hasFlag(flagHelp)) {
+            System.out.println(USAGE_INFO);
+        }
+
+        String outputDir = parser.getValue(optOutDir).get();
+        List<String> files = parser.getTrailingArgs();
+        System.out.println("Output directory: " + outputDir);
+        System.out.println("Files to process: " + files);
+
+        var config = KlangCompilerConfig.builder()
+                .outputDir(outputDir)
+                .showParseTree(parser.hasFlag(flagShowParseTree))
+                .buildAst(parser.hasFlag(flagBuildAst))
+                .prettyPrintAst(parser.hasFlag(flagPrettyPrintAst))
+                .typeCheck(parser.hasFlag(flagTypeCheck))
+                .generateJbc(parser.hasFlag(flagJbc))
+                .generateAsm(parser.hasFlag(flagAsm))
+                .build();
+        var compiler = new KlangCompiler(config);
+        var filePaths = files.stream().map(src -> Path.of(src)).toList();
         for (var fp : filePaths) {
             var file = fp.toFile();
-            var reader = new FileReader(file);
 
-            var fpBase = PathUtils.getParentOrEmpty(fp);
+            var fpBase = PathUtils.getParentOrEmpty(fp).normalize();
             var packageName = fpBase.toString().replace(File.separator, ".");
             var className = PathUtils.getFileNameNoExt(fp);
 
-            try {
-                compile(reader, outputDir, packageName, className);
-                reader.close();
+            try (var reader = new FileReader(file)) {
+                compiler.compile(reader, packageName, className);
                 System.out.println("All tasks finished successfully.");
             } catch (Exception e) {
                 System.out.println("Errors occured while processing compilation tasks.");
@@ -191,7 +230,7 @@ public class KlangCompiler {
         }
     }
 
-    private static void showAstVisualization(Parser parser, RuleContext tree) {
+    private static void showParseTreeVisualization(Parser parser, RuleContext tree) {
         // UI AST Visualization
         JFrame frame = new JFrame("Antlr AST");
         JPanel panel = new JPanel();

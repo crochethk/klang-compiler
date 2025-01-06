@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 
-DEPENDENCIES=('lib/antlr4-4.13.2-complete.jar')
+DEPENDENCIES=(                       \
+    'lib/antlr4-4.13.2-complete.jar' \
+    'lib/lombok/lombok-1.18.36.jar'  \
+)
+
 DEV_DEPENDENCIES=(          \
     "${DEPENDENCIES[@]}"    \
-    'lib/junit5/junit-platform-console-standalone-1.11.4.jar'          \
+    'lib/junit5/junit-platform-console-standalone-1.11.4.jar' \
 )
 
 BUILD_ARTIFACTS_BASE_DIR="./build"
@@ -18,7 +22,9 @@ _compile_file_list() {
         echo "'${0}' (${LINENO}): $# args received but expected 3"
         return 1
     fi
-    cmd="javac --enable-preview --source 23 --target 23 -cp \"${2}\" -d \"${3}\" @\"${1}\""
+
+    # "-proc:full" -> required for lombok (since JDK >22)
+    cmd="javac --enable-preview -proc:full --source 23 --target 23 -cp \"${2}\" -d \"${3}\" @\"${1}\""
     echo "${cmd}"
     eval ${cmd}
 }

@@ -4,10 +4,7 @@
 # ==============================================================================
 # Builds a self-contained JAR of the klang compiler.
 #
-# Jar Usage: java --enable-preview -jar klangc.jar [OUTDIR SOURCEFILE [FILES...]]
-# - [OUTDIR SOURCEFILE [FILES...]]
-#       Semi-Optional outputpath and one or more input source file(s).
-#       If not specified a "klangc.env" file must define OUTDIR and SOURCEFILE.
+# Jar Usage see: java --enable-preview -jar klangc.jar --help
 # ==============================================================================
 
 source ./scripts/compile_java.sh
