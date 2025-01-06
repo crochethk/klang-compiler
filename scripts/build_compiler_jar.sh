@@ -34,3 +34,17 @@ cd "${cwd_bak}"
 jar_path="${BUILD_ARTIFACTS_BASE_DIR}/klangc.jar"
 jar --create --file "${jar_path}" --main-class cc.crochethk.compilerbau.praktikum.KlangCompiler -C "${classes_out_dir}" .
 echo "Jar created: '${jar_path}'"
+
+# Create helper script to execute jar
+jar_runner="${BUILD_ARTIFACTS_BASE_DIR}/klangc.sh"
+
+cat > "${jar_runner}" <<- EOM
+#!/usr/bin/env bash
+JAR_DIR="\$( cd "\$( dirname "\${0}" )" && pwd )"
+# \$1      : Output directory
+# \$2...   : List of files to compile
+# Example : klangc.sh ./build/gen file1.k file2.k
+_outdir="\${1}"
+shift
+java --enable-preview -jar "\${JAR_DIR}/klangc.jar" --output "\${_outdir}" -- \${@}
+EOM

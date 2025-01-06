@@ -48,7 +48,7 @@ public class KlangCompiler {
             boolean generateAsm) {
     }
 
-    public void compile(Reader inputCode, String packageName, String className)
+    public void compile(Reader inputCode, final String packageName, final String className)
             throws IOException {
         var ast = buildAst(inputCode);
         var indent = " ".repeat(4);
@@ -81,18 +81,22 @@ public class KlangCompiler {
         // GNU Assembly generation
         System.out.println("GNU Assembly Code:");
         if (cfg.generateAsm()) {
+            // Prepare for Assembly
             var codeGenerator = new GenAsm(cfg.outputDir(), packageName, className);
             printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
-            ast.accept(codeGenerator);
 
-            // Generate C helper files
+            // Prepare for C helper files
             var cHelpersGen = new GenCHelpers(cfg.outputDir(), packageName, className);
             printGeneratingFilesMessage(indent, cHelpersGen.outFilePaths());
-            ast.accept(cHelpersGen);
+
+            // Generate files
+            runWithSuccessCheck(() -> {
+                ast.accept(codeGenerator);
+                ast.accept(cHelpersGen);
+            }, indent);
         } else {
             System.out.println(indent + "No assembly generated (disabled).");
         }
-        System.out.println();
     }
 
     private static void printGeneratingFilesMessage(String indent, List<Path> paths) {
@@ -211,9 +215,9 @@ public class KlangCompiler {
 
             try (var reader = new FileReader(file)) {
                 compiler.compile(reader, packageName, className);
-                System.out.println("All tasks finished successfully.");
+                System.out.println(">>> All tasks finished successfully.\n");
             } catch (Exception e) {
-                System.out.println("Errors occured while processing compilation tasks.");
+                System.out.println(">>> Errors occured while processing compilation tasks.");
                 System.err.println(e.getMessage());
                 System.exit(1);
             }
