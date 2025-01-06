@@ -181,4 +181,46 @@ public class CommandLineParser {
     public Map<String, String> getAllArguments() {
         return new HashMap<>(parsedArguments);
     }
+
+    /**
+     * Example usage of the parser. Run this class with "--help" for usage info
+     * for this example.
+     */
+    public static void main(String[] args) {
+        final String EXAMPLE_USAGE_INFO = """
+                Usage: command OPTION... FLAG... [--] args...
+                    args...                 The trailing args.
+                Options:
+                    --a-required-option <value>         Specify some mandatory named argument/value.
+                    --the-optional-option <value>       Specify some named argument/value.
+                Flags:
+                    --enable-something       This flag enables something. (default: false)""";
+        try {
+            CommandLineParser exampleParser = new CommandLineParser.ArgumentBuilder()
+                    .requiredArg("a-required-option")
+                    .optionalArg("the-optional-option", "the default value, if not present")
+                    .flag("enable-something", false)
+                    .withTrailingArgs()
+                    .parse(args);
+
+            if (exampleParser.hasFlag("help")) {
+                System.out.println(EXAMPLE_USAGE_INFO);
+            }
+
+            String theRequiredValue = exampleParser.getValue("a-required-option").get();
+            String theOptionalValueOrDefault = exampleParser.getValue("the-optional-option").get();
+            boolean theEnableSomethingFlag = exampleParser.hasFlag("enable-something");
+            List<String> theTrailingArgs = exampleParser.getTrailingArgs();
+
+            System.out.println("Mandatory value: " + theRequiredValue);
+            System.out.println("Optional value or its default: " + theOptionalValueOrDefault);
+            System.out.println("Should something be enabled? - " + theEnableSomethingFlag);
+            System.out.println("Trailing arguments: " + theTrailingArgs);
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: " + e.getMessage());
+            System.err.println(EXAMPLE_USAGE_INFO);
+            System.exit(1);
+        }
+    }
 }
