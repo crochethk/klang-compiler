@@ -3,6 +3,8 @@
 
 # ==============================================================================
 # Builds a self-contained JAR of the klang compiler.
+#
+# Jar Usage see: java --enable-preview -jar klangc.jar --help
 # ==============================================================================
 
 source ./scripts/compile_java.sh

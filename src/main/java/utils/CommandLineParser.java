@@ -48,8 +48,8 @@ public class CommandLineParser {
             return this;
         }
 
-        public ArgumentBuilder flag(String name) {
-            arguments.put(name, new Argument(name, false, false, "false"));
+        public ArgumentBuilder flag(String name, boolean isDefault) {
+            arguments.put(name, new Argument(name, false, false, "" + isDefault));
             return this;
         }
 
@@ -59,7 +59,10 @@ public class CommandLineParser {
             return this;
         }
 
-        public CommandLineParser parse(String[] args) {
+        /**
+         * @throws IllegalArgumentException if provided arguments do not match the configuration.
+         */
+        public CommandLineParser parse(String[] args) throws IllegalArgumentException {
             return new CommandLineParser(this, args, withTrailingArgs);
         }
     }
@@ -152,11 +155,15 @@ public class CommandLineParser {
         }
     }
 
-    public String getValue(String argName) {
+    /**
+     * @return An Optional containing the argument's value if an argument with
+     * the specified name has been parsed; Empty Optional otherwise.
+     */
+    public Optional<String> getValue(String argName) {
         if (!argumentDefinitions.containsKey(argName)) {
-            throw new IllegalArgumentException("Argument not found: " + argName);
+            return Optional.empty();
         }
-        return parsedArguments.get(argName);
+        return Optional.of(parsedArguments.get(argName));
     }
 
     public boolean hasFlag(String flagName) {
