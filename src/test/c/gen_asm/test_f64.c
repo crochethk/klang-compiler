@@ -2,10 +2,7 @@
 #include <stdbool.h>
 
 #include "../minunit.h"
-#include "../../../../build/dev/code_gen/tests.asm_test_f64.h"
-
-// In project root folder run using:
-// mkdir -p ./build/dev/.c/ && gcc -o ./build/dev/.c/test.out src/test/c/gen_asm/test_f64.c  build/dev/code_gen/tests.asm_test_f64.s && ./build/dev/.c/test.out
+#include "tests.asm_test_f64.h"
 
 char* test_doubleConst42() {
     mu_asserteq(42.d, doubleConst42());

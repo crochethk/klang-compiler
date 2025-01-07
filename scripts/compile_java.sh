@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 
-DEPENDENCIES=(                       \
-    'lib/antlr4-4.13.2-complete.jar' \
-    'lib/lombok/lombok-1.18.36.jar'  \
-)
-
-DEV_DEPENDENCIES=(          \
-    "${DEPENDENCIES[@]}"    \
-    'lib/junit5/junit-platform-console-standalone-1.11.4.jar' \
-)
-
-BUILD_ARTIFACTS_BASE_DIR="./build"
+source ./scripts/config.sh
 
 # Compile a list of java files.
 # Parameters:
@@ -67,7 +57,7 @@ _join_array() {
 }
 
 # Parameters:
-#   $1 : Targetname (basically subdirectory where files will be saved)
+#   $1 : Target workdir (directory where files for this target will be saved)
 #   $2 : Array ref with paths to dependencies
 #   $3 : Array ref with source directories
 _compile_sources() {
@@ -76,7 +66,7 @@ _compile_sources() {
         return 1
     fi
     # where to put all .class files
-    local work_dir="${BUILD_ARTIFACTS_BASE_DIR}/${1}"
+    local work_dir="${1}"
     local classes_out_dir="${work_dir}/classes"
     local sourcesListFile="${work_dir}/sources.txt"
 
@@ -89,20 +79,11 @@ _compile_sources() {
 }
 
 compile_dev() {
-    local targetname="dev"
-    local source_dirs=(     \
-        'src/main/java'     \
-        'src/main/gen'      \
-        'src/test/java'     \
-    )
-    _compile_sources "${targetname}" "DEV_DEPENDENCIES[@]" "source_dirs[@]"
+    ./scripts/run_antlr.sh
+    _compile_sources "${DEV_WORK_DIR}" "DEV_DEPENDENCIES[@]" "DEV_SRC_DIRS[@]"
 }
 
 compile_release() {
-    local targetname="release"
-    local source_dirs=(     \
-        'src/main/java'     \
-        'src/main/gen'      \
-    )
-    _compile_sources "${targetname}" "DEPENDENCIES[@]" "source_dirs[@]"
+    ./scripts/run_antlr.sh
+    _compile_sources "${RELEASE_WORK_DIR}" "DEPENDENCIES[@]" "RELEASE_SRC_DIRS[@]"
 }

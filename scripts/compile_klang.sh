@@ -3,14 +3,18 @@
 # ==============================================================================
 # This script, when directly executed, will bulk compile all klang files within
 # the given directory and its subdirectories.
+# It's assumed that the project was already compiled using
+# "scripts/compile_java -> compile_release".
+#
 # Parameters:
 #   $1 : Output directory for generated files.
 #   $2 : Directory where to look for klang files.
+#
 # Example:
 #   scripts/compile_klang.sh ./build/out ./tests
 # ==============================================================================
 
-source ./scripts/compile_java.sh
+source ./scripts/config.sh
 
 # Compile a list of klang files.
 # Parameters:
@@ -22,15 +26,9 @@ compile_klang_files() {
     shift
     local files=${@}
 
-    compile_release
-    if [ $? -ne 0 ]; then
-        echo -e ">>> ERROR while compiling java source files\n"
-        exit 1
-    fi
-
     local classpath=$(_join_array "DEPENDENCIES[@]" ":")
     # Add compiler classes to cp
-    classpath="${BUILD_ARTIFACTS_BASE_DIR}/release/classes:${classpath}"
+    classpath="${RELEASE_WORK_DIR}/classes:${classpath}"
  
     java --enable-preview -cp "${classpath}" \
         cc.crochethk.compilerbau.praktikum.KlangCompiler --output "${outdir}" -- $files

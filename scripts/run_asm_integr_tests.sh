@@ -2,42 +2,38 @@
 # >>> Expects $(pwd) to be the __project root folder__. <<<
 
 # ==============================================================================
-# Runs all "test_*.c" files in TEST_FILE_DIR. For each test file first assembly
-# code of the corresponding source file in "SRC_FILES_DIR" is generated.
+# Runs all "test_*.c" files in TEST_ASM_TESTS_DIR. For each test file first assembly
+# code of the corresponding source file in "TEST_KLANG_FILES_DIR" is generated.
 # ==============================================================================
 
+source ./scripts/config.sh
 source ./scripts/compile_java.sh
+source ./scripts/compile_klang.sh
 
-SRC_FILES_DIR=tests
-TEST_FILE_DIR=src/test/c/gen_asm
-
-work_dir="${BUILD_ARTIFACTS_BASE_DIR}/dev"
-C_BIN_DIR="${work_dir}/.c"
-
-# Build project
-./scripts/run_antlr.sh
-compile_dev
+# Compile compiler
+compile_release
 if [ $? -ne 0 ]; then
     echo -e ">>> ERROR while compiling java source files\n"
     exit 1
 fi
 
-# DONT CHANGE ("test_*.c" files depend on this)
+work_dir="${TEST_WORK_DIR}/asm"
 src_file_compile_dir="${work_dir}/code_gen"
+c_bin_dir="${work_dir}/bin"
+mkdir -p "$c_bin_dir"
 
-# Iterate over each file in TEST_FILE_DIR with prefix "test_" and extension ".c"
-for test_file in "${TEST_FILE_DIR}/test_"*.c; do
+# Iterate over each file in TEST_ASM_TESTS_DIR with prefix "test_" and extension ".c"
+for test_file in "${TEST_ASM_TESTS_DIR}/test_"*.c; do
     # Extract the file name without extension
     test_file_name_no_ext=$(basename "$test_file" .c)
     src_file_name_no_ext="asm_${test_file_name_no_ext}"
 
     echo "--- Testfile: '${test_file}'"
 
-    # Compile the test's source file
-    echo "Compiling '${SRC_FILES_DIR}/${src_file_name_no_ext}.k' to assembly"
+    # Compile the test's corresponding source file
+    echo "Compiling '${TEST_KLANG_FILES_DIR}/${src_file_name_no_ext}.k' to assembly"
     dependencies_cp=$(_join_array "DEPENDENCIES[@]" ":")
-    java --enable-preview -cp "${work_dir}/classes:${dependencies_cp}"\
-        cc.crochethk.compilerbau.praktikum.KlangCompiler "${src_file_compile_dir}" "${SRC_FILES_DIR}/${src_file_name_no_ext}.k" > /dev/null
+    compile_klang_files "${src_file_compile_dir}" "${TEST_KLANG_FILES_DIR}/${src_file_name_no_ext}.k"
     if [ $? -ne 0 ]; then
         echo -e ">>> ERROR. Test skipped!\n"
         continue
@@ -45,16 +41,18 @@ for test_file in "${TEST_FILE_DIR}/test_"*.c; do
 
     # Compile the test, linking it with the assembly file using gcc
     echo "Compiling and linking '$test_file' and 'tests.${src_file_name_no_ext}.s'"
-    mkdir -p "$C_BIN_DIR"
-    gcc -o "${C_BIN_DIR}/${test_file_name_no_ext}" "${test_file}" "${src_file_compile_dir}/tests.${src_file_name_no_ext}.s" "${src_file_compile_dir}/tests.${src_file_name_no_ext}.c"
+
+    gcc -I"${src_file_compile_dir}" -o "${c_bin_dir}/${test_file_name_no_ext}"   \
+        "${test_file}" "${src_file_compile_dir}/tests.${src_file_name_no_ext}.s" \
+        "${src_file_compile_dir}/tests.${src_file_name_no_ext}.c"
     if [ $? -ne 0 ]; then
         echo -e ">>> ERROR. Test skipped!\n"
         continue
     fi
-    
+
     # Execute the compiled test binary
-    echo "Run test: ${C_BIN_DIR}/${test_file_name_no_ext}"
-    "${C_BIN_DIR}/${test_file_name_no_ext}"
+    echo "Run test: ${c_bin_dir}/${test_file_name_no_ext}"
+    "${c_bin_dir}/${test_file_name_no_ext}"
     echo ""
 done
 
