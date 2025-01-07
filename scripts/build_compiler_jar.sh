@@ -7,6 +7,7 @@
 # Jar Usage see: java --enable-preview -jar klangc.jar --help
 # ==============================================================================
 
+source ./scripts/config.sh
 source ./scripts/compile_java.sh
 
 work_dir="${BUILD_ARTIFACTS_BASE_DIR}/jar"

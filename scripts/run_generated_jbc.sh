@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+source ./scripts/config.sh
 source ./scripts/compile_klang.sh
 
 # Compile and execute a ".k" source file.

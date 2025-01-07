@@ -6,6 +6,7 @@
 # code of the corresponding source file in "SRC_FILES_DIR" is generated.
 # ==============================================================================
 
+source ./scripts/config.sh
 source ./scripts/compile_java.sh
 
 SRC_FILES_DIR=tests

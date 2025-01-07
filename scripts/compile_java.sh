@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 
-DEPENDENCIES=(                       \
-    'lib/antlr4-4.13.2-complete.jar' \
-    'lib/lombok/lombok-1.18.36.jar'  \
-)
-
-DEV_DEPENDENCIES=(          \
-    "${DEPENDENCIES[@]}"    \
-    'lib/junit5/junit-platform-console-standalone-1.11.4.jar' \
-)
-
-BUILD_ARTIFACTS_BASE_DIR="./build"
+source ./scripts/config.sh
 
 # Compile a list of java files.
 # Parameters:

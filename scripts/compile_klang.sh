@@ -10,6 +10,7 @@
 #   scripts/compile_klang.sh ./build/out ./tests
 # ==============================================================================
 
+source ./scripts/config.sh
 source ./scripts/compile_java.sh
 
 # Compile a list of klang files.
