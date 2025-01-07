@@ -29,6 +29,11 @@ if [ -z "${CONFIG_SH_SOURCED}" ]; then
         'src/test/java' \
     )
 
+    TEST_WORK_DIR="${BUILD_ARTIFACTS_BASE_DIR}/test"
+
+    TEST_ASM_TESTS_DIR=src/test/c/gen_asm
+    TEST_KLANG_FILES_DIR=tests
+
     # JAR build config
     JAR_WORK_DIR="${BUILD_ARTIFACTS_BASE_DIR}/jar"
 
