@@ -12,9 +12,6 @@ source ./scripts/compile_java.sh
 work_dir="${BUILD_ARTIFACTS_BASE_DIR}/jar"
 classes_out_dir="${work_dir}/classes/"
 
-# Make sure lexer and parser were generated
-./scripts/run_antlr.sh
-
 # Compile compiler and copy to workdir
 compile_release
 if [ $? -ne 0 ]; then

@@ -89,6 +89,7 @@ _compile_sources() {
 }
 
 compile_dev() {
+    ./scripts/run_antlr.sh
     local targetname="dev"
     local source_dirs=(     \
         'src/main/java'     \
@@ -99,6 +100,7 @@ compile_dev() {
 }
 
 compile_release() {
+    ./scripts/run_antlr.sh
     local targetname="release"
     local source_dirs=(     \
         'src/main/java'     \
