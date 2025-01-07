@@ -28,6 +28,9 @@ if [ -z "${CONFIG_SH_SOURCED}" ]; then
         'src/main/gen'  \
         'src/test/java' \
     )
-    
+
+    # JAR build config
+    JAR_WORK_DIR="${BUILD_ARTIFACTS_BASE_DIR}/jar"
+
     # --------------------------------------------------------------------------
 fi
