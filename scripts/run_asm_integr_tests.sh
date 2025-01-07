@@ -12,7 +12,7 @@ source ./scripts/compile_java.sh
 SRC_FILES_DIR=tests
 TEST_FILE_DIR=src/test/c/gen_asm
 
-work_dir="${BUILD_ARTIFACTS_BASE_DIR}/dev"
+work_dir="${DEV_WORK_DIR}"
 C_BIN_DIR="${work_dir}/.c"
 
 # Build project

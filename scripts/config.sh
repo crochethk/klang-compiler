@@ -16,5 +16,18 @@ if [ -z "${CONFIG_SH_SOURCED}" ]; then
 
     BUILD_ARTIFACTS_BASE_DIR="./build"
 
+    RELEASE_WORK_DIR="${BUILD_ARTIFACTS_BASE_DIR}/release"
+    RELEASE_SRC_DIRS=(  \
+        'src/main/java' \
+        'src/main/gen'  \
+    )
+
+    DEV_WORK_DIR="${BUILD_ARTIFACTS_BASE_DIR}/dev"
+    DEV_SRC_DIRS=(      \
+        'src/main/java' \
+        'src/main/gen'  \
+        'src/test/java' \
+    )
+    
     # --------------------------------------------------------------------------
 fi

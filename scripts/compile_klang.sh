@@ -31,7 +31,7 @@ compile_klang_files() {
 
     local classpath=$(_join_array "DEPENDENCIES[@]" ":")
     # Add compiler classes to cp
-    classpath="${BUILD_ARTIFACTS_BASE_DIR}/release/classes:${classpath}"
+    classpath="${RELEASE_WORK_DIR}/classes:${classpath}"
  
     java --enable-preview -cp "${classpath}" \
         cc.crochethk.compilerbau.praktikum.KlangCompiler --output "${outdir}" -- $files

@@ -57,7 +57,7 @@ _join_array() {
 }
 
 # Parameters:
-#   $1 : Targetname (basically subdirectory where files will be saved)
+#   $1 : Target workdir (directory where files for this target will be saved)
 #   $2 : Array ref with paths to dependencies
 #   $3 : Array ref with source directories
 _compile_sources() {
@@ -66,7 +66,7 @@ _compile_sources() {
         return 1
     fi
     # where to put all .class files
-    local work_dir="${BUILD_ARTIFACTS_BASE_DIR}/${1}"
+    local work_dir="${1}"
     local classes_out_dir="${work_dir}/classes"
     local sourcesListFile="${work_dir}/sources.txt"
 
@@ -80,21 +80,10 @@ _compile_sources() {
 
 compile_dev() {
     ./scripts/run_antlr.sh
-    local targetname="dev"
-    local source_dirs=(     \
-        'src/main/java'     \
-        'src/main/gen'      \
-        'src/test/java'     \
-    )
-    _compile_sources "${targetname}" "DEV_DEPENDENCIES[@]" "source_dirs[@]"
+    _compile_sources "${DEV_WORK_DIR}" "DEV_DEPENDENCIES[@]" "DEV_SRC_DIRS[@]"
 }
 
 compile_release() {
     ./scripts/run_antlr.sh
-    local targetname="release"
-    local source_dirs=(     \
-        'src/main/java'     \
-        'src/main/gen'      \
-    )
-    _compile_sources "${targetname}" "DEPENDENCIES[@]" "source_dirs[@]"
+    _compile_sources "${RELEASE_WORK_DIR}" "DEPENDENCIES[@]" "RELEASE_SRC_DIRS[@]"
 }

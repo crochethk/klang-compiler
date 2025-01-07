@@ -19,7 +19,7 @@ if [ $? -ne 0 ]; then
     echo -e ">>> ERROR while compiling java source files\n"
     exit 1
 fi
-cp -r "${BUILD_ARTIFACTS_BASE_DIR}/release" "${work_dir}"
+cp -r "${RELEASE_WORK_DIR}" "${work_dir}"
 
 # Extract libraries to be included
 cwd_bak=$(pwd)
