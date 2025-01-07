@@ -2,7 +2,7 @@
 #include <stdbool.h>
 
 #include "../minunit.h"
-#include "../../../../build/dev/code_gen/tests.asm_test_struct_helpers_1.h"
+#include "tests.asm_test_struct_helpers_1.h"
 
 char* test_tostring1() {
     struct Empty st;
