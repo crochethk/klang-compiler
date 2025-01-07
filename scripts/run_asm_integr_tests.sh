@@ -8,22 +8,22 @@
 
 source ./scripts/config.sh
 source ./scripts/compile_java.sh
+source ./scripts/compile_klang.sh
 
 SRC_FILES_DIR=tests
 TEST_FILE_DIR=src/test/c/gen_asm
 
-work_dir="${DEV_WORK_DIR}"
+work_dir="${RELEASE_WORK_DIR}"
 C_BIN_DIR="${work_dir}/.c"
 
-# Build project
-./scripts/run_antlr.sh
-compile_dev
+src_file_compile_dir="${work_dir}/code_gen"
+
+# Compile compiler
+compile_release
 if [ $? -ne 0 ]; then
     echo -e ">>> ERROR while compiling java source files\n"
     exit 1
 fi
-
-src_file_compile_dir="${work_dir}/code_gen"
 
 # Iterate over each file in TEST_FILE_DIR with prefix "test_" and extension ".c"
 for test_file in "${TEST_FILE_DIR}/test_"*.c; do
@@ -33,11 +33,10 @@ for test_file in "${TEST_FILE_DIR}/test_"*.c; do
 
     echo "--- Testfile: '${test_file}'"
 
-    # Compile the test's source file
+    # Compile the test's corresponding source file
     echo "Compiling '${SRC_FILES_DIR}/${src_file_name_no_ext}.k' to assembly"
     dependencies_cp=$(_join_array "DEPENDENCIES[@]" ":")
-    java --enable-preview -cp "${work_dir}/classes:${dependencies_cp}"\
-        cc.crochethk.compilerbau.praktikum.KlangCompiler "${src_file_compile_dir}" "${SRC_FILES_DIR}/${src_file_name_no_ext}.k" > /dev/null
+    compile_klang_files "${src_file_compile_dir}" "${SRC_FILES_DIR}/${src_file_name_no_ext}.k"
     if [ $? -ne 0 ]; then
         echo -e ">>> ERROR. Test skipped!\n"
         continue
@@ -53,7 +52,7 @@ for test_file in "${TEST_FILE_DIR}/test_"*.c; do
         echo -e ">>> ERROR. Test skipped!\n"
         continue
     fi
-    
+
     # Execute the compiled test binary
     echo "Run test: ${C_BIN_DIR}/${test_file_name_no_ext}"
     "${C_BIN_DIR}/${test_file_name_no_ext}"
