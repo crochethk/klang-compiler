@@ -185,7 +185,7 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(Prog prog) {
-        var guardName = fileNameNoExt().concat(EXT_H).replace('.', '_').toUpperCase();
+        var guardName = fileNameNoExt().concat(EXT_H).replaceAll("[\\. ]", "_").toUpperCase();
         // H preamble
         header.write("// Auto-generated C header file");
         header.write("\n#ifndef ", guardName);
