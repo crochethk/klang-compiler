@@ -2,7 +2,7 @@
 #include <stdbool.h>
 
 #include "../minunit.h"
-#include "tests.asm_test_f64.h"
+#include "tests.asm.test_f64.h"
 
 char* test_doubleConst42() {
     mu_asserteq(42.d, doubleConst42());

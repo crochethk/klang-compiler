@@ -311,7 +311,7 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
     }
 
     private void writeCFullClassName(SourceCodeBuilder scb) {
-        scb.write(packageName, "$$", className);
+        scb.write(packageName.replace(".", "$$"), "$", className);
     }
 
     private void writeConstructorSignature(SourceCodeBuilder scb, StructDef st) {

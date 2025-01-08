@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "../minunit.h"
-#include "tests.asm_test_i64.h"
+#include "tests.asm.test_i64.h"
 
 char* test_f42() { mu_asserteq(42, f42()); return 0; }
 char* test_soManyParams() { mu_asserteq(28, soManyParams(1,2,3,4,5,6,7)); return 0; }

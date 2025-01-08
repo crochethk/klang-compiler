@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
 # >>> Expects $(pwd) to be the __project root folder__. <<<
 
-# antlr config
-ANTLR_JAR=lib/antlr4-4.13.2-complete.jar
-ANTLR_FILES_PACKAGE=cc.crochethk.compilerbau.praktikum.antlr
-GRAMMAR_FILE=src/main/Klang.g4
+source ./scripts/config.sh
 
-# figure out directory for generated files
-antlrFilesPackageAsDir=$(echo "${ANTLR_FILES_PACKAGE}" | tr '.' '/')
-antlrOutputDir=src/main/gen/${antlrFilesPackageAsDir}
+# figure out package-adjusted path for generated files
+antlrFilesPackageAsDir=$(echo "${ANTLR_GEN_FILES_PACKAGE}" | tr '.' '/')
+antlrOutputDir="${ANTLR_OUT_BASE}/${antlrFilesPackageAsDir}"
 
 # generate antlr lexer and parser
 java -jar "${ANTLR_JAR}" -message-format antlr -Xexact-output-dir -o "${antlrOutputDir}" \
-    -package "${ANTLR_FILES_PACKAGE}" -listener -no-visitor "${GRAMMAR_FILE}"
+    -package "${ANTLR_GEN_FILES_PACKAGE}" -listener -no-visitor "${ANTLR_GRAMMAR_FILE}"

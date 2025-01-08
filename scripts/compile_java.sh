@@ -19,13 +19,16 @@ _compile_file_list() {
     eval ${cmd}
 }
 
-# Compile a list of all java files in the specified directories.
+# Create a file with a list of all java files in the specified directories.
+# Files that have a more recent class file counterpart in the output directory
+# are skipped (i.e. only changed files are collected).
 # Parameters:
 #   $1 : Full filename, the list will be written to. Will be overwritten, if existing!
-#   $2 : Directories as array reference (passed as: "myArr[@]")
-_collect_sources() {
-    if [[ $# -ne 2 ]]; then
-        echo "'${0}' (${LINENO}): $# args received but expected 2"
+#   $2 : Directories as array reference (passed as: "myArr[@]").
+#   $3 : Directory where to look for existing class files.
+_collect_changed_sources() {
+    if [[ $# -ne 3 ]]; then
+        echo "'${0}' (${LINENO}): $# args received but expected 3"
         return 1
     fi
     local dirs=("${!2}") # get array
@@ -33,9 +36,24 @@ _collect_sources() {
     mkdir -p $(dirname "${1}")
     rm -f "${1}"
 
-    # write list of all java files to be compiled
+    # Write list of all java files to be compiled
     for d in "${dirs[@]}"; do
-        find "${d}" -type f -name "*.java" >> "${1}"
+        local java_files=( $(find "${d}" -type f -name "*.java") )
+
+        # Filter source files w/ up to date .class file
+        for java_file in "${java_files[@]}"; do
+            # Get corresponding class filepath
+            # - replace extension
+            local class_file="${java_file%.java}.class"
+            # - replace base directory
+            class_file="${class_file/#${d}/${3}}"
+
+            # Append java_file if class_file not existent or outdated
+            if [[ ! -f "${class_file}" || "${java_file}" -nt "${class_file}" ]]; then
+                # echo "MODIFIED: '${java_file}'"
+                echo "${java_file}" >> "${1}"
+            fi
+        done
     done
 }
 
@@ -71,19 +89,40 @@ _compile_sources() {
     local sourcesListFile="${work_dir}/sources.txt"
 
     local source_dirs=("${!3}")
-    _collect_sources "${sourcesListFile}" "source_dirs[@]"
+    _collect_changed_sources "${sourcesListFile}" "source_dirs[@]" "${classes_out_dir}"
 
     # compile source files
     local classpath=$(_join_array "${2}" ":")
-    _compile_file_list "${sourcesListFile}" "${classpath}" "${classes_out_dir}"
+
+    if [[ -s "${sourcesListFile}" ]]; then
+        _compile_file_list "${sourcesListFile}" "${classes_out_dir}:${classpath}" "${classes_out_dir}"
+    else
+        echo "INFO: javac skipped (already up to date)."
+    fi
+}
+
+_run_antlr_if_necessary() {
+    mkdir -p "${ANTLR_OUT_BASE}"
+
+    local all_files=$( find "${ANTLR_OUT_BASE}" -type f )
+    if [[ -z "${all_files}" ]]; then
+        # no files exist at all
+        ./scripts/run_antlr.sh
+    else
+        # Check for outdated files, compared to grammar file
+        local old_files=$(find "${ANTLR_OUT_BASE}" -type f -not -newer "${ANTLR_GRAMMAR_FILE}")
+        if [[ -n "${old_files}" ]]; then
+            ./scripts/run_antlr.sh
+        fi
+    fi
 }
 
 compile_dev() {
-    ./scripts/run_antlr.sh
+    _run_antlr_if_necessary
     _compile_sources "${DEV_WORK_DIR}" "DEV_DEPENDENCIES[@]" "DEV_SRC_DIRS[@]"
 }
 
 compile_release() {
-    ./scripts/run_antlr.sh
+    _run_antlr_if_necessary
     _compile_sources "${RELEASE_WORK_DIR}" "DEPENDENCIES[@]" "RELEASE_SRC_DIRS[@]"
 }
