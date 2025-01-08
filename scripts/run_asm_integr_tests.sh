@@ -2,9 +2,9 @@
 # >>> Expects $(pwd) to be the __project root folder__. <<<
 
 # ==============================================================================
-# Without parameters runs all "test_" prefixed C files in TEST_ASM_TESTS_DIR. For each 
-# test file first assembly code of the corresponding source file in
-# "TEST_KLANG_FILES_DIR" is generated.
+# Without parameters runs all "test_" prefixed C files in TEST_ASM_TESTS_DIR.
+# Foreach test file first assembly code of the corresponding source file in
+# "TEST_KLANG_FILES_DIR/asm" is generated.
 #
 # Optional Parameters:
 #   $1 : Filename pattern of test runner files to execute. This is useful to run
@@ -25,6 +25,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+asm_test_klang_files_dir="${TEST_KLANG_FILES_DIR}/asm"
+
 work_dir="${TEST_WORK_DIR}/asm"
 src_file_compile_dir="${work_dir}/code_gen"
 c_bin_dir="${work_dir}/bin"
@@ -43,29 +45,28 @@ IFS=$'\n'
 
 # Iterate over each file in TEST_ASM_TESTS_DIR with prefix "test_" and extension ".c"
 for test_file in ${file_list}; do
-    # Extract the file name without extension
-    test_file_name_no_ext=$(basename "$test_file" .c)
-    src_file_name_no_ext="asm_${test_file_name_no_ext}"
-
     echo "+-------------------------------------------------------------------------------"
     echo "+     Test: '${test_file}'"
     echo "+-------------------------------------------------------------------------------"
 
+    # Extract the file name without extension
+    test_file_name_no_ext=$(basename "$test_file" .c)
+
     # Compile the test's corresponding source file
-    echo "Compiling '${TEST_KLANG_FILES_DIR}/${src_file_name_no_ext}.k' to assembly"
+    echo "Compiling '${asm_test_klang_files_dir}/${test_file_name_no_ext}.k' to assembly"
     dependencies_cp=$(_join_array "DEPENDENCIES[@]" ":")
-    compile_klang_files "${src_file_compile_dir}" "${TEST_KLANG_FILES_DIR}/${src_file_name_no_ext}.k"
+    compile_klang_files "${src_file_compile_dir}" "${asm_test_klang_files_dir}/${test_file_name_no_ext}.k"
     if [ $? -ne 0 ]; then
         echo -e ">>> ERROR. Test skipped!\n"
         continue
     fi
 
     # Compile the test, linking it with the assembly file using gcc
-    echo "Compiling and linking '$test_file' and 'tests.${src_file_name_no_ext}.s'"
+    echo "Compiling and linking '$test_file' and 'tests.asm.${test_file_name_no_ext}.s'"
 
     gcc -I"${src_file_compile_dir}" -o "${c_bin_dir}/${test_file_name_no_ext}"   \
-        "${test_file}" "${src_file_compile_dir}/tests.${src_file_name_no_ext}.s" \
-        "${src_file_compile_dir}/tests.${src_file_name_no_ext}.c"
+        "${test_file}" "${src_file_compile_dir}/tests.asm.${test_file_name_no_ext}.s" \
+        "${src_file_compile_dir}/tests.asm.${test_file_name_no_ext}.c"
     if [ $? -ne 0 ]; then
         echo -e ">>> ERROR. Test skipped!\n"
         continue
