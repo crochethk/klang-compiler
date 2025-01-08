@@ -181,6 +181,7 @@ KW_IF: 'if';
 KW_ELSE: 'else';
 
 KW_LET: 'let';
+KW_DROP: 'drop';
 KW_AS: 'as';
 
 KW_LOOP: 'loop';
