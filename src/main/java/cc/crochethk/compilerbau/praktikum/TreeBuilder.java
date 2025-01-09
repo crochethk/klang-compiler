@@ -121,6 +121,10 @@ public class TreeBuilder extends KlangBaseListener {
         return String.join("", escChunks);
     }
 
+    public void exitNullLit(KlangParser.NullLitContext ctx) {
+        ctx.result = new NullLit(getSourcePos(ctx));
+    }
+
     @Override
     public void exitVarOrFunCall(KlangParser.VarOrFunCallContext ctx) {
         var srcPos = getSourcePos(ctx);
@@ -197,6 +201,8 @@ public class TreeBuilder extends KlangBaseListener {
             ctx.result = buildTernaryConditionalNode(ctx, ctx.expr(), ctx.ternaryElseBranch());
         } else if (ctx.string() != null) {
             ctx.result = ctx.string().result;
+        } else if (ctx.nullLit() != null) {
+            ctx.result = ctx.nullLit().result;
         } else {
             throw new UnhandledAlternativeException(getSourcePos(ctx), "expr", ctx.getText());
         }

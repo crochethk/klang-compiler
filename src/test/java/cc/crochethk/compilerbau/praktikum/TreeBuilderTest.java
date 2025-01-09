@@ -43,6 +43,13 @@ public class TreeBuilderTest {
     }
 
     @Test
+    void testExitNullLit() {
+        var ctx = parse("null", p -> p.nullLit());
+        treeBuilder.exitNullLit(ctx);
+        assertEquals(new NullLit(srcPosMock), ctx.result);
+    }
+
+    @Test
     void testLiteralExprEqualsDoesNotThrowWithNullValues() {
         var nullLit = new NullLit(srcPosMock);
         var nonNullNullLit = new NullLit(srcPosMock);
