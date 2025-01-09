@@ -46,16 +46,19 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
     }
 
     final Type STRING_T = new RefType("String", "java.lang", "const char*");
-    final Type LONG_T = new PrimType(TypeKind.LongType, AsmTypeKind.LongType); // TODO encapsulate byteSize in a enum/class "CTypeKind" analogous to JVM's approach
+    final Type LONG_T = new PrimType(TypeKind.LongType, AsmTypeKind.LongType);
     final Type BOOL_T = new PrimType(TypeKind.BooleanType, AsmTypeKind.BooleanType);
     final Type DOUBLE_T = new PrimType(TypeKind.DoubleType, AsmTypeKind.DoubleType);
     final Type VOID_T = new PrimType(TypeKind.VoidType, AsmTypeKind.VoidType);
 
     /**
      * Not an actual type. Just placeholder to avoid null, where the type
-     * couldn't be determined
+     * couldn't be determined during type check.
      */
-    Type UNKNOWN_T = new RefType("UNKNOWN", "", "const void*");
+    final Type UNKNOWN_T = new RefType("UNKNOWN", "", "const void*");
+
+    /** Placeholder type for "intentionally" unknown (e.g. null) reference types. */
+    final Type NULL_T = new RefType("Object", "java.lang", "void*");
 
     enum AsmTypeKind {
         LongType(8, "int64_t"),

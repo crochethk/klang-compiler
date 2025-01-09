@@ -48,8 +48,8 @@ public class TypeChecker implements Visitor<Type> {
 
     @Override
     public Type visit(NullLit nullLit) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        nullLit.theType = Type.NULL_T;
+        return nullLit.theType;
     }
 
     @Override
