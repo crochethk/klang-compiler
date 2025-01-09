@@ -25,16 +25,60 @@ public class PrettyPrinterTest {
     @Nested
     class LiteralExprTests {
         @Test
-        void testNullLit_isolated() {
+        void nullLit_isolated() {
             pp.visit(new NullLit(srcPosMock));
             assertEquals("null", pp.scb.toString());
         }
 
         @Test
-        void terstNullLit_inStatement() {
+        void nullLit_inStatement() {
             var stat = new VarAssignStat(srcPosMock, "foo", new NullLit(srcPosMock));
             pp.visit(stat);
             assertEquals("foo = null;", pp.scb.toString());
+        }
+    }
+
+    @Nested
+    class ConstructorCallTests {
+        @Test
+        void emptyStruct_emptyArgsList() {
+            var constCall = new ConstructorCall(srcPosMock, "EmptyStruct", Collections.emptyList());
+            pp.visit(constCall);
+            assertEquals("EmptyStruct{}", pp.scb.toString());
+        }
+
+        @Test
+        void emptyStruct_nullArgs_unlikely() {
+            var constCall = new ConstructorCall(srcPosMock, "EmptyStruct", null);
+            pp.visit(constCall);
+            assertEquals("EmptyStruct{}", pp.scb.toString());
+        }
+
+        @Test
+        void emptyStruct_insideStatement() {
+            var constCall = new ConstructorCall(srcPosMock, "EmptyStruct", null);
+            var stat = new VarAssignStat(srcPosMock, "empty", constCall);
+            pp.visit(stat);
+            assertEquals("empty = EmptyStruct{};", pp.scb.toString());
+        }
+
+        @Test
+        void withMultipleArgs() {
+            var constCall = new ConstructorCall(srcPosMock, "MultiField", List.of(
+                    new I64Lit(srcPosMock, -42, false),
+                    new StringLit(srcPosMock, "bar"),
+                    new F64Lit(srcPosMock, 4.2d, false)));
+            pp.visit(constCall);
+            assertEquals("MultiField{-42, \"bar\", 4.2}", pp.scb.toString());
+        }
+
+        @Test
+        void withSingleArg_insideStatement() {
+            var constCall = new ConstructorCall(srcPosMock, "OneField",
+                    List.of(new I64Lit(srcPosMock, 123, true)));
+            var stat = new VarAssignStat(srcPosMock, "onefield", constCall);
+            pp.visit(stat);
+            assertEquals("onefield = OneField{123 as i64};", pp.scb.toString());
         }
     }
 

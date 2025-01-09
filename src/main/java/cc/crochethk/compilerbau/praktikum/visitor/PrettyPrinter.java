@@ -3,6 +3,7 @@ package cc.crochethk.compilerbau.praktikum.visitor;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
@@ -64,21 +65,27 @@ public class PrettyPrinter implements Visitor<Void> {
 
     @Override
     public Void visit(FunCall funCall) {
-        scb.write(funCall.name);
-        scb.write("(");
-        for (int i = 0; i < funCall.args.size(); i++) {
-            funCall.args.get(i).accept(this);
-            if (i < funCall.args.size() - 1)
-                scb.write(", ");
-        }
+        scb.write(funCall.name, "(");
+        writeArgsList(scb, funCall.args);
         scb.write(")");
         return null;
     }
 
+    private void writeArgsList(SourceCodeBuilder scb, List<Node> args) {
+        for (int i = 0; i < args.size(); i++) {
+            args.get(i).accept(this);
+            if (i < args.size() - 1)
+                scb.write(", ");
+        }
+    }
+
     @Override
     public Void visit(ConstructorCall constructorCall) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        var cc = constructorCall;
+        scb.write(cc.structName, "{");
+        writeArgsList(scb, cc.args);
+        scb.write("}");
+        return null;
     }
 
     @Override
