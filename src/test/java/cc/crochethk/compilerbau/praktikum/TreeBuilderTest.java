@@ -42,6 +42,18 @@ public class TreeBuilderTest {
         return srcPosMock;
     }
 
+    @Test
+    void testLiteralExprEqualsDoesNotThrowWithNullValues() {
+        var nullLit = new NullLit(srcPosMock);
+        var nonNullNullLit = new NullLit(srcPosMock);
+        nonNullNullLit.value = new Object();
+
+        assertDoesNotThrow(() -> assertFalse(nullLit.equals(nonNullNullLit)));
+        assertDoesNotThrow(() -> assertFalse(nonNullNullLit.equals(nullLit)));
+        assertDoesNotThrow(() -> assertTrue(nullLit.equals(nullLit)));
+        assertDoesNotThrow(() -> assertTrue(nonNullNullLit.equals(nonNullNullLit)));
+    }
+
     @Nested
     class ExitStringTests {
         @Test
