@@ -89,6 +89,7 @@ expr
 	| number
 	| bool
 	| string
+	| nullLit
 	| varOrFunCall
 ;
 
@@ -120,6 +121,9 @@ bool
 
 string
 	returns[Node result]: LIT_STRING;
+
+nullLit
+	returns[Node result]: KW_NULL;
 
 // Lexer rules
 LIT_INTEGER: DIGIT+;

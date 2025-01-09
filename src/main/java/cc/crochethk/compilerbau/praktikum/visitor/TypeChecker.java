@@ -47,6 +47,12 @@ public class TypeChecker implements Visitor<Type> {
     }
 
     @Override
+    public Type visit(NullLit nullLit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Type visit(Var var) {
         var varType = funDefVarTypes.get(var.name);
         if (varType == null) {

@@ -51,6 +51,12 @@ public class PrettyPrinter implements Visitor<Void> {
     }
 
     @Override
+    public Void visit(NullLit nullLit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Void visit(Var var) {
         scb.write(var.name);
         return null;

@@ -34,6 +34,8 @@ public interface Visitor<R> {
 
     R visit(StringLit stringLit);
 
+    R visit(NullLit nullLit);
+
     R visit(Var var);
 
     R visit(FunCall funCall);

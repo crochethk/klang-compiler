@@ -66,6 +66,12 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
     }
 
     @Override
+    public Void visit(NullLit nullLit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Void visit(Var var) {
         return null;
     }

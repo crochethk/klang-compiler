@@ -84,6 +84,12 @@ public class GenAsm extends CodeGenVisitor<Void> {
     }
 
     @Override
+    public Void visit(NullLit nullLit) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Void visit(Var var) {
         code.movq(stack.get(var.name), rax);
         return null;
