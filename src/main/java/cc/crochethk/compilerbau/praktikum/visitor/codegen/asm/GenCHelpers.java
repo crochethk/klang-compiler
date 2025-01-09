@@ -82,6 +82,12 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
     }
 
     @Override
+    public Void visit(ConstructorCall constructorCall) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Void visit(BinOpExpr binOpExpr) {
         return null;
     }

@@ -91,6 +91,15 @@ expr
 	| string
 	| nullLit
 	| varOrFunCall
+	| constructorCall
+;
+
+/* Foo { 123, 456, abc } (-> new Foo instance with 123, 456, abc (variable) values as fields) */
+constructorCall
+	returns[Node result]:
+	structName=IDENT LBRACE (
+		args+=expr (COMMA args+=expr)* COMMA?
+	)? RBRACE
 ;
 
 ternaryElseBranch

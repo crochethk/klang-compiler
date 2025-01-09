@@ -98,6 +98,12 @@ public class TypeChecker implements Visitor<Type> {
     }
 
     @Override
+    public Type visit(ConstructorCall constructorCall) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Type visit(BinOpExpr binOpExpr) {
         // Compute type of the operands
         var lhsType = binOpExpr.lhs.accept(this);

@@ -119,6 +119,12 @@ public class GenAsm extends CodeGenVisitor<Void> {
     }
 
     @Override
+    public Void visit(ConstructorCall constructorCall) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
     public Void visit(BinOpExpr binOpExpr) {
         binOpExpr.rhs.accept(this);
         var lhsNotComplex = binOpExpr.lhs instanceof LiteralExpr || binOpExpr.lhs instanceof Var;
