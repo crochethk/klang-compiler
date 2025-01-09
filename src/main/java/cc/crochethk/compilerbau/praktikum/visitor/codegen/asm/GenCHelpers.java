@@ -204,7 +204,7 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
         header.write("\n");
 
         // Declare struct auto-methods
-        // - Methodnames: <packageName>$$<ProgName>$<StructName>$<methName>
+        // - Methodnames: <StructName>$<methName>
         prog.structDefs.forEach(st -> {
             // constructor
             writeConstructorSignature(header, st);
@@ -256,8 +256,7 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
                         if (f.type().theType == Type.STRING_T) {
                             ccode.write("strdup(this->", f.name(), ");");
                         } else {
-                            writeCFullClassName(ccode);
-                            ccode.write("$", f.type().typeToken, "$to_string(this->", f.name(), ");");
+                            ccode.write(f.type().typeToken, "$to_string(this->", f.name(), ");");
                         }
                     } else {
                         ccode.writeIndented("fStr = malloc(22);");
@@ -310,25 +309,18 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
         return null;
     }
 
-    private void writeCFullClassName(SourceCodeBuilder scb) {
-        scb.write(packageName.replace(".", "$$"), "$", className);
-    }
-
     private void writeConstructorSignature(SourceCodeBuilder scb, StructDef st) {
         scb.write("\n", st.theType.cTypeName(), " ");
-        writeCFullClassName(scb);
-        scb.write("$", st.name, "$new(", formatParams(st.fields), ")");
+        scb.write(st.name, "$new(", formatParams(st.fields), ")");
     }
 
     private void writeDestructorSignature(SourceCodeBuilder scb, StructDef st) {
         scb.write("\nvoid ");
-        writeCFullClassName(scb);
-        scb.write("$", st.name, "$dispose(", st.theType.cTypeName(), " this)");
+        scb.write(st.name, "$drop(", st.theType.cTypeName(), " this)");
     }
 
     private void writeToStringSignature(SourceCodeBuilder scb, StructDef st) {
         scb.write("\nchar* ");
-        writeCFullClassName(scb);
-        scb.write("$", st.name, "$to_string(", st.theType.cTypeName(), " this)");
+        scb.write(st.name, "$to_string(", st.theType.cTypeName(), " this)");
     }
 }
