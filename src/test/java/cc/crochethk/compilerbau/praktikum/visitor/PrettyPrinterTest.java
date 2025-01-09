@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.literal.I64Lit;
+import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import utils.SourcePos;
 
 public class PrettyPrinterTest {
@@ -20,6 +20,22 @@ public class PrettyPrinterTest {
     @BeforeEach
     void setUp() {
         pp = new PrettyPrinter();
+    }
+
+    @Nested
+    class LiteralExprTests {
+        @Test
+        void testNullLit_isolated() {
+            pp.visit(new NullLit(srcPosMock));
+            assertEquals("null", pp.scb.toString());
+        }
+
+        @Test
+        void terstNullLit_inStatement() {
+            var stat = new VarAssignStat(srcPosMock, "foo", new NullLit(srcPosMock));
+            pp.visit(stat);
+            assertEquals("foo = null;", pp.scb.toString());
+        }
     }
 
     @Nested
