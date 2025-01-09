@@ -130,9 +130,7 @@ public class TreeBuilder extends KlangBaseListener {
         var srcPos = getSourcePos(ctx);
         if (ctx.LPAR() != null) {
             // function call
-            var args = ctx.expr() != null
-                    ? ctx.expr().stream().map(expr -> expr.result).toList()
-                    : null;
+            var args = ctx.args.stream().map(arg -> arg.result).toList();
             ctx.result = new FunCall(srcPos, ctx.IDENT().getText(), args);
         } else if (ctx.IDENT() != null && ctx.LPAR() == null) {
             // variable access

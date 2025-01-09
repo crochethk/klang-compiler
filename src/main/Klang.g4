@@ -102,7 +102,7 @@ ternaryElseBranch
 varOrFunCall
 	returns[Node result]:
 	// function call with one or more args
-	IDENT LPAR expr (COMMA expr)* RPAR
+	IDENT LPAR args+=expr (COMMA args+=expr)* RPAR
 	// function call without args
 	| IDENT LPAR RPAR
 	// variable reference
