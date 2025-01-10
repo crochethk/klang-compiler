@@ -98,6 +98,48 @@ public class TypeChekerTest {
         // ---------------------------------------------------------------------
     }
 
+    @Nested
+    class BinOpExprTests {
+        @Test
+        void nullOperandShouldReportErr_1() {
+            var lhs = new I64Lit(srcPosMock, 123, false);
+            var rhs = new NullLit(srcPosMock);
+            var fun = new FunDef(srcPosMock, "fun", List.of(), new TypeNode(srcPosMock, "void", true),
+                    new StatementList(srcPosMock, List.of(
+                            new VarDeclareStat(srcPosMock, "var", new TypeNode(srcPosMock, "i64", true)),
+                            new VarAssignStat(srcPosMock, "var", new BinOpExpr(srcPosMock, lhs, BinaryOp.add, rhs)))));
+
+            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertReportedErrors(2);
+        }
+
+        @Test
+        void nullOperandShouldReportErr_2() {
+            var lhs = new NullLit(srcPosMock);
+            var rhs = new I64Lit(srcPosMock, 123, false);
+            var fun = new FunDef(srcPosMock, "fun", List.of(), new TypeNode(srcPosMock, "void", true),
+                    new StatementList(srcPosMock, List.of(
+                            new VarDeclareStat(srcPosMock, "var", new TypeNode(srcPosMock, "i64", true)),
+                            new VarAssignStat(srcPosMock, "var", new BinOpExpr(srcPosMock, lhs, BinaryOp.add, rhs)))));
+
+            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertReportedErrors(3);
+        }
+
+        @Test
+        void nullOperandShouldReportErr_3() {
+            var lhs = new NullLit(srcPosMock);
+            var rhs = new NullLit(srcPosMock);
+            var fun = new FunDef(srcPosMock, "fun", List.of(), new TypeNode(srcPosMock, "void", true),
+                    new StatementList(srcPosMock, List.of(
+                            new VarDeclareStat(srcPosMock, "var", new TypeNode(srcPosMock, "i64", true)),
+                            new VarAssignStat(srcPosMock, "var", new BinOpExpr(srcPosMock, lhs, BinaryOp.add, rhs)))));
+
+            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertReportedErrors(2);
+        }
+    }
+
     /** Add definitions to the tested type checker's state */
     private void registerDefinitions(List<FunDef> funDefs, List<StructDef> structDefs) {
         tc.visit(new Prog(srcPosMock, funDefs, null, structDefs));

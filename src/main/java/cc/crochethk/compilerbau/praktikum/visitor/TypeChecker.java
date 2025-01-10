@@ -151,22 +151,27 @@ public class TypeChecker implements Visitor<Type> {
         // Compute type of the operands
         var lhsType = binOpExpr.lhs.accept(this);
         var rhsType = binOpExpr.rhs.accept(this);
+        if (lhsType.isReference() || rhsType.isReference()) {
+            if (!binOpExpr.op.isComparison()) {
+                reportError(binOpExpr, "RefType incompatible with binary operator '" + binOpExpr.op + "'");
+            }
+        }
 
         Type exprType;
         if (binOpExpr.op.isBoolean()) {
             exprType = Type.BOOL_T;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
-                reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
+                reportBinOpExprErrorMsg(binOpExpr);
             }
         } else if (binOpExpr.op.isArithmetic()) {
             exprType = binOpExpr.lhs.theType;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
-                reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
+                reportBinOpExprErrorMsg(binOpExpr);
             }
         } else if (binOpExpr.op.isComparison()) {
             exprType = Type.BOOL_T;
             if (!(lhsType.equals(rhsType) && lhsType.isNumeric() && rhsType.isNumeric())) {
-                reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
+                reportBinOpExprErrorMsg(binOpExpr);
             }
         } else {
             throw new UnsupportedOperationException("Unknown binary operator: " + binOpExpr.op);
@@ -174,6 +179,12 @@ public class TypeChecker implements Visitor<Type> {
 
         binOpExpr.theType = Objects.requireNonNull(exprType, "Expected valid Type object but was null");
         return binOpExpr.theType;
+    }
+
+    private void reportBinOpExprErrorMsg(BinOpExpr expr) {
+        reportError(expr,
+                "Can't " + expr.op.toString().toUpperCase() + " " + expr.lhs.theType.getClass().getSimpleName()
+                        + " and " + expr.rhs.theType.getClass().getSimpleName());
     }
 
     @Override
