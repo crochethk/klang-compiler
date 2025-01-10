@@ -195,6 +195,17 @@ public class TypeChekerTest extends NodeMocker {
         }
     }
 
+    @Nested
+    class IfElseStatTests {
+        @Test
+        void nullConditionShouldReportErr() {
+            var cond = NULL_LIT;
+            var fun = funDef("fun", List.of(), List.of(ifElseStat(cond, statementList(), statementList())));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+            assertReportedErrors(1);
+        }
+    }
+
     /** Run TypeChecker on new Program consiting of given definitions */
     private void checkProgOf(List<FunDef> funDefs, List<StructDef> structDefs) {
         tc.visit(new Prog(new SourcePos(0, 0), funDefs, null, structDefs));

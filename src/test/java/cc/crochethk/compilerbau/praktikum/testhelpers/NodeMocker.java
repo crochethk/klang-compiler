@@ -111,4 +111,12 @@ public class NodeMocker {
     public TernaryConditionalExpr ternaryConditionalExpr(Node condition, Node then, Node otherwise) {
         return new TernaryConditionalExpr(srcPosMock, condition, then, otherwise);
     }
+
+    public StatementList statementList(Node... nodes) {
+        return new StatementList(srcPosMock, List.of(nodes));
+    }
+
+    public IfElseStat ifElseStat(Node condition, StatementList then, StatementList otherwise) {
+        return new IfElseStat(srcPosMock, condition, then, otherwise);
+    }
 }
