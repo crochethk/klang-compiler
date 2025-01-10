@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker.TypeCheckFailedException;
 import utils.SourcePos;
@@ -135,6 +136,31 @@ public class TypeChekerTest {
                             new VarDeclareStat(srcPosMock, "var", new TypeNode(srcPosMock, "i64", true)),
                             new VarAssignStat(srcPosMock, "var", new BinOpExpr(srcPosMock, lhs, BinaryOp.add, rhs)))));
 
+            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertReportedErrors(2);
+        }
+    }
+
+    @Nested
+    class UnaryOpExprTests {
+        @Test
+        void nullOperandShouldReportErr_arithmeticOp() {
+            var operand = new NullLit(srcPosMock);
+            var fun = new FunDef(srcPosMock, "fun", List.of(), new TypeNode(srcPosMock, "void", true),
+                    new StatementList(srcPosMock, List.of(
+                            new VarDeclareStat(srcPosMock, "var", new TypeNode(srcPosMock, "i64", true)),
+                            new VarAssignStat(srcPosMock, "var", new UnaryOpExpr(srcPosMock, operand, UnaryOp.neg)))));
+            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertReportedErrors(2);
+        }
+
+        @Test
+        void nullOperandShouldReportErr_booleanOp() {
+            var operand = new NullLit(srcPosMock);
+            var fun = new FunDef(srcPosMock, "fun", List.of(), new TypeNode(srcPosMock, "void", true),
+                    new StatementList(srcPosMock, List.of(
+                            new VarDeclareStat(srcPosMock, "var", new TypeNode(srcPosMock, "bool", true)),
+                            new VarAssignStat(srcPosMock, "var", new UnaryOpExpr(srcPosMock, operand, UnaryOp.not)))));
             assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
             assertReportedErrors(2);
         }

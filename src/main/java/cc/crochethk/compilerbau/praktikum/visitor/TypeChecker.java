@@ -193,7 +193,7 @@ public class TypeChecker implements Visitor<Type> {
         unaryOpExpr.theType = operandType;
         var op = unaryOpExpr.op;
 
-        if (op.isBoolean() && operandType.isNumeric()) {
+        if (op.isBoolean() && (operandType.isNumeric() || operandType.isReference())) {
             reportError(unaryOpExpr, "Boolean operator incompatible with '"
                     + operandType + "' operand");
         }
