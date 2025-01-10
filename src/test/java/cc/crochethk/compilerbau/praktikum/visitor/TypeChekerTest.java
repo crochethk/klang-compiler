@@ -29,7 +29,7 @@ public class TypeChekerTest extends NodeMocker {
         void nullArgForNonRefParamShouldReportErr() {
             var fun = funDef("fun", List.of(param("p1", I64_TN)), I64_TN,
                     List.of(returnStat(i64Lit(42))));
-            registerDefinitions(List.of(fun), List.of());
+            checkProgOf(List.of(fun), List.of());
             assertReportedErrors(0);
 
             var funCall = funCall("fun", List.of(NULL_LIT));
@@ -41,7 +41,7 @@ public class TypeChekerTest extends NodeMocker {
         void nullArgForRefParamIsOk() {
             var customType = structDef("CustomType", List.of());
             var fun = funDef("fun", List.of(param("p1", "CustomType", false)), List.of());
-            registerDefinitions(List.of(fun), List.of(customType));
+            checkProgOf(List.of(fun), List.of(customType));
             assertReportedErrors(0);
 
             var funCall = funCall("fun", List.of(NULL_LIT));
@@ -55,7 +55,7 @@ public class TypeChekerTest extends NodeMocker {
         @Test
         void emptyStruct() {
             var structDef = structDef("Empty", List.of());
-            registerDefinitions(List.of(), List.of(structDef));
+            checkProgOf(List.of(), List.of(structDef));
             assertReportedErrors(0);
 
             var constCall = constructorCall("Empty");
@@ -67,7 +67,7 @@ public class TypeChekerTest extends NodeMocker {
         @Test
         void nullArgForNonRefParamShouldReportErr() {
             var def = structDef("Def", List.of(param("p1", I64_TN)));
-            registerDefinitions(List.of(), List.of(def));
+            checkProgOf(List.of(), List.of(def));
             assertReportedErrors(0);
 
             var constCall = constructorCall("Def", List.of(NULL_LIT));
@@ -79,7 +79,7 @@ public class TypeChekerTest extends NodeMocker {
         void nullArgForRefParamIsOk() {
             var customType = structDef("CustomType", List.of());
             var def = structDef("Def", List.of(param("p1", "CustomType", false)));
-            registerDefinitions(List.of(), List.of(customType, def));
+            checkProgOf(List.of(), List.of(customType, def));
             assertReportedErrors(0);
 
             var constCall = constructorCall("Def", List.of(NULL_LIT));
@@ -99,7 +99,7 @@ public class TypeChekerTest extends NodeMocker {
                     varDeclareStat("var", I64_TN),
                     varAssignStat("var", binOpExpr(lhs, BinaryOp.add, rhs))));
 
-            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(2);
         }
 
@@ -111,7 +111,7 @@ public class TypeChekerTest extends NodeMocker {
                     varDeclareStat("var", I64_TN),
                     varAssignStat("var", binOpExpr(lhs, BinaryOp.add, rhs))));
 
-            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(3);
         }
 
@@ -123,7 +123,7 @@ public class TypeChekerTest extends NodeMocker {
                     varDeclareStat("var", I64_TN),
                     varAssignStat("var", binOpExpr(lhs, BinaryOp.add, rhs))));
 
-            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(2);
         }
     }
@@ -136,7 +136,7 @@ public class TypeChekerTest extends NodeMocker {
             var fun = funDef("fun", List.of(), List.of(
                     varDeclareStat("var", I64_TN),
                     varAssignStat("var", unaryOpExpr(operand, UnaryOp.neg))));
-            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(2);
         }
 
@@ -146,7 +146,7 @@ public class TypeChekerTest extends NodeMocker {
             var fun = funDef("fun", List.of(), List.of(
                     varDeclareStat("var", BOOL_TN),
                     varAssignStat("var", unaryOpExpr(operand, UnaryOp.not))));
-            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(2);
         }
     }
@@ -159,7 +159,7 @@ public class TypeChekerTest extends NodeMocker {
             var fun = funDef("fun", List.of(param("strVar", STRING_TN)), List.of(
                     varAssignStat("strVar", ternaryConditionalExpr(
                             cond, stringLit("then expr"), stringLit("else expr")))));
-            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(1);
         }
 
@@ -169,7 +169,7 @@ public class TypeChekerTest extends NodeMocker {
             var fun = funDef("fun", List.of(param("strVar", STRING_TN)), List.of(
                     varAssignStat("strVar",
                             ternaryConditionalExpr(cond, NULL_LIT, stringLit("else expr")))));
-            registerDefinitions(List.of(fun), List.of());
+            checkProgOf(List.of(fun), List.of());
             assertReportedErrors(0);
         }
     }
@@ -181,7 +181,7 @@ public class TypeChekerTest extends NodeMocker {
             var expr = NULL_LIT;
             var fun = funDef("fun", List.of(param("var", F64_TN)),
                     List.of(varAssignStat("var", expr)));
-            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(1);
         }
 
@@ -190,13 +190,13 @@ public class TypeChekerTest extends NodeMocker {
             var expr = NULL_LIT;
             var fun = funDef("fun", List.of(param("strVar", STRING_TN)),
                     List.of(varAssignStat("strVar", expr)));
-            registerDefinitions(List.of(fun), List.of());
+            checkProgOf(List.of(fun), List.of());
             assertReportedErrors(0);
         }
     }
 
-    /** Add definitions to the tested type checker's state */
-    private void registerDefinitions(List<FunDef> funDefs, List<StructDef> structDefs) {
+    /** Run TypeChecker on new Program consiting of given definitions */
+    private void checkProgOf(List<FunDef> funDefs, List<StructDef> structDefs) {
         tc.visit(new Prog(new SourcePos(0, 0), funDefs, null, structDefs));
     }
 
