@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Nested;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker.TypeCheckFailedException;
 import utils.SourcePos;
 import cc.crochethk.compilerbau.praktikum.testhelpers.NodeMocker;
@@ -170,6 +169,27 @@ public class TypeChekerTest extends NodeMocker {
             var fun = funDef("fun", List.of(param("strVar", "string", true)), List.of(
                     varAssignStat("strVar",
                             ternaryConditionalExpr(cond, NULL_LIT, stringLit("else expr")))));
+            registerDefinitions(List.of(fun), List.of());
+            assertReportedErrors(0);
+        }
+    }
+
+    @Nested
+    class VarAssignStatTests {
+        @Test
+        void nullOnNonRefTypeShouldReportErr() {
+            var expr = NULL_LIT;
+            var fun = funDef("fun", List.of(param("var", "f64", true)),
+                    List.of(varAssignStat("var", expr)));
+            assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
+            assertReportedErrors(1);
+        }
+
+        @Test
+        void nullOkIfTargetIsRefType() {
+            var expr = NULL_LIT;
+            var fun = funDef("fun", List.of(param("strVar", "string", true)),
+                    List.of(varAssignStat("strVar", expr)));
             registerDefinitions(List.of(fun), List.of());
             assertReportedErrors(0);
         }
