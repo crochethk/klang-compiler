@@ -10,12 +10,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
+import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import utils.SourcePos;
 
 public class PrettyPrinterTest {
     private static final SourcePos srcPosMock = new SourcePos(-1, -1);
     private PrettyPrinter pp;
+
+    private Parameter param(String paramName, String typeName, boolean isBuiltin) {
+        return new Parameter(paramName, new TypeNode(srcPosMock, typeName, isBuiltin));
+    }
 
     @BeforeEach
     void setUp() {
@@ -84,10 +89,6 @@ public class PrettyPrinterTest {
 
     @Nested
     class StructDefTests {
-        private Parameter param(String paramName, String typeName, boolean isBuiltin) {
-            return new Parameter(paramName, new TypeNode(srcPosMock, typeName, isBuiltin));
-        }
-
         @Test
         void emptyStruct() {
             pp.visit(new StructDef(srcPosMock, "FooBar", Collections.emptyList()));
@@ -108,6 +109,49 @@ public class PrettyPrinterTest {
             assertEquals(
                     "struct structuredData {\n  one: f64,\n  two: string,\n  thr33: i64,\n  four: OtherStruct,\n}\n",
                     pp.scb.toString());
+        }
+    }
+
+    @Nested
+    class FunDefTests {
+        @Test
+        void emptyParamsAndBody() {
+            pp.visit(new FunDef(srcPosMock, "fun_1", List.of(),
+                    new TypeNode(srcPosMock, "void", true),
+                    new StatementList(srcPosMock, List.of())));
+            assertEquals("fn fun_1() {}\n", pp.scb.toString());
+        }
+
+        @Test
+        void oneParamWithReturn() {
+            pp.visit(new FunDef(srcPosMock, "fun_2", List.of(
+                    param("p1", "i64", true)),
+                    new TypeNode(srcPosMock, "i64", true), new StatementList(srcPosMock,
+                            List.of(new ReturnStat(srcPosMock, new I64Lit(srcPosMock, 42, false))))));
+            assertEquals("fn fun_2(p1: i64, ) -> i64 {\n  return 42;\n}\n", pp.scb.toString());
+        }
+
+        @Test
+        void multipleParamsAndStatements() {
+            pp.visit(new FunDef(srcPosMock, "fun_3",
+                    List.of(param("p1", "i64", true),
+                            param("p2", "CustomType", false),
+                            param("p3", "string", true)),
+                    new TypeNode(srcPosMock, "void", true),
+                    new StatementList(srcPosMock,
+                            List.of(
+                                    new VarAssignStat(srcPosMock, "p1",
+                                            new BinOpExpr(srcPosMock,
+                                                    new Var(srcPosMock, "p1"),
+                                                    BinaryOp.add,
+                                                    new I64Lit(srcPosMock, 1, false))),
+                                    new ReturnStat(srcPosMock, new EmptyNode(srcPosMock))))));
+            var expString = """
+                    fn fun_3(p1: i64, p2: CustomType, p3: string, ) {
+                      p1 = (p1 + 1);
+                      return;
+                    }\n""";
+            assertEquals(expString, pp.scb.toString());
         }
     }
 
