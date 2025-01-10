@@ -45,6 +45,12 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         return this.equals(LONG_T) || this.equals(DOUBLE_T);
     }
 
+    public default boolean isCompatible(Type other) {
+        return this.isReference() && other == Type.NULL_T
+                || other.isReference() && this == Type.NULL_T
+                || this.equals(other);
+    }
+
     final Type STRING_T = new RefType("String", "java.lang", "const char*");
     final Type LONG_T = new PrimType(TypeKind.LongType, AsmTypeKind.LongType);
     final Type BOOL_T = new PrimType(TypeKind.BooleanType, AsmTypeKind.BooleanType);

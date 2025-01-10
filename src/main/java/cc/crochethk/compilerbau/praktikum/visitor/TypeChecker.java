@@ -88,20 +88,20 @@ public class TypeChecker implements Visitor<Type> {
                     break;
                 }
                 var arg = argsIter.next();
-                if (arg.theType == Type.NULL_T) {
-                    // "null" only ok for RefTypes
-                    if (!p.type().theType.isReference()) {
-                        reportError(funCall,
-                                "Attempt to assign 'null' to non-reference type variable '" + p.name() + "'");
-                    }
-                } else if (!p.type().theType.equals(arg.theType)) {
+
+                if (!p.type().theType.isCompatible(arg.theType)) {
                     reportError(funCall, "Invalid argument type for parameter '" + p.name()
-                            + "': expected '" + p.type() + "' but found incompatible '" + arg.theType + "'");
+                            + "': expected '" + prettyTheTypeName(p.type()) + "' but found incompatible '"
+                            + prettyTheTypeName(arg) + "'");
                 }
             }
         }
         return funCall.theType;
     }
+
+    private String prettyTheTypeName(Node n) {
+        return n.theType.getClass().getSimpleName();
+    };
 
     @Override
     public Type visit(ConstructorCall constCall) {
@@ -131,13 +131,7 @@ public class TypeChecker implements Visitor<Type> {
                 }
                 var arg = argsIter.next();
 
-                if (arg.theType == Type.NULL_T) {
-                    // "null" only ok for RefTypes
-                    if (!field.type().theType.isReference()) {
-                        reportError(constCall,
-                                "Attempt to assign 'null' to non-reference type variable '" + field.name() + "'");
-                    }
-                } else if (!field.type().theType.equals(arg.theType)) {
+                if (!field.type().theType.isCompatible(arg.theType)) {
                     reportError(constCall, "Invalid argument type for field '" + field.name()
                             + "': Expected '" + field.type() + "' but found incompatible '" + arg.theType + "'");
                 }
@@ -211,7 +205,7 @@ public class TypeChecker implements Visitor<Type> {
         var otherwiseType = ternaryConditionalExpr.otherwise.accept(this);
         ternaryConditionalExpr.theType = thenType;
 
-        if (!thenType.equals(otherwiseType)) {
+        if (!thenType.isCompatible(otherwiseType)) {
             reportError(ternaryConditionalExpr.then, "Conditional branches return incompatible types");
         }
         if (!condType.equals(Type.BOOL_T)) {
@@ -247,7 +241,7 @@ public class TypeChecker implements Visitor<Type> {
         if (varType == null) {
             reportError(varAssignStat,
                     "Assignment to undeclared variable '" + varAssignStat.targetVarName + "'");
-        } else if (!(varType.equals(exprType))) {
+        } else if (!(varType.isCompatible(exprType))) {
             reportError(varAssignStat, "Attempt to assign value of type '"
                     + exprType + "' to variable '" + varAssignStat.targetVarName
                     + "' of incompatible type '" + varType + "'");
