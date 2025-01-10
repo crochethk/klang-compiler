@@ -16,7 +16,7 @@ classes_out_dir="${work_dir}/classes/"
 # Compile compiler and copy to workdir
 compile_release
 if [ $? -ne 0 ]; then
-    echo -e ">>> ERROR while compiling java source files\n"
+    echo -e "\e[31m>>> ERROR while compiling java source files\e[0m\n"
     exit 1
 fi
 cp -r "${RELEASE_WORK_DIR}" "${work_dir}"

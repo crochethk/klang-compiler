@@ -21,7 +21,7 @@ source ./scripts/compile_klang.sh
 # Compile compiler
 compile_release
 if [ $? -ne 0 ]; then
-    echo -e ">>> ERROR while compiling java source files\n"
+    echo -e "\e[31m>>> ERROR while compiling java source files\e[0m\n"
     exit 1
 fi
 
@@ -57,7 +57,7 @@ for test_file in ${file_list}; do
     dependencies_cp=$(_join_array "DEPENDENCIES[@]" ":")
     compile_klang_files "${src_file_compile_dir}" "${asm_test_klang_files_dir}/${test_file_name_no_ext}.k"
     if [ $? -ne 0 ]; then
-        echo -e ">>> ERROR. Test skipped!\n"
+        echo -e "\n\e[31m>>> ERROR. Test failed! <<<\e[0m\n"
         continue
     fi
 
@@ -68,7 +68,7 @@ for test_file in ${file_list}; do
         "${test_file}" "${src_file_compile_dir}/tests.asm.${test_file_name_no_ext}.s" \
         "${src_file_compile_dir}/tests.asm.${test_file_name_no_ext}.c"
     if [ $? -ne 0 ]; then
-        echo -e ">>> ERROR. Test skipped!\n"
+        echo -e "\n\e[31m>>> ERROR. Test failed! <<<\e[0m\n"
         continue
     fi
 
