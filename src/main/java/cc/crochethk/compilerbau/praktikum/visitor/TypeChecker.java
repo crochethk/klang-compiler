@@ -95,8 +95,8 @@ public class TypeChecker implements Visitor<Type> {
                                 "Attempt to assign 'null' to non-reference type variable '" + p.name() + "'");
                     }
                 } else if (!p.type().theType.equals(arg.theType)) {
-                    reportError(funCall,
-                            "Invalid argument type '" + arg.theType + "' (arg='" + arg.toString() + "')");
+                    reportError(funCall, "Invalid argument type for parameter '" + p.name()
+                            + "': expected '" + p.type() + "' but found incompatible '" + arg.theType + "'");
                 }
             }
         }
@@ -104,9 +104,46 @@ public class TypeChecker implements Visitor<Type> {
     }
 
     @Override
-    public Type visit(ConstructorCall constructorCall) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    public Type visit(ConstructorCall constCall) {
+        // Basically same constraints apply as in funCall
+        constCall.args.forEach(arg -> arg.accept(this));
+
+        var structDef = structDefs.get(constCall.structName);
+        if (structDef == null) {
+            reportError(constCall, "Unknown constructor '" + constCall.structName + "'");
+            constCall.theType = Type.UNKNOWN_T;
+        } else {
+            //structDef found
+            constCall.theType = structDef.theType;
+
+            var fieldsCount = structDef.fields.size();
+            var argsCount = constCall.args.size();
+            if (fieldsCount != argsCount) {
+                reportError(constCall,
+                        "Wrong number of arguments: expected " + fieldsCount
+                                + " but " + argsCount + " provided");
+            }
+
+            var argsIter = constCall.args.iterator();
+            for (var field : structDef.fields) {
+                if (!argsIter.hasNext()) {
+                    break;
+                }
+                var arg = argsIter.next();
+
+                if (arg.theType == Type.NULL_T) {
+                    // "null" only ok for RefTypes
+                    if (!field.type().theType.isReference()) {
+                        reportError(constCall,
+                                "Attempt to assign 'null' to non-reference type variable '" + field.name() + "'");
+                    }
+                } else if (!field.type().theType.equals(arg.theType)) {
+                    reportError(constCall, "Invalid argument type for field '" + field.name()
+                            + "': Expected '" + field.type() + "' but found incompatible '" + arg.theType + "'");
+                }
+            }
+        }
+        return constCall.theType;
     }
 
     @Override
