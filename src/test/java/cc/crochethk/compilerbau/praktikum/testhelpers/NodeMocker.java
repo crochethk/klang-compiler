@@ -90,6 +90,10 @@ public class NodeMocker {
         return new UnaryOpExpr(srcPosMock, operand, op);
     }
 
+    public Var var(String name) {
+        return new Var(srcPosMock, name);
+    }
+
     public FunCall funCall(String name, List<Node> args) {
         return new FunCall(srcPosMock, name, args);
     }

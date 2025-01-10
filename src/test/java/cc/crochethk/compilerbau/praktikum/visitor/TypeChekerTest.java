@@ -204,11 +204,35 @@ public class TypeChekerTest extends NodeMocker {
             assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(1);
         }
+
+        @Test
+        void maxIntUsingIfElse() {
+            var fun = maxInt_IfElse_fd();
+            var useMaxInt = funCall("maxInt", List.of(i64Lit(-1), i64Lit(2)));
+            checkProgOf(List.of(fun), List.of(), useMaxInt);
+            assertReportedErrors(0);
+        }
+
+        private FunDef maxInt_IfElse_fd() {
+            var lhs = var("a");
+            var rhs = var("b");
+            var params = List.of(param(lhs.name, I64_TN), param(rhs.name, I64_TN));
+            var cond = binOpExpr(lhs, BinaryOp.gteq, rhs);
+            var then = statementList(returnStat(lhs));
+            var otherwise = statementList(returnStat(rhs));
+            IfElseStat ifelse = ifElseStat(cond, then, otherwise);
+            return funDef("maxInt", params, I64_TN, List.of(ifelse));
+        }
     }
 
     /** Run TypeChecker on new Program consiting of given definitions */
     private void checkProgOf(List<FunDef> funDefs, List<StructDef> structDefs) {
         tc.visit(new Prog(new SourcePos(0, 0), funDefs, null, structDefs));
+    }
+
+    /** Run TypeChecker on new Program consiting of given definitions and the entry point call */
+    private void checkProgOf(List<FunDef> funDefs, List<StructDef> structDefs, FunCall entryPoint) {
+        tc.visit(new Prog(new SourcePos(0, 0), funDefs, entryPoint, structDefs));
     }
 
     private void assertReportedErrors(int expErrCount) {
