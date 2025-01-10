@@ -27,7 +27,7 @@ public class TypeChekerTest extends NodeMocker {
     class FunCallTests {
         @Test
         void nullArgForNonRefParamShouldReportErr() {
-            var fun = funDef("fun", List.of(param("p1", "i64", true)), typeNode("i64", true),
+            var fun = funDef("fun", List.of(param("p1", I64_TN)), I64_TN,
                     List.of(returnStat(i64Lit(42))));
             registerDefinitions(List.of(fun), List.of());
             assertReportedErrors(0);
@@ -66,7 +66,7 @@ public class TypeChekerTest extends NodeMocker {
         // ------------ adjusted copy paste from FunCallTests ------------------
         @Test
         void nullArgForNonRefParamShouldReportErr() {
-            var def = structDef("Def", List.of(param("p1", "i64", true)));
+            var def = structDef("Def", List.of(param("p1", I64_TN)));
             registerDefinitions(List.of(), List.of(def));
             assertReportedErrors(0);
 
@@ -96,7 +96,7 @@ public class TypeChekerTest extends NodeMocker {
             var lhs = i64Lit(123);
             var rhs = NULL_LIT;
             var fun = funDef("fun", List.of(), List.of(
-                    varDeclareStat("var", typeNode("i64", true)),
+                    varDeclareStat("var", I64_TN),
                     varAssignStat("var", binOpExpr(lhs, BinaryOp.add, rhs))));
 
             assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
@@ -108,7 +108,7 @@ public class TypeChekerTest extends NodeMocker {
             var lhs = NULL_LIT;
             var rhs = i64Lit(123);
             var fun = funDef("fun", List.of(), List.of(
-                    varDeclareStat("var", typeNode("i64", true)),
+                    varDeclareStat("var", I64_TN),
                     varAssignStat("var", binOpExpr(lhs, BinaryOp.add, rhs))));
 
             assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
@@ -120,7 +120,7 @@ public class TypeChekerTest extends NodeMocker {
             var lhs = NULL_LIT;
             var rhs = NULL_LIT;
             var fun = funDef("fun", List.of(), List.of(
-                    varDeclareStat("var", typeNode("i64", true)),
+                    varDeclareStat("var", I64_TN),
                     varAssignStat("var", binOpExpr(lhs, BinaryOp.add, rhs))));
 
             assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
@@ -134,7 +134,7 @@ public class TypeChekerTest extends NodeMocker {
         void nullOperandShouldReportErr_arithmeticOp() {
             var operand = NULL_LIT;
             var fun = funDef("fun", List.of(), List.of(
-                    varDeclareStat("var", typeNode("i64", true)),
+                    varDeclareStat("var", I64_TN),
                     varAssignStat("var", unaryOpExpr(operand, UnaryOp.neg))));
             assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
             assertReportedErrors(2);
@@ -144,7 +144,7 @@ public class TypeChekerTest extends NodeMocker {
         void nullOperandShouldReportErr_booleanOp() {
             var operand = NULL_LIT;
             var fun = funDef("fun", List.of(), List.of(
-                    varDeclareStat("var", typeNode("bool", true)),
+                    varDeclareStat("var", BOOL_TN),
                     varAssignStat("var", unaryOpExpr(operand, UnaryOp.not))));
             assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
             assertReportedErrors(2);
@@ -156,7 +156,7 @@ public class TypeChekerTest extends NodeMocker {
         @Test
         void nullConditionShouldReportErr() {
             var cond = NULL_LIT;
-            var fun = funDef("fun", List.of(param("strVar", "string", true)), List.of(
+            var fun = funDef("fun", List.of(param("strVar", STRING_TN)), List.of(
                     varAssignStat("strVar", ternaryConditionalExpr(
                             cond, stringLit("then expr"), stringLit("else expr")))));
             assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
@@ -166,7 +166,7 @@ public class TypeChekerTest extends NodeMocker {
         @Test
         void nullOkInBranchWithRefType() {
             var cond = boolLit(true);
-            var fun = funDef("fun", List.of(param("strVar", "string", true)), List.of(
+            var fun = funDef("fun", List.of(param("strVar", STRING_TN)), List.of(
                     varAssignStat("strVar",
                             ternaryConditionalExpr(cond, NULL_LIT, stringLit("else expr")))));
             registerDefinitions(List.of(fun), List.of());
@@ -179,7 +179,7 @@ public class TypeChekerTest extends NodeMocker {
         @Test
         void nullOnNonRefTypeShouldReportErr() {
             var expr = NULL_LIT;
-            var fun = funDef("fun", List.of(param("var", "f64", true)),
+            var fun = funDef("fun", List.of(param("var", F64_TN)),
                     List.of(varAssignStat("var", expr)));
             assertThrows(TypeCheckFailedException.class, () -> registerDefinitions(List.of(fun), List.of()));
             assertReportedErrors(1);
@@ -188,7 +188,7 @@ public class TypeChekerTest extends NodeMocker {
         @Test
         void nullOkIfTargetIsRefType() {
             var expr = NULL_LIT;
-            var fun = funDef("fun", List.of(param("strVar", "string", true)),
+            var fun = funDef("fun", List.of(param("strVar", STRING_TN)),
                     List.of(varAssignStat("strVar", expr)));
             registerDefinitions(List.of(fun), List.of());
             assertReportedErrors(0);
