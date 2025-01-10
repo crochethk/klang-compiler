@@ -266,7 +266,7 @@ public class TreeBuilder extends KlangBaseListener {
         var then = ctx.then.result;
         var otherwise = ctx.KW_ELSE() != null
                 ? ctx.otherwise.result
-                : new EmptyNode(srcPos);
+                : new StatementList(srcPos, List.of());
         ctx.result = new IfElseStat(srcPos, condition, then, otherwise);
     }
 

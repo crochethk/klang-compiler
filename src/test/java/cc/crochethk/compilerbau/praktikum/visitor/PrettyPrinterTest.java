@@ -178,9 +178,9 @@ public class PrettyPrinterTest {
             var assStat = new VarAssignStat(srcPosMock,
                     "counter", new BinOpExpr(srcPosMock, new Var(srcPosMock, "counter"),
                             BinOpExpr.BinaryOp.add, new I64Lit(srcPosMock, 1, false)));
-            var ifelse = new IfElseStat(srcPosMock,
-                    new FunCall(srcPosMock, "maxReached", Collections.emptyList()),
-                    new BreakStat(srcPosMock), new EmptyNode(srcPosMock));
+            var ifelse = new IfElseStat(srcPosMock, new FunCall(srcPosMock, "maxReached", Collections.emptyList()),
+                    new StatementList(srcPosMock, List.of(new BreakStat(srcPosMock))),
+                    new StatementList(srcPosMock, List.of()));
 
             pp.visit(new LoopStat(srcPosMock, new StatementList(srcPosMock, List.of(assStat, ifelse))));
             assertEquals("loop {\n  counter = (counter + 1);\n  if maxReached() {\n    break;\n  } else {}\n}",
