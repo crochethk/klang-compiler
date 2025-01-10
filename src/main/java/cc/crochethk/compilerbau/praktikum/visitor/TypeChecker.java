@@ -88,12 +88,18 @@ public class TypeChecker implements Visitor<Type> {
                     break;
                 }
                 var arg = argsIter.next();
-                if (!p.type().theType.equals(arg.theType)) {
-                    reportError(funCall, "Invalid argument type '" + arg.theType + "'");
+                if (arg.theType == Type.NULL_T) {
+                    // "null" only ok for RefTypes
+                    if (!p.type().theType.isReference()) {
+                        reportError(funCall,
+                                "Attempt to assign 'null' to non-reference type variable '" + p.name() + "'");
+                    }
+                } else if (!p.type().theType.equals(arg.theType)) {
+                    reportError(funCall,
+                            "Invalid argument type '" + arg.theType + "' (arg='" + arg.toString() + "')");
                 }
             }
         }
-
         return funCall.theType;
     }
 
