@@ -1,0 +1,104 @@
+package cc.crochethk.compilerbau.praktikum.testhelpers;
+
+import java.util.List;
+
+import cc.crochethk.compilerbau.praktikum.ast.*;
+import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.literal.*;
+import utils.SourcePos;
+
+public class NodeMocker {
+    private final SourcePos srcPosMock = new SourcePos(-1, -1);
+
+    public final NullLit NULL_LIT = new NullLit(srcPosMock);
+    protected final StructDef EMPTY_STRUCT = new StructDef(srcPosMock, "Empty", List.of());
+
+    public FunDef funDef(String name, List<Parameter> params, TypeNode returnType, List<Node> statements) {
+        return new FunDef(srcPosMock, name, params, returnType,
+                new StatementList(srcPosMock, statements));
+    }
+
+    /** FunDef mock with {@code void} return type */
+    public FunDef funDef(String name, List<Parameter> params, List<Node> statements) {
+        return funDef(name, params, typeNode("void", true), statements);
+    }
+
+    public StructDef structDef(String name, List<Parameter> fields) {
+        return new StructDef(srcPosMock, name, fields);
+    }
+
+    public Parameter param(String paramName, String typeName, boolean isBuiltin) {
+        return new Parameter(paramName, typeNode(typeName, isBuiltin));
+    }
+
+    public TypeNode typeNode(String typeName, boolean isBuiltin) {
+        return new TypeNode(srcPosMock, typeName, isBuiltin);
+    }
+
+    public ReturnStat returnStat(Node expr) {
+        return new ReturnStat(srcPosMock, expr);
+    }
+
+    public I64Lit i64Lit(long value, boolean hasTypeAnnotation) {
+        return new I64Lit(srcPosMock, value, hasTypeAnnotation);
+    }
+
+    public I64Lit i64Lit(long value) {
+        return i64Lit(value, false);
+    }
+
+    public F64Lit f64Lit(double value, boolean hasTypeAnnotation) {
+        return new F64Lit(srcPosMock, value, hasTypeAnnotation);
+    }
+
+    public F64Lit f64Lit(double value) {
+        return f64Lit(value, false);
+    }
+
+    public StringLit stringLit(String value) {
+        return new StringLit(srcPosMock, value);
+    }
+
+    public BoolLit boolLit(boolean value) {
+        return new BoolLit(srcPosMock, value);
+    }
+
+    public VarDeclareStat varDeclareStat(String varName, TypeNode declaredType) {
+        return new VarDeclareStat(srcPosMock, varName, declaredType);
+    }
+
+    public VarAssignStat varAssignStat(String targetVarName, Node expr) {
+        return new VarAssignStat(srcPosMock, targetVarName, expr);
+    }
+
+    public BinOpExpr binOpExpr(Node lhs, BinaryOp op, Node rhs) {
+        return new BinOpExpr(srcPosMock, lhs, op, rhs);
+    }
+
+    public UnaryOpExpr unaryOpExpr(Node operand, UnaryOp op) {
+        return new UnaryOpExpr(srcPosMock, operand, op);
+    }
+
+    public FunCall funCall(String name, List<Node> args) {
+        return new FunCall(srcPosMock, name, args);
+    }
+
+    /** Call without args */
+    public FunCall funCall(String name) {
+        return funCall(name);
+    }
+
+    public ConstructorCall constructorCall(String structName, List<Node> args) {
+        return new ConstructorCall(srcPosMock, structName, args);
+    }
+
+    /** Call without args */
+    public ConstructorCall constructorCall(String structName) {
+        return constructorCall(structName, List.of());
+    }
+
+    public TernaryConditionalExpr ternaryConditionalExpr(Node condition, Node then, Node otherwise) {
+        return new TernaryConditionalExpr(srcPosMock, condition, then, otherwise);
+    }
+}
