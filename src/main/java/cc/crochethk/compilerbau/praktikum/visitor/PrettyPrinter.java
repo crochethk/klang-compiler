@@ -9,7 +9,7 @@ import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 
-public class PrettyPrinter implements Visitor<Void> {
+public class PrettyPrinter implements Visitor {
     public Writer writer;
     SourceCodeBuilder scb;
 
@@ -23,52 +23,45 @@ public class PrettyPrinter implements Visitor<Void> {
     }
 
     @Override
-    public Void visit(I64Lit i64Lit) {
+    public void visit(I64Lit i64Lit) {
         scb.write(Long.toString(i64Lit.value));
         if (i64Lit.hasTypeAnnotation)
             scb.write(" as i64");
-        return null;
     }
 
     @Override
-    public Void visit(F64Lit f64Lit) {
+    public void visit(F64Lit f64Lit) {
         scb.write(Double.toString(f64Lit.value));
         if (f64Lit.hasTypeAnnotation)
             scb.write(" as f64");
-        return null;
     }
 
     @Override
-    public Void visit(BoolLit boolLit) {
+    public void visit(BoolLit boolLit) {
         var lex = boolLit.value ? BoolLit.TRUE_LEX : BoolLit.FALSE_LEX;
         scb.write(lex);
-        return null;
     }
 
     @Override
-    public Void visit(StringLit stringLit) {
+    public void visit(StringLit stringLit) {
         scb.write("\"", stringLit.value, "\"");
-        return null;
     }
 
     @Override
-    public Void visit(NullLit nullLit) {
+    public void visit(NullLit nullLit) {
         scb.write("null");
-        return null;
     }
 
     @Override
-    public Void visit(Var var) {
+    public void visit(Var var) {
         scb.write(var.name);
-        return null;
     }
 
     @Override
-    public Void visit(FunCall funCall) {
+    public void visit(FunCall funCall) {
         scb.write(funCall.name, "(");
         writeArgsList(scb, funCall.args);
         scb.write(")");
-        return null;
     }
 
     private void writeArgsList(SourceCodeBuilder scb, List<Node> args) {
@@ -80,16 +73,15 @@ public class PrettyPrinter implements Visitor<Void> {
     }
 
     @Override
-    public Void visit(ConstructorCall constructorCall) {
+    public void visit(ConstructorCall constructorCall) {
         var cc = constructorCall;
         scb.write(cc.structName, "{");
         writeArgsList(scb, cc.args);
         scb.write("}");
-        return null;
     }
 
     @Override
-    public Void visit(BinOpExpr binOpExpr) {
+    public void visit(BinOpExpr binOpExpr) {
         scb.write("(");
         binOpExpr.lhs.accept(this);
 
@@ -101,11 +93,10 @@ public class PrettyPrinter implements Visitor<Void> {
 
         binOpExpr.rhs.accept(this);
         scb.write(")");
-        return null;
     }
 
     @Override
-    public Void visit(UnaryOpExpr unaryOpExpr) {
+    public void visit(UnaryOpExpr unaryOpExpr) {
         scb.write("(");
         var op_lex = unaryOpExpr.op.toLexeme();
         switch (unaryOpExpr.op.side) {
@@ -119,36 +110,33 @@ public class PrettyPrinter implements Visitor<Void> {
             }
         }
         scb.write(")");
-        return null;
     }
 
     @Override
-    public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
+    public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
         ternaryConditionalExpr.condition.accept(this);
         scb.write(" ? ");
         ternaryConditionalExpr.then.accept(this);
         scb.write(" : ");
-        return ternaryConditionalExpr.otherwise.accept(this);
+        ternaryConditionalExpr.otherwise.accept(this);
     }
 
     @Override
-    public Void visit(VarDeclareStat varDeclareStat) {
+    public void visit(VarDeclareStat varDeclareStat) {
         scb.write("let ", varDeclareStat.varName, ": ");
         varDeclareStat.declaredType.accept(this);
         scb.write(";");
-        return null;
     }
 
     @Override
-    public Void visit(VarAssignStat varAssignStat) {
+    public void visit(VarAssignStat varAssignStat) {
         scb.write(varAssignStat.targetVarName, " = ");
         varAssignStat.expr.accept(this);
         scb.write(";");
-        return null;
     }
 
     @Override
-    public Void visit(IfElseStat ifElseStat) {
+    public void visit(IfElseStat ifElseStat) {
         scb.write("if ");
         ifElseStat.condition.accept(this);
         scb.write(" {");
@@ -169,11 +157,10 @@ public class PrettyPrinter implements Visitor<Void> {
             scb.writeIndent();
         }
         scb.write("}");
-        return null;
     }
 
     @Override
-    public Void visit(LoopStat loopStat) {
+    public void visit(LoopStat loopStat) {
         scb.write("loop {");
         if (!loopStat.body.isEmpty()) {
             scb.increaseIndent();
@@ -183,11 +170,10 @@ public class PrettyPrinter implements Visitor<Void> {
             scb.writeIndent();
         }
         scb.write("}");
-        return null;
     }
 
     @Override
-    public Void visit(StatementList statementList) {
+    public void visit(StatementList statementList) {
         var statList = statementList.statements;
         for (int i = 0; i < statList.size(); i++) {
             var s = statList.get(i);
@@ -195,35 +181,31 @@ public class PrettyPrinter implements Visitor<Void> {
             if (!s.isEmpty() && i < statList.size() - 1)
                 scb.writeIndent();
         }
-        return null;
     }
 
     @Override
-    public Void visit(ReturnStat returnStat) {
+    public void visit(ReturnStat returnStat) {
         scb.write("return");
         if (!returnStat.isEmpty()) {
             scb.write(" ");
         }
         returnStat.expr.accept(this);
         scb.write(";");
-        return null;
     }
 
     @Override
-    public Void visit(BreakStat breakStat) {
+    public void visit(BreakStat breakStat) {
         scb.write("break");
         scb.write(";");
-        return null;
     }
 
     @Override
-    public Void visit(TypeNode type) {
+    public void visit(TypeNode type) {
         scb.write(type.typeToken);
-        return null;
     }
 
     @Override
-    public Void visit(FunDef funDef) {
+    public void visit(FunDef funDef) {
         // Signature
         scb.write("fn ", funDef.name, "(");
         for (var p : funDef.params) {
@@ -248,11 +230,10 @@ public class PrettyPrinter implements Visitor<Void> {
         }
         scb.write("}");
         scb.writeIndent();
-        return null;
     }
 
     @Override
-    public Void visit(StructDef structDef) {
+    public void visit(StructDef structDef) {
         scb.write("struct ", structDef.name, " {");
         if (!structDef.fields.isEmpty()) {
             scb.increaseIndent();
@@ -267,11 +248,10 @@ public class PrettyPrinter implements Visitor<Void> {
         }
         scb.write("}");
         scb.writeIndent();
-        return null;
     }
 
     @Override
-    public Void visit(Prog prog) {
+    public void visit(Prog prog) {
         for (int i = 0; i < prog.structDefs.size(); i++) {
             prog.structDefs.get(i).accept(this);
             if (i < prog.structDefs.size() - 1)
@@ -289,11 +269,10 @@ public class PrettyPrinter implements Visitor<Void> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return null;
     }
 
     @Override
-    public Void visit(EmptyNode emptyNode) {
-        return null;
+    public void visit(EmptyNode emptyNode) {
+        return;
     }
 }

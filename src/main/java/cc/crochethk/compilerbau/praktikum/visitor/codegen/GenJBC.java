@@ -32,7 +32,7 @@ import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
  * qualified name and then written into a '.class' file, ready to be executed
  * by the JVM.
  */
-public class GenJBC extends CodeGenVisitor<Void> {
+public class GenJBC extends CodeGenVisitor {
     private static final String FILE_EXT = ".class";
 
     @Override
@@ -56,42 +56,37 @@ public class GenJBC extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Void visit(I64Lit i64Lit) {
+    public void visit(I64Lit i64Lit) {
         codeBuilder.ldc(i64Lit.value);
-        return null;
     }
 
     @Override
-    public Void visit(F64Lit f64Lit) {
+    public void visit(F64Lit f64Lit) {
         codeBuilder.ldc(f64Lit.value);
-        return null;
     }
 
     @Override
-    public Void visit(BoolLit boolLit) {
+    public void visit(BoolLit boolLit) {
         if (boolLit.value) {
             // push "true" representation
             codeBuilder.iconst_1();
         } else {
             codeBuilder.iconst_0();
         }
-        return null;
     }
 
     @Override
-    public Void visit(StringLit stringLit) {
+    public void visit(StringLit stringLit) {
         codeBuilder.ldc(stringLit.value);
-        return null;
     }
 
     @Override
-    public Void visit(NullLit nullLit) {
+    public void visit(NullLit nullLit) {
         codeBuilder.aconst_null();
-        return null;
     }
 
     @Override
-    public Void visit(Var var) {
+    public void visit(Var var) {
         var slot = varsManager.getSlot(var.name);
 
         switch (var.theType.jvmTypeKind()) {
@@ -105,11 +100,10 @@ public class GenJBC extends CodeGenVisitor<Void> {
                     "No matching load instruction found for var '" + var.name
                             + "' with type '" + var.theType + "'");
         }
-        return null;
     }
 
     @Override
-    public Void visit(FunCall funCall) {
+    public void visit(FunCall funCall) {
         // load arguments before calling function
         funCall.args.forEach(arg -> arg.accept(this));
 
@@ -117,17 +111,16 @@ public class GenJBC extends CodeGenVisitor<Void> {
         var methDescriptor = MethodTypeDesc.of(funCall.theType.classDesc(), argsClassDescs);
 
         codeBuilder.invokestatic(ClassDesc.of(packageName, className), funCall.name, methDescriptor);
-        return null;
     }
 
     @Override
-    public Void visit(ConstructorCall constructorCall) {
+    public void visit(ConstructorCall constructorCall) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override
-    public Void visit(BinOpExpr binOpExpr) {
+    public void visit(BinOpExpr binOpExpr) {
         // load both operands
         binOpExpr.lhs.accept(this);
         binOpExpr.rhs.accept(this);
@@ -135,7 +128,6 @@ public class GenJBC extends CodeGenVisitor<Void> {
         // now operands should be loaded onto operand stack
 
         genOpInstruction(codeBuilder, binOpExpr.lhs.theType, binOpExpr.op);
-        return null;
     }
 
     private void genOpInstruction(CodeBuilder cb, Type operandType, BinaryOp op) {
@@ -262,11 +254,10 @@ public class GenJBC extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Void visit(UnaryOpExpr unaryOpExpr) {
+    public void visit(UnaryOpExpr unaryOpExpr) {
         // load operand
         unaryOpExpr.operand.accept(this);
         genOpInstruction(codeBuilder, unaryOpExpr.operand.theType, unaryOpExpr.op);
-        return null;
     }
 
     private void genOpInstruction(CodeBuilder cb, Type operandType, UnaryOp op) {
@@ -298,7 +289,7 @@ public class GenJBC extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
+    public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
         ternaryConditionalExpr.condition.accept(this);
         var falseBranch = codeBuilder.newLabel();
         var afterFalseBranch = codeBuilder.newLabel();
@@ -309,26 +300,23 @@ public class GenJBC extends CodeGenVisitor<Void> {
         codeBuilder.labelBinding(falseBranch);
         ternaryConditionalExpr.otherwise.accept(this);
         codeBuilder.labelBinding(afterFalseBranch);
-        return null;
     }
 
     @Override
-    public Void visit(VarDeclareStat varDeclareStat) {
+    public void visit(VarDeclareStat varDeclareStat) {
         // we are fine with redefintion
         varsManager.reserveSlot(varDeclareStat.varName, varDeclareStat.declaredType.theType);
-        return null;
     }
 
     @Override
-    public Void visit(VarAssignStat varAssignStat) {
+    public void visit(VarAssignStat varAssignStat) {
         varAssignStat.expr.accept(this);
         var slot = varsManager.getSlot(varAssignStat.targetVarName);
         codeBuilder.storeLocal(varAssignStat.theType.jvmTypeKind(), slot);
-        return null;
     }
 
     @Override
-    public Void visit(IfElseStat ifElseStat) {
+    public void visit(IfElseStat ifElseStat) {
         ifElseStat.condition.accept(this);
         codeBuilder.ifThenElse(
                 thenbcb -> {
@@ -342,13 +330,12 @@ public class GenJBC extends CodeGenVisitor<Void> {
                     ifElseStat.otherwise.accept(this);
                     codeBuilder = cbBak;
                 });
-        return null;
     }
 
     private Label currentLoopEnd = null;
 
     @Override
-    public Void visit(LoopStat loopStat) {
+    public void visit(LoopStat loopStat) {
         // backup current label (in case other scope is using it)
         var previousEnd = currentLoopEnd;
         currentLoopEnd = codeBuilder.newLabel();
@@ -360,36 +347,32 @@ public class GenJBC extends CodeGenVisitor<Void> {
 
         //restore previous label
         currentLoopEnd = previousEnd;
-        return null;
     }
 
     @Override
-    public Void visit(StatementList statementList) {
+    public void visit(StatementList statementList) {
         statementList.statements.forEach(s -> s.accept(this));
-        return null;
     }
 
     @Override
-    public Void visit(ReturnStat returnStat) {
+    public void visit(ReturnStat returnStat) {
         returnStat.expr.accept(this);
         codeBuilder.return_(returnStat.theType.jvmTypeKind());
-        return null;
     }
 
     @Override
-    public Void visit(BreakStat breakStat) {
+    public void visit(BreakStat breakStat) {
         codeBuilder.goto_(currentLoopEnd);
-        return null;
     }
 
     @Override
-    public Void visit(TypeNode type) {
+    public void visit(TypeNode type) {
         // -> skip
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(FunDef funDef) {
+    public void visit(FunDef funDef) {
         // Add to function lookup table for later use
         funDefs.put(funDef.name, funDef);
 
@@ -424,17 +407,16 @@ public class GenJBC extends CodeGenVisitor<Void> {
                         cdb.return_();
                     }
                 }));
-        return null;
     }
 
     @Override
-    public Void visit(StructDef structDef) {
+    public void visit(StructDef structDef) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override
-    public Void visit(Prog prog) {
+    public void visit(Prog prog) {
         var classDesc = ClassDesc.of(packageName, className);
         var bytes = ClassFile.of().build(classDesc, cb -> {
             this.classBuilder = cb;
@@ -457,8 +439,6 @@ public class GenJBC extends CodeGenVisitor<Void> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return null;
     }
 
     private void genMainMethod(ClassBuilder cb, FunCall entryPointCall) {
@@ -499,9 +479,9 @@ public class GenJBC extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Void visit(EmptyNode emptyNode) {
+    public void visit(EmptyNode emptyNode) {
         // -> skip
-        return null;
+        return;
     }
 
     private class VariableSlotManager {

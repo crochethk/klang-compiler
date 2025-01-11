@@ -7,7 +7,7 @@ import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 
-public abstract class CodeGenVisitor<T> implements Visitor<T> {
+public abstract class CodeGenVisitor implements Visitor {
     protected String outDir;
     protected String packageName;
     protected String className;

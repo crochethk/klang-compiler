@@ -14,7 +14,7 @@ import cc.crochethk.compilerbau.praktikum.ast.literal.*;
  * While doing that each visited Node is annotated with its inferred type information
  * by assigning an appropriate Type object to {@code Node.theType}.
  */
-public class TypeChecker implements Visitor<Type> {
+public class TypeChecker implements Visitor {
     int errorsReported = 0;
 
     private void reportError(Node node, String s) {
@@ -23,47 +23,41 @@ public class TypeChecker implements Visitor<Type> {
     }
 
     @Override
-    public Type visit(I64Lit i64Lit) {
+    public void visit(I64Lit i64Lit) {
         i64Lit.theType = Type.LONG_T;
-        return i64Lit.theType;
     }
 
     @Override
-    public Type visit(F64Lit f64Lit) {
+    public void visit(F64Lit f64Lit) {
         f64Lit.theType = Type.DOUBLE_T;
-        return f64Lit.theType;
     }
 
     @Override
-    public Type visit(BoolLit boolLit) {
+    public void visit(BoolLit boolLit) {
         boolLit.theType = Type.BOOL_T;
-        return boolLit.theType;
     }
 
     @Override
-    public Type visit(StringLit stringLit) {
+    public void visit(StringLit stringLit) {
         stringLit.theType = Type.STRING_T;
-        return stringLit.theType;
     }
 
     @Override
-    public Type visit(NullLit nullLit) {
+    public void visit(NullLit nullLit) {
         nullLit.theType = Type.NULL_T;
-        return nullLit.theType;
     }
 
     @Override
-    public Type visit(Var var) {
+    public void visit(Var var) {
         var varType = funDefVarTypes.get(var.name);
         if (varType == null) {
             reportError(var, "Use of undefined variable '" + var.name + "'");
         }
         var.theType = varType;
-        return varType;
     }
 
     @Override
-    public Type visit(FunCall funCall) {
+    public void visit(FunCall funCall) {
         funCall.args.forEach(arg -> arg.accept(this));
 
         var funDef = funDefs.get(funCall.name);
@@ -96,7 +90,6 @@ public class TypeChecker implements Visitor<Type> {
                 }
             }
         }
-        return funCall.theType;
     }
 
     private String prettyTheTypeName(Node n) {
@@ -104,7 +97,7 @@ public class TypeChecker implements Visitor<Type> {
     };
 
     @Override
-    public Type visit(ConstructorCall constCall) {
+    public void visit(ConstructorCall constCall) {
         // Basically same constraints apply as in funCall
         constCall.args.forEach(arg -> arg.accept(this));
 
@@ -137,14 +130,15 @@ public class TypeChecker implements Visitor<Type> {
                 }
             }
         }
-        return constCall.theType;
     }
 
     @Override
-    public Type visit(BinOpExpr binOpExpr) {
+    public void visit(BinOpExpr binOpExpr) {
         // Compute type of the operands
-        var lhsType = binOpExpr.lhs.accept(this);
-        var rhsType = binOpExpr.rhs.accept(this);
+        binOpExpr.lhs.accept(this);
+        binOpExpr.rhs.accept(this);
+        var lhsType = binOpExpr.lhs.theType;
+        var rhsType = binOpExpr.rhs.theType;
         if (lhsType.isReference() || rhsType.isReference()) {
             if (!binOpExpr.op.isComparison()) {
                 reportError(binOpExpr, "RefType incompatible with binary operator '" + binOpExpr.op + "'");
@@ -172,7 +166,6 @@ public class TypeChecker implements Visitor<Type> {
         }
 
         binOpExpr.theType = Objects.requireNonNull(exprType, "Expected valid Type object but was null");
-        return binOpExpr.theType;
     }
 
     private void reportBinOpExprErrorMsg(BinOpExpr expr) {
@@ -182,8 +175,9 @@ public class TypeChecker implements Visitor<Type> {
     }
 
     @Override
-    public Type visit(UnaryOpExpr unaryOpExpr) {
-        var operandType = unaryOpExpr.operand.accept(this);
+    public void visit(UnaryOpExpr unaryOpExpr) {
+        unaryOpExpr.operand.accept(this);
+        var operandType = unaryOpExpr.operand.theType;
         unaryOpExpr.theType = operandType;
         var op = unaryOpExpr.op;
 
@@ -195,14 +189,16 @@ public class TypeChecker implements Visitor<Type> {
             reportError(unaryOpExpr, "Arithmetic operator '" + op
                     + "' incompatible with '" + operandType + "' operand");
         }
-        return unaryOpExpr.theType;
     }
 
     @Override
-    public Type visit(TernaryConditionalExpr ternaryConditionalExpr) {
-        var condType = ternaryConditionalExpr.condition.accept(this);
-        var thenType = ternaryConditionalExpr.then.accept(this);
-        var otherwiseType = ternaryConditionalExpr.otherwise.accept(this);
+    public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
+        ternaryConditionalExpr.condition.accept(this);
+        ternaryConditionalExpr.then.accept(this);
+        ternaryConditionalExpr.otherwise.accept(this);
+        var condType = ternaryConditionalExpr.condition.theType;
+        var thenType = ternaryConditionalExpr.then.theType;
+        var otherwiseType = ternaryConditionalExpr.otherwise.theType;
         ternaryConditionalExpr.theType = thenType;
 
         if (!thenType.isCompatible(otherwiseType)) {
@@ -211,11 +207,10 @@ public class TypeChecker implements Visitor<Type> {
         if (!condType.equals(Type.BOOL_T)) {
             reportError(ternaryConditionalExpr.condition, "Condition must return a boolean type");
         }
-        return ternaryConditionalExpr.theType;
     }
 
     @Override
-    public Type visit(VarDeclareStat varDeclareStat) {
+    public void visit(VarDeclareStat varDeclareStat) {
         /*
         TODO TODO TODO TODO TODO 
         - consider checking, whether the declared type is actually defined
@@ -228,15 +223,16 @@ public class TypeChecker implements Visitor<Type> {
         - when declaration has optional initializer: check whether types match
         */
 
-        varDeclareStat.theType = varDeclareStat.declaredType.accept(this);
+        varDeclareStat.declaredType.accept(this);
+        varDeclareStat.theType = varDeclareStat.declaredType.theType;
         funDefVarTypes.put(varDeclareStat.varName, varDeclareStat.theType);
-        return varDeclareStat.theType;
     }
 
     @Override
-    public Type visit(VarAssignStat varAssignStat) {
+    public void visit(VarAssignStat varAssignStat) {
         var varType = funDefVarTypes.get(varAssignStat.targetVarName);
-        var exprType = varAssignStat.expr.accept(this);
+        varAssignStat.expr.accept(this);
+        var exprType = varAssignStat.expr.theType;
 
         if (varType == null) {
             reportError(varAssignStat,
@@ -248,13 +244,14 @@ public class TypeChecker implements Visitor<Type> {
         }
 
         varAssignStat.theType = varType;
-        return varAssignStat.theType;
     }
 
     @Override
-    public Type visit(IfElseStat ifElseStat) {
-        var condType = ifElseStat.condition.accept(this);
-        var thenType = ifElseStat.then.accept(this);
+    public void visit(IfElseStat ifElseStat) {
+        ifElseStat.condition.accept(this);
+        ifElseStat.then.accept(this);
+        var condType = ifElseStat.condition.theType;
+        var thenType = ifElseStat.then.theType;
         ifElseStat.otherwise.accept(this);
 
         if (!condType.equals(Type.BOOL_T)) {
@@ -263,14 +260,13 @@ public class TypeChecker implements Visitor<Type> {
         }
 
         ifElseStat.theType = thenType;
-        return ifElseStat.theType;
     }
 
     /** Indicates that the visitor is currently in a loop context */
     private boolean isLoopContext = false;
 
     @Override
-    public Type visit(LoopStat loopStat) {
+    public void visit(LoopStat loopStat) {
         var prevState = isLoopContext;
 
         isLoopContext = true;
@@ -279,49 +275,45 @@ public class TypeChecker implements Visitor<Type> {
         loopStat.theType = Type.VOID_T;
 
         isLoopContext = prevState;
-        return loopStat.theType;
     }
 
     @Override
-    public Type visit(StatementList statementList) {
+    public void visit(StatementList statementList) {
         statementList.statements.forEach(s -> s.accept(this));
         statementList.theType = statementList.isEmpty()
                 ? Type.VOID_T
                 : statementList.statements.getLast().theType;
-        return statementList.theType;
     }
 
     @Override
-    public Type visit(ReturnStat returnStat) {
+    public void visit(ReturnStat returnStat) {
         var retType = currentFun.returnType.theType;
         currentFunReturnCount += 1;
         returnStat.theType = retType;
 
-        var exprType = returnStat.expr.accept(this);
+        returnStat.expr.accept(this);
+        var exprType = returnStat.expr.theType;
         if (!retType.isCompatible(exprType)) {
             reportError(returnStat, "Expected return type '" + retType
                     + "' but found incompatible '" + exprType + "'");
         }
-        return returnStat.theType;
     }
 
     @Override
-    public Type visit(BreakStat breakStat) {
+    public void visit(BreakStat breakStat) {
         if (!isLoopContext) {
             reportError(breakStat, "'break' only allowed inside loop body");
         }
         breakStat.theType = Type.VOID_T;
-        return breakStat.theType;
     }
 
     @Override
-    public Type visit(TypeNode type) {
+    public void visit(TypeNode type) {
         // TODO handle non-default packages
         type.theType = Type.of(type.typeToken, "" /*default package */);
         if (!type.isBuiltin && !structDefs.containsKey(type.typeToken)) {
             reportError(type, "Unknown type '" + type.typeToken + "'");
         }
-        return type.theType;
     }
 
     /**
@@ -336,7 +328,7 @@ public class TypeChecker implements Visitor<Type> {
     private int currentFunReturnCount = 0;
 
     @Override
-    public Type visit(FunDef funDef) {
+    public void visit(FunDef funDef) {
         // Hint: Signature nodes are already evaluated in Prog
         currentFun = funDef;
         currentFunReturnCount = 0;
@@ -363,11 +355,10 @@ public class TypeChecker implements Visitor<Type> {
         */
         // TODO change to something more meaningful
         funDef.theType = funDef.returnType.theType;
-        return funDef.theType;
     }
 
     @Override
-    public Type visit(StructDef structDef) {
+    public void visit(StructDef structDef) {
         //TODO handle custom package
         structDef.theType = Type.of(structDef.name, "");
         Set<String> fnames = new HashSet<>();
@@ -377,14 +368,13 @@ public class TypeChecker implements Visitor<Type> {
             }
             f.type().accept(this);
         });
-        return null;
     }
 
     private Map<String, FunDef> funDefs = new HashMap<>();
     private Map<String, StructDef> structDefs = new HashMap<>();
 
     @Override
-    public Type visit(Prog prog) {
+    public void visit(Prog prog) {
         prog.structDefs.forEach(structDef -> {
             var previous = structDefs.put(structDef.name, structDef);
             if (previous != null) {
@@ -416,13 +406,11 @@ public class TypeChecker implements Visitor<Type> {
         if (errorsReported != 0) {
             throw new TypeCheckFailedException();
         }
-        return null;
     }
 
     @Override
-    public Type visit(EmptyNode emptyNode) {
+    public void visit(EmptyNode emptyNode) {
         emptyNode.theType = Type.VOID_T;
-        return emptyNode.theType;
     }
 
     public class TypeCheckFailedException extends RuntimeException {
