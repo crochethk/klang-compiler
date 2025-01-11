@@ -86,8 +86,8 @@ public class GenJBC extends CodeGenVisitor<Void> {
 
     @Override
     public Void visit(NullLit nullLit) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        codeBuilder.aconst_null();
+        return null;
     }
 
     @Override
