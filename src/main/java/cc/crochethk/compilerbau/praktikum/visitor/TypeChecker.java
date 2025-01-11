@@ -298,7 +298,7 @@ public class TypeChecker implements Visitor<Type> {
         returnStat.theType = retType;
 
         var exprType = returnStat.expr.accept(this);
-        if (!retType.equals(exprType)) {
+        if (!retType.isCompatible(exprType)) {
             reportError(returnStat, "Expected return type '" + retType
                     + "' but found incompatible '" + exprType + "'");
         }

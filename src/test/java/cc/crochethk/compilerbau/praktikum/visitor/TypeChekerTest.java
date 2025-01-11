@@ -225,6 +225,42 @@ public class TypeChekerTest extends NodeMocker {
         }
     }
 
+    @Nested
+    class ReturnStatTests {
+        @Test
+        void nullWithReturnPrimitiveShouldReportErr_1() {
+            var stat = returnStat(NULL_LIT);
+            var fun = funDef("fun", List.of(), List.of(stat));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+            assertReportedErrors(1);
+        }
+
+        @Test
+        void nullWithReturnPrimitiveShouldReportErr_2() {
+            var stat = returnStat(NULL_LIT);
+            var fun = funDef("fun", List.of(), I64_TN, List.of(stat));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+            assertReportedErrors(1);
+        }
+
+        @Test
+        void nullOkWithReturnRefType_1() {
+            var stat = returnStat(NULL_LIT);
+            var fun = funDef("fun", List.of(), STRING_TN, List.of(stat));
+            checkProgOf(List.of(fun), List.of());
+            assertReportedErrors(0);
+        }
+
+        @Test
+        void nullOkWithReturnRefType_2() {
+            var stat = returnStat(NULL_LIT);
+            var struct = structDef("SomeStruct", List.of());
+            var fun = funDef("fun", List.of(), typeNode(struct.name, false), List.of(stat));
+            checkProgOf(List.of(fun), List.of(struct));
+            assertReportedErrors(0);
+        }
+    }
+
     /** Run TypeChecker on new Program consiting of given definitions */
     private void checkProgOf(List<FunDef> funDefs, List<StructDef> structDefs) {
         tc.visit(new Prog(new SourcePos(0, 0), funDefs, null, structDefs));
