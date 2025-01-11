@@ -215,6 +215,11 @@ public class KlangLexerTest {
         }
 
         @Test
+        public void testKW_DROP() {
+            assertEquals(List.of(KlangLexer.KW_DROP, KlangLexer.EOF), getTokenTypesFromText("drop"));
+        }
+
+        @Test
         public void testKW_AS() {
             assertEquals(List.of(KlangLexer.KW_AS, KlangLexer.EOF), getTokenTypesFromText("as"));
         }

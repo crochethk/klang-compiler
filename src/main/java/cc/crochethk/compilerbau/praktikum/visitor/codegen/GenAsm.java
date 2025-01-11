@@ -84,6 +84,12 @@ public class GenAsm extends CodeGenVisitor<Void> {
     }
 
     @Override
+    public Void visit(NullLit nullLit) {
+        code.movq($(0), rax);
+        return null;
+    }
+
+    @Override
     public Void visit(Var var) {
         code.movq(stack.get(var.name), rax);
         return null;
@@ -110,6 +116,12 @@ public class GenAsm extends CodeGenVisitor<Void> {
             code.addq($(stackArgsOffset), rsp);
         }
         return null;
+    }
+
+    @Override
+    public Void visit(ConstructorCall constructorCall) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override

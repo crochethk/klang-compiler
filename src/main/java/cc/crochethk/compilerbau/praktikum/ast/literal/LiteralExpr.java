@@ -16,7 +16,10 @@ public abstract class LiteralExpr<T> extends Node {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof LiteralExpr other) {
-            return this.value.equals(other.value);
+            if (this.value == null)
+                return other.value == null;
+            else
+                return this.value.equals(other.value);
         } else {
             return false;
         }

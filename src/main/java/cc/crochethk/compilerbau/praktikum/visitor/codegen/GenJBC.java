@@ -85,6 +85,12 @@ public class GenJBC extends CodeGenVisitor<Void> {
     }
 
     @Override
+    public Void visit(NullLit nullLit) {
+        codeBuilder.aconst_null();
+        return null;
+    }
+
+    @Override
     public Void visit(Var var) {
         var slot = varsManager.getSlot(var.name);
 
@@ -112,6 +118,12 @@ public class GenJBC extends CodeGenVisitor<Void> {
 
         codeBuilder.invokestatic(ClassDesc.of(packageName, className), funCall.name, methDescriptor);
         return null;
+    }
+
+    @Override
+    public Void visit(ConstructorCall constructorCall) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override

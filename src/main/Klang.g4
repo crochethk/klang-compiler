@@ -89,7 +89,17 @@ expr
 	| number
 	| bool
 	| string
+	| nullLit
 	| varOrFunCall
+	| constructorCall
+;
+
+/* Foo { 123, 456, abc } (-> new Foo instance with 123, 456, abc (variable) values as fields) */
+constructorCall
+	returns[Node result]:
+	structName=IDENT LBRACE (
+		args+=expr (COMMA args+=expr)* COMMA?
+	)? RBRACE
 ;
 
 ternaryElseBranch
@@ -101,7 +111,7 @@ ternaryElseBranch
 varOrFunCall
 	returns[Node result]:
 	// function call with one or more args
-	IDENT LPAR expr (COMMA expr)* RPAR
+	IDENT LPAR args+=expr (COMMA args+=expr)* RPAR
 	// function call without args
 	| IDENT LPAR RPAR
 	// variable reference
@@ -120,6 +130,9 @@ bool
 
 string
 	returns[Node result]: LIT_STRING;
+
+nullLit
+	returns[Node result]: KW_NULL;
 
 // Lexer rules
 LIT_INTEGER: DIGIT+;
@@ -181,6 +194,7 @@ KW_IF: 'if';
 KW_ELSE: 'else';
 
 KW_LET: 'let';
+KW_DROP: 'drop';
 KW_AS: 'as';
 
 KW_LOOP: 'loop';

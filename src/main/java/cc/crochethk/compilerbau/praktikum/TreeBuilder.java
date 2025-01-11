@@ -122,13 +122,16 @@ public class TreeBuilder extends KlangBaseListener {
     }
 
     @Override
+    public void exitNullLit(KlangParser.NullLitContext ctx) {
+        ctx.result = new NullLit(getSourcePos(ctx));
+    }
+
+    @Override
     public void exitVarOrFunCall(KlangParser.VarOrFunCallContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.LPAR() != null) {
             // function call
-            var args = ctx.expr() != null
-                    ? ctx.expr().stream().map(expr -> expr.result).toList()
-                    : null;
+            var args = ctx.args.stream().map(arg -> arg.result).toList();
             ctx.result = new FunCall(srcPos, ctx.IDENT().getText(), args);
         } else if (ctx.IDENT() != null && ctx.LPAR() == null) {
             // variable access
@@ -136,6 +139,14 @@ public class TreeBuilder extends KlangBaseListener {
         } else {
             throw new UnhandledAlternativeException(srcPos, "varOrFunCall", ctx.getText());
         }
+    }
+
+    @Override
+    public void exitConstructorCall(KlangParser.ConstructorCallContext ctx) {
+        ctx.result = new ConstructorCall(
+                getSourcePos(ctx),
+                ctx.structName.getText(),
+                ctx.args.stream().map(arg -> arg.result).toList());
     }
 
     @Override
@@ -197,6 +208,10 @@ public class TreeBuilder extends KlangBaseListener {
             ctx.result = buildTernaryConditionalNode(ctx, ctx.expr(), ctx.ternaryElseBranch());
         } else if (ctx.string() != null) {
             ctx.result = ctx.string().result;
+        } else if (ctx.nullLit() != null) {
+            ctx.result = ctx.nullLit().result;
+        } else if (ctx.constructorCall() != null) {
+            ctx.result = ctx.constructorCall().result;
         } else {
             throw new UnhandledAlternativeException(getSourcePos(ctx), "expr", ctx.getText());
         }
@@ -251,7 +266,7 @@ public class TreeBuilder extends KlangBaseListener {
         var then = ctx.then.result;
         var otherwise = ctx.KW_ELSE() != null
                 ? ctx.otherwise.result
-                : new EmptyNode(srcPos);
+                : new StatementList(srcPos, List.of());
         ctx.result = new IfElseStat(srcPos, condition, then, otherwise);
     }
 

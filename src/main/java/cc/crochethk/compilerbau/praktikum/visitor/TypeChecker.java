@@ -47,6 +47,12 @@ public class TypeChecker implements Visitor<Type> {
     }
 
     @Override
+    public Type visit(NullLit nullLit) {
+        nullLit.theType = Type.NULL_T;
+        return nullLit.theType;
+    }
+
+    @Override
     public Type visit(Var var) {
         var varType = funDefVarTypes.get(var.name);
         if (varType == null) {
@@ -82,13 +88,56 @@ public class TypeChecker implements Visitor<Type> {
                     break;
                 }
                 var arg = argsIter.next();
-                if (!p.type().theType.equals(arg.theType)) {
-                    reportError(funCall, "Invalid argument type '" + arg.theType + "'");
+
+                if (!p.type().theType.isCompatible(arg.theType)) {
+                    reportError(funCall, "Invalid argument type for parameter '" + p.name()
+                            + "': expected '" + prettyTheTypeName(p.type()) + "' but found incompatible '"
+                            + prettyTheTypeName(arg) + "'");
                 }
             }
         }
-
         return funCall.theType;
+    }
+
+    private String prettyTheTypeName(Node n) {
+        return n.theType.getClass().getSimpleName();
+    };
+
+    @Override
+    public Type visit(ConstructorCall constCall) {
+        // Basically same constraints apply as in funCall
+        constCall.args.forEach(arg -> arg.accept(this));
+
+        var structDef = structDefs.get(constCall.structName);
+        if (structDef == null) {
+            reportError(constCall, "Unknown constructor '" + constCall.structName + "'");
+            constCall.theType = Type.UNKNOWN_T;
+        } else {
+            //structDef found
+            constCall.theType = structDef.theType;
+
+            var fieldsCount = structDef.fields.size();
+            var argsCount = constCall.args.size();
+            if (fieldsCount != argsCount) {
+                reportError(constCall,
+                        "Wrong number of arguments: expected " + fieldsCount
+                                + " but " + argsCount + " provided");
+            }
+
+            var argsIter = constCall.args.iterator();
+            for (var field : structDef.fields) {
+                if (!argsIter.hasNext()) {
+                    break;
+                }
+                var arg = argsIter.next();
+
+                if (!field.type().theType.isCompatible(arg.theType)) {
+                    reportError(constCall, "Invalid argument type for field '" + field.name()
+                            + "': Expected '" + field.type() + "' but found incompatible '" + arg.theType + "'");
+                }
+            }
+        }
+        return constCall.theType;
     }
 
     @Override
@@ -96,22 +145,27 @@ public class TypeChecker implements Visitor<Type> {
         // Compute type of the operands
         var lhsType = binOpExpr.lhs.accept(this);
         var rhsType = binOpExpr.rhs.accept(this);
+        if (lhsType.isReference() || rhsType.isReference()) {
+            if (!binOpExpr.op.isComparison()) {
+                reportError(binOpExpr, "RefType incompatible with binary operator '" + binOpExpr.op + "'");
+            }
+        }
 
         Type exprType;
         if (binOpExpr.op.isBoolean()) {
             exprType = Type.BOOL_T;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
-                reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
+                reportBinOpExprErrorMsg(binOpExpr);
             }
         } else if (binOpExpr.op.isArithmetic()) {
             exprType = binOpExpr.lhs.theType;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
-                reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
+                reportBinOpExprErrorMsg(binOpExpr);
             }
         } else if (binOpExpr.op.isComparison()) {
             exprType = Type.BOOL_T;
             if (!(lhsType.equals(rhsType) && lhsType.isNumeric() && rhsType.isNumeric())) {
-                reportError(binOpExpr, lhsType + " " + binOpExpr.op + " " + rhsType);
+                reportBinOpExprErrorMsg(binOpExpr);
             }
         } else {
             throw new UnsupportedOperationException("Unknown binary operator: " + binOpExpr.op);
@@ -121,13 +175,19 @@ public class TypeChecker implements Visitor<Type> {
         return binOpExpr.theType;
     }
 
+    private void reportBinOpExprErrorMsg(BinOpExpr expr) {
+        reportError(expr,
+                "Can't " + expr.op.toString().toUpperCase() + " " + expr.lhs.theType.getClass().getSimpleName()
+                        + " and " + expr.rhs.theType.getClass().getSimpleName());
+    }
+
     @Override
     public Type visit(UnaryOpExpr unaryOpExpr) {
         var operandType = unaryOpExpr.operand.accept(this);
         unaryOpExpr.theType = operandType;
         var op = unaryOpExpr.op;
 
-        if (op.isBoolean() && operandType.isNumeric()) {
+        if (op.isBoolean() && (operandType.isNumeric() || operandType.isReference())) {
             reportError(unaryOpExpr, "Boolean operator incompatible with '"
                     + operandType + "' operand");
         }
@@ -145,7 +205,7 @@ public class TypeChecker implements Visitor<Type> {
         var otherwiseType = ternaryConditionalExpr.otherwise.accept(this);
         ternaryConditionalExpr.theType = thenType;
 
-        if (!thenType.equals(otherwiseType)) {
+        if (!thenType.isCompatible(otherwiseType)) {
             reportError(ternaryConditionalExpr.then, "Conditional branches return incompatible types");
         }
         if (!condType.equals(Type.BOOL_T)) {
@@ -181,7 +241,7 @@ public class TypeChecker implements Visitor<Type> {
         if (varType == null) {
             reportError(varAssignStat,
                     "Assignment to undeclared variable '" + varAssignStat.targetVarName + "'");
-        } else if (!(varType.equals(exprType))) {
+        } else if (!(varType.isCompatible(exprType))) {
             reportError(varAssignStat, "Attempt to assign value of type '"
                     + exprType + "' to variable '" + varAssignStat.targetVarName
                     + "' of incompatible type '" + varType + "'");
@@ -238,7 +298,7 @@ public class TypeChecker implements Visitor<Type> {
         returnStat.theType = retType;
 
         var exprType = returnStat.expr.accept(this);
-        if (!retType.equals(exprType)) {
+        if (!retType.isCompatible(exprType)) {
             reportError(returnStat, "Expected return type '" + retType
                     + "' but found incompatible '" + exprType + "'");
         }

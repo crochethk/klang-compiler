@@ -1,0 +1,23 @@
+package cc.crochethk.compilerbau.praktikum.ast;
+
+import java.util.Collections;
+import java.util.List;
+
+import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
+import utils.SourcePos;
+
+public class ConstructorCall extends Node {
+    public String structName;
+    public List<Node> args;
+
+    public ConstructorCall(SourcePos srcPos, String structName, List<Node> args) {
+        super(srcPos);
+        this.structName = structName;
+        this.args = args != null ? args : Collections.emptyList();
+    }
+
+    @Override
+    public <R> R accept(Visitor<R> visitor) {
+        return visitor.visit(this);
+    }
+}

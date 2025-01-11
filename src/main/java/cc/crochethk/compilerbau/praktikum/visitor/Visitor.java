@@ -1,22 +1,6 @@
 package cc.crochethk.compilerbau.praktikum.visitor;
 
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.BreakStat;
-import cc.crochethk.compilerbau.praktikum.ast.EmptyNode;
-import cc.crochethk.compilerbau.praktikum.ast.FunCall;
-import cc.crochethk.compilerbau.praktikum.ast.FunDef;
-import cc.crochethk.compilerbau.praktikum.ast.IfElseStat;
-import cc.crochethk.compilerbau.praktikum.ast.LoopStat;
-import cc.crochethk.compilerbau.praktikum.ast.Prog;
-import cc.crochethk.compilerbau.praktikum.ast.ReturnStat;
-import cc.crochethk.compilerbau.praktikum.ast.StatementList;
-import cc.crochethk.compilerbau.praktikum.ast.StructDef;
-import cc.crochethk.compilerbau.praktikum.ast.TernaryConditionalExpr;
-import cc.crochethk.compilerbau.praktikum.ast.TypeNode;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr;
-import cc.crochethk.compilerbau.praktikum.ast.Var;
-import cc.crochethk.compilerbau.praktikum.ast.VarAssignStat;
-import cc.crochethk.compilerbau.praktikum.ast.VarDeclareStat;
+import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 
 public interface Visitor<R> {
@@ -34,9 +18,13 @@ public interface Visitor<R> {
 
     R visit(StringLit stringLit);
 
+    R visit(NullLit nullLit);
+
     R visit(Var var);
 
     R visit(FunCall funCall);
+
+    R visit(ConstructorCall constructorCall);
 
     R visit(BinOpExpr binOpExpr);
 
