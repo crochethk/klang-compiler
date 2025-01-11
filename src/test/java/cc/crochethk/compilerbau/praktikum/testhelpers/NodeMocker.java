@@ -123,4 +123,16 @@ public class NodeMocker {
     public IfElseStat ifElseStat(Node condition, StatementList then, StatementList otherwise) {
         return new IfElseStat(srcPosMock, condition, then, otherwise);
     }
+
+    public EmptyNode emptyNode() {
+        return new EmptyNode(srcPosMock);
+    }
+
+    public LoopStat loopStat(StatementList statementList) {
+        return new LoopStat(srcPosMock, statementList);
+    }
+
+    public BreakStat breakStat() {
+        return new BreakStat(srcPosMock);
+    }
 }
