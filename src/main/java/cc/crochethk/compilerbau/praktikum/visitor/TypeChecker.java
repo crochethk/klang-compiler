@@ -352,11 +352,6 @@ public class TypeChecker implements Visitor<Type> {
         if (prog.entryPoint != null) {
             prog.entryPoint.accept(this);
             prog.theType = prog.entryPoint.theType;
-
-            if (!funDefs.containsKey(prog.entryPoint.name)) {
-                reportError(prog, "Entrypoint function '" + prog.entryPoint.name
-                        + "' specified but no definition with matching name exists");
-            }
         }
         if (errorsReported != 0) {
             throw new TypeCheckFailedException();
