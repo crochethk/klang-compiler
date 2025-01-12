@@ -211,15 +211,9 @@ public class TypeChecker implements Visitor {
     @Override
     public void visit(VarDeclareStat varDeclareStat) {
         /*
-        TODO TODO TODO TODO TODO 
-        - consider checking, whether the declared type is actually defined
-            - should only be relevant for custom types, since primitves are
-            already implicitly checked upon building the AST...
-            - probably should be delegated to "visit(Type)" instead
-        
         - we will allow redeclaration of variables (so no check if already declared)
-        
-        - when declaration has optional initializer: check whether types match
+        TODO
+        - when declaration has optional initializer: check whether types are compatible
         */
 
         varDeclareStat.declaredType.accept(this);
@@ -234,8 +228,8 @@ public class TypeChecker implements Visitor {
         var exprType = varAssignStat.expr.theType;
 
         if (varType == null) {
-            reportError(varAssignStat,
-                    "Assignment to undeclared variable '" + varAssignStat.targetVarName + "'");
+            reportError(varAssignStat, "Assignment to undeclared variable '"
+                    + varAssignStat.targetVarName + "'");
         } else if (!(varType.isCompatible(exprType))) {
             reportError(varAssignStat, "Attempt to assign value of type '"
                     + exprType + "' to variable '" + varAssignStat.targetVarName
@@ -347,19 +341,13 @@ public class TypeChecker implements Visitor {
                     + "' but no return statement was found");
         }
 
-        /*
-        TODO TODO TODO TODO 
-        Probably a "FunctionT" Type should be introduced as functiondef type, maybe
-        something like "java.lang.constant.MethodTypeDesc" (see GenJBC).
-        */
-        // TODO change to something more meaningful
         funDef.theType = funDef.returnType.theType;
     }
 
     @Override
     public void visit(StructDef structDef) {
         //TODO handle custom package
-        structDef.theType = Type.of(structDef.name, "");
+        structDef.theType = Type.of(structDef.name, "" /*default package */);
         Set<String> fnames = new HashSet<>();
         structDef.fields.forEach(f -> {
             if (!fnames.add(f.name())) {
