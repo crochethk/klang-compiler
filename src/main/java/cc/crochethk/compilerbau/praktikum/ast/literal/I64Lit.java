@@ -9,7 +9,7 @@ public class I64Lit extends NumberLiteral<Long> {
     }
 
     @Override
-    public <R> R accept(Visitor<R> visitor) {
-        return visitor.visit(this);
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }

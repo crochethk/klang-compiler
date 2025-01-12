@@ -22,7 +22,7 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.SectionBuilder;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
 
-public class GenAsm extends CodeGenVisitor<Void> {
+public class GenAsm extends CodeGenVisitor {
     private static final String FILE_EXT = ".s";
 
     /** Readonly data section (".rodata") */
@@ -47,15 +47,14 @@ public class GenAsm extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Void visit(I64Lit i64Lit) {
+    public void visit(I64Lit i64Lit) {
         code.movq($(i64Lit.value), rax);
-        return null;
     }
 
     private int localConstantCounter = 0;
 
     @Override
-    public Void visit(F64Lit f64Lit) {
+    public void visit(F64Lit f64Lit) {
         // Create constant definition
         long allBits = Double.doubleToRawLongBits(f64Lit.value);
         int lowBits = (int) allBits;
@@ -68,35 +67,34 @@ public class GenAsm extends CodeGenVisitor<Void> {
         code.movq(xmm0, rax);
 
         localConstantCounter += 1;
-        return null;
     }
 
     @Override
-    public Void visit(BoolLit boolLit) {
+    public void visit(BoolLit boolLit) {
         // TODO Auto-generated method stub
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(StringLit stringLit) {
+    public void visit(StringLit stringLit) {
         // TODO Auto-generated method stub
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(NullLit nullLit) {
+    public void visit(NullLit nullLit) {
         code.movq($(0), rax);
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(Var var) {
+    public void visit(Var var) {
         code.movq(stack.get(var.name), rax);
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(FunCall funCall) {
+    public void visit(FunCall funCall) {
         stack.alignRspToStackSize();
 
         var regArgsCount = Math.min(funCall.args.size(), regs.length);
@@ -115,17 +113,16 @@ public class GenAsm extends CodeGenVisitor<Void> {
         if (stackArgsOffset > 0) {
             code.addq($(stackArgsOffset), rsp);
         }
-        return null;
     }
 
     @Override
-    public Void visit(ConstructorCall constructorCall) {
+    public void visit(ConstructorCall constructorCall) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override
-    public Void visit(BinOpExpr binOpExpr) {
+    public void visit(BinOpExpr binOpExpr) {
         binOpExpr.rhs.accept(this);
         var lhsNotComplex = binOpExpr.lhs instanceof LiteralExpr || binOpExpr.lhs instanceof Var;
         // Put rdx on stack, if rdx might be overwritten when evaluating lhs
@@ -136,7 +133,6 @@ public class GenAsm extends CodeGenVisitor<Void> {
         // now operands in %rax (lhs), "rhsResLoc" (rhs)
 
         genOpInstruction(code, binOpExpr.lhs.theType, binOpExpr.op, rhsResLoc, rax);
-        return null;
     }
 
     /**
@@ -211,50 +207,48 @@ public class GenAsm extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Void visit(UnaryOpExpr unaryOpExpr) {
+    public void visit(UnaryOpExpr unaryOpExpr) {
         // TODO Auto-generated method stub
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
+    public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
         // TODO Auto-generated method stub
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(VarDeclareStat varDeclareStat) {
+    public void visit(VarDeclareStat varDeclareStat) {
         stack.store(varDeclareStat.varName, varDeclareStat.theType.byteSize());
-        return null;
     }
 
     @Override
-    public Void visit(VarAssignStat varAssignStat) {
+    public void visit(VarAssignStat varAssignStat) {
         varAssignStat.expr.accept(this);
         code.movq(rax, stack.get(varAssignStat.targetVarName));
-        return null;
     }
 
     @Override
-    public Void visit(IfElseStat ifElseStat) {
+    public void visit(IfElseStat ifElseStat) {
         // TODO Auto-generated method stub
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(LoopStat loopStat) {
+    public void visit(LoopStat loopStat) {
         // TODO Auto-generated method stub
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(StatementList statementList) {
+    public void visit(StatementList statementList) {
         statementList.statements.forEach(s -> s.accept(this));
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(ReturnStat returnStat) {
+    public void visit(ReturnStat returnStat) {
         returnStat.expr.accept(this);
         /* Epilogue */
         // Restore caller's context:
@@ -262,23 +256,22 @@ public class GenAsm extends CodeGenVisitor<Void> {
         // -> Can be reduced to "popq" part in certain cases.
         code.leave();
         code.ret();
-        return null;
     }
 
     @Override
-    public Void visit(BreakStat breakStat) {
+    public void visit(BreakStat breakStat) {
         // TODO Auto-generated method stub
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(TypeNode type) {
+    public void visit(TypeNode type) {
         // TODO Auto-generated method stub
-        return null;
+        return;
     }
 
     @Override
-    public Void visit(FunDef funDef) {
+    public void visit(FunDef funDef) {
         var oldCtx = stack;
         stack = new StackManager(code);
 
@@ -328,17 +321,16 @@ public class GenAsm extends CodeGenVisitor<Void> {
         }
 
         stack = oldCtx;
-        return null;
     }
 
     @Override
-    public Void visit(StructDef structDef) {
+    public void visit(StructDef structDef) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override
-    public Void visit(Prog prog) {
+    public void visit(Prog prog) {
         prog.funDefs.forEach(f -> f.accept(this));
 
         var filePath = outFilePaths().get(0);
@@ -357,12 +349,11 @@ public class GenAsm extends CodeGenVisitor<Void> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return null;
     }
 
     @Override
-    public Void visit(EmptyNode emptyNode) {
-        return null;
+    public void visit(EmptyNode emptyNode) {
+        return;
     }
 
     class StackManager {

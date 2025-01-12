@@ -16,7 +16,7 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.CodeGenVisitor;
  * FunDef nodes for easier external usage, as well as auto-generated functions for
  * structs.
  */
-public class GenCHelpers extends CodeGenVisitor<Void> {
+public class GenCHelpers extends CodeGenVisitor {
     private static final String EXT_H = ".h";
     private static final String EXT_C = ".c";
     private static final String INDENT_SEQ = "  ";
@@ -46,111 +46,109 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Void visit(I64Lit i64Lit) {
-        return null;
+    public void visit(I64Lit i64Lit) {
+        return;
     }
 
     @Override
-    public Void visit(F64Lit f64Lit) {
-        return null;
+    public void visit(F64Lit f64Lit) {
+        return;
     }
 
     @Override
-    public Void visit(BoolLit boolLit) {
-        return null;
+    public void visit(BoolLit boolLit) {
+        return;
     }
 
     @Override
-    public Void visit(StringLit stringLit) {
-        return null;
+    public void visit(StringLit stringLit) {
+        return;
     }
 
     @Override
-    public Void visit(NullLit nullLit) {
+    public void visit(NullLit nullLit) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override
-    public Void visit(Var var) {
-        return null;
+    public void visit(Var var) {
+        return;
     }
 
     @Override
-    public Void visit(FunCall funCall) {
-        return null;
+    public void visit(FunCall funCall) {
+        return;
     }
 
     @Override
-    public Void visit(ConstructorCall constructorCall) {
+    public void visit(ConstructorCall constructorCall) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
     @Override
-    public Void visit(BinOpExpr binOpExpr) {
-        return null;
+    public void visit(BinOpExpr binOpExpr) {
+        return;
     }
 
     @Override
-    public Void visit(UnaryOpExpr unaryOpExpr) {
-        return null;
+    public void visit(UnaryOpExpr unaryOpExpr) {
+        return;
     }
 
     @Override
-    public Void visit(TernaryConditionalExpr ternaryConditionalExpr) {
-        return null;
+    public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
+        return;
     }
 
     @Override
-    public Void visit(VarDeclareStat varDeclareStat) {
-        return null;
+    public void visit(VarDeclareStat varDeclareStat) {
+        return;
     }
 
     @Override
-    public Void visit(VarAssignStat varAssignStat) {
-        return null;
+    public void visit(VarAssignStat varAssignStat) {
+        return;
     }
 
     @Override
-    public Void visit(IfElseStat ifElseStat) {
-        return null;
+    public void visit(IfElseStat ifElseStat) {
+        return;
     }
 
     @Override
-    public Void visit(LoopStat loopStat) {
-        return null;
+    public void visit(LoopStat loopStat) {
+        return;
     }
 
     @Override
-    public Void visit(StatementList statementList) {
-        return null;
+    public void visit(StatementList statementList) {
+        return;
     }
 
     @Override
-    public Void visit(ReturnStat returnStat) {
-        return null;
+    public void visit(ReturnStat returnStat) {
+        return;
     }
 
     @Override
-    public Void visit(BreakStat breakStat) {
-        return null;
+    public void visit(BreakStat breakStat) {
+        return;
     }
 
     @Override
-    public Void visit(TypeNode type) {
+    public void visit(TypeNode type) {
         header.write(formatTypeNode(type));
-        return null;
     }
 
     @Override
-    public Void visit(FunDef funDef) {
+    public void visit(FunDef funDef) {
         header.write("\n");
         // Write function signature
         funDef.returnType.accept(this);
         header.write(" ");
         header.write(funDef.name, "(", formatParams(funDef.params), ");");
-        return null;
     }
 
     private String formatParams(List<Parameter> params) {
@@ -176,7 +174,7 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
     }
 
     @Override
-    public Void visit(StructDef structDef) {
+    public void visit(StructDef structDef) {
         // write actual struct definition
         header.write("\nstruct ");
         header.write(structDef.name);
@@ -192,11 +190,10 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
         if (!structDef.fields.isEmpty())
             header.write("\n");
         header.write("};\n");
-        return null;
     }
 
     @Override
-    public Void visit(Prog prog) {
+    public void visit(Prog prog) {
         var guardName = fileNameNoExt().concat(EXT_H).replaceAll("[\\. ]", "_").toUpperCase();
         // H preamble
         header.write("// Auto-generated C header file");
@@ -313,12 +310,11 @@ public class GenCHelpers extends CodeGenVisitor<Void> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return null;
     }
 
     @Override
-    public Void visit(EmptyNode emptyNode) {
-        return null;
+    public void visit(EmptyNode emptyNode) {
+        return;
     }
 
     private void writeConstructorSignature(SourceCodeBuilder scb, StructDef st) {

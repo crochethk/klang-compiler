@@ -3,56 +3,56 @@ package cc.crochethk.compilerbau.praktikum.visitor;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 
-public interface Visitor<R> {
+public interface Visitor {
     /*
     * Add one visit method per Node type of the tree
     * Concrete Visitors must then implement their behaviour for each of the types.
     * A visitor encapsulates all the algorithmic logic for a procedure on the tree.
     */
     // void visit(Visitable element);
-    R visit(I64Lit i64Lit);
+    void visit(I64Lit i64Lit);
 
-    R visit(F64Lit f64Lit);
+    void visit(F64Lit f64Lit);
 
-    R visit(BoolLit boolLit);
+    void visit(BoolLit boolLit);
 
-    R visit(StringLit stringLit);
+    void visit(StringLit stringLit);
 
-    R visit(NullLit nullLit);
+    void visit(NullLit nullLit);
 
-    R visit(Var var);
+    void visit(Var var);
 
-    R visit(FunCall funCall);
+    void visit(FunCall funCall);
 
-    R visit(ConstructorCall constructorCall);
+    void visit(ConstructorCall constructorCall);
 
-    R visit(BinOpExpr binOpExpr);
+    void visit(BinOpExpr binOpExpr);
 
-    R visit(UnaryOpExpr unaryOpExpr);
+    void visit(UnaryOpExpr unaryOpExpr);
 
-    R visit(TernaryConditionalExpr ternaryConditionalExpr);
+    void visit(TernaryConditionalExpr ternaryConditionalExpr);
 
-    R visit(VarDeclareStat varDeclareStat);
+    void visit(VarDeclareStat varDeclareStat);
 
-    R visit(VarAssignStat varAssignStat);
+    void visit(VarAssignStat varAssignStat);
 
-    R visit(IfElseStat ifElseStat);
+    void visit(IfElseStat ifElseStat);
 
-    R visit(LoopStat loopStat);
+    void visit(LoopStat loopStat);
 
-    R visit(StatementList statementList);
+    void visit(StatementList statementList);
 
-    R visit(ReturnStat returnStat);
+    void visit(ReturnStat returnStat);
 
-    R visit(BreakStat breakStat);
+    void visit(BreakStat breakStat);
 
-    R visit(TypeNode type);
+    void visit(TypeNode type);
 
-    R visit(FunDef funDef);
+    void visit(FunDef funDef);
 
-    R visit(StructDef structDef);
+    void visit(StructDef structDef);
 
-    R visit(Prog prog);
+    void visit(Prog prog);
 
-    R visit(EmptyNode emptyNode);
+    void visit(EmptyNode emptyNode);
 }
