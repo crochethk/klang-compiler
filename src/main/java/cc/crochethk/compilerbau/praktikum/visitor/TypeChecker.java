@@ -19,7 +19,7 @@ public class TypeChecker implements Visitor {
 
     private void reportError(Node node, String s) {
         errorsReported++;
-        System.err.println("(L" + node.line + ":" + node.column + ") Type error: " + s);
+        System.err.println("(L" + node.line() + ":" + node.column() + ") Type error: " + s);
     }
 
     @Override
