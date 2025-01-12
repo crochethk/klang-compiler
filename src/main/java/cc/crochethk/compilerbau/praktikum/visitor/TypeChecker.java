@@ -169,9 +169,8 @@ public class TypeChecker implements Visitor {
     }
 
     private void reportBinOpExprErrorMsg(BinOpExpr expr) {
-        reportError(expr,
-                "Can't " + expr.op.toString().toUpperCase() + " " + expr.lhs.theType.getClass().getSimpleName()
-                        + " and " + expr.rhs.theType.getClass().getSimpleName());
+        reportError(expr, "Can't use binary '" + expr.op.toLexeme() + "' with operands "
+                + prettyTheTypeName(expr.lhs) + ", " + prettyTheTypeName(expr.rhs));
     }
 
     @Override
