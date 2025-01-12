@@ -5,7 +5,40 @@ public interface OperandSpecifier {
 
     /** Enum representing general purpose registers according to x86-64, Linux System V ABI */
     public enum Register implements OperandSpecifier {
-        rax, rcx, rdx, rbx, rsi, rdi, rsp, rbp, r8, r9, r10, r11, r12, r13, r14, r15, rip;
+        /** Return value */
+        rax,
+        /** Argument 4 */
+        rcx,
+        /** Argument 3 */
+        rdx,
+        /** <b>Callee</b> saved */
+        rbx,
+        /** Argument 2 */
+        rsi,
+        /** Argument 1 */
+        rdi,
+        /** Stack pointer */
+        rsp,
+        /** Base Pointer, <b>Callee</b> saved */
+        rbp,
+        /** Argument 5 */
+        r8,
+        /** Argument 6 */
+        r9,
+        /** Scratch reg */
+        r10,
+        /** Scratch reg */
+        r11,
+        /** <b>Callee</b> saved */
+        r12,
+        /** <b>Callee</b> saved */
+        r13,
+        /** <b>Callee</b> saved */
+        r14,
+        /** <b>Callee</b> saved */
+        r15,
+        /** The instruction pointer */
+        rip;
 
         @Override
         public String operandSpec() {
