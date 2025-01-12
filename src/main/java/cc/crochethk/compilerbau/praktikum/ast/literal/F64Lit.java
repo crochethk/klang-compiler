@@ -9,7 +9,7 @@ public class F64Lit extends NumberLiteral<Double> {
     }
 
     @Override
-    public <R> R accept(Visitor<R> visitor) {
-        return visitor.visit(this);
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }
