@@ -39,12 +39,20 @@ else
 fi
 file_list=$( find "${TEST_ASM_TESTS_DIR}" -type f -name "${file_filter}" )
 
+if [[ -z "${file_list}" ]]; then
+    echo "No tests run. (No file in '${TEST_ASM_TESTS_DIR}' matched filter '${file_filter}')"
+    exit 1
+fi
+
 # Workaround (pt1/2) for potential " " in filenames
 old_IFS="$IFS"
 IFS=$'\n'
 
 # Iterate over each file in TEST_ASM_TESTS_DIR with prefix "test_" and extension ".c"
+declare -i ok_test_files=0
+declare -i total_test_files=0
 for test_file in ${file_list}; do
+    total_test_files+=1
     echo "+-------------------------------------------------------------------------------"
     echo "+     Test: '${test_file}'"
     echo "+-------------------------------------------------------------------------------"
@@ -76,8 +84,11 @@ for test_file in ${file_list}; do
     echo "Run test: ${c_bin_dir}/${test_file_name_no_ext}"
     "${c_bin_dir}/${test_file_name_no_ext}"
     echo ""
+    ok_test_files+=1
 done
 # Workaround (pt2/2)
 IFS="$old_IFS"
 
-echo "All tests have been processed."
+echo "+============================== Summary ========================================"
+echo "+ ${ok_test_files}/${total_test_files} test files run successfully."
+echo "+==============================================================================="
