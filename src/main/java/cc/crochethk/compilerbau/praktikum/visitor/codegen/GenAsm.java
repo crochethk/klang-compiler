@@ -344,7 +344,7 @@ public class GenAsm extends CodeGenVisitor {
                 }
             }
 
-            w.write("\t.section\t.note.GNU-stack,\"\",@progbits\n");
+            w.write("\n\t.section\t.note.GNU-stack,\"\",@progbits\n");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
