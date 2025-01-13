@@ -67,8 +67,7 @@ public class GenCHelpers extends CodeGenVisitor {
 
     @Override
     public void visit(NullLit nullLit) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        return;
     }
 
     @Override
@@ -83,8 +82,7 @@ public class GenCHelpers extends CodeGenVisitor {
 
     @Override
     public void visit(ConstructorCall constructorCall) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        return;
     }
 
     @Override

@@ -325,8 +325,7 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(StructDef structDef) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        // see GenCHelpers
     }
 
     @Override
