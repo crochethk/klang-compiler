@@ -15,7 +15,7 @@ import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker.TypeCheckFailedExc
 import utils.SourcePos;
 import cc.crochethk.compilerbau.praktikum.testhelpers.NodeMocker;
 
-public class TypeChekerTest extends NodeMocker {
+public class TypeCheckerTest extends NodeMocker {
     private TypeChecker tc;
 
     @BeforeEach
