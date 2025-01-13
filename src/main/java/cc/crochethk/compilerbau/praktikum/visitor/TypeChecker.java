@@ -211,14 +211,16 @@ public class TypeChecker implements Visitor {
     @Override
     public void visit(VarDeclareStat varDeclareStat) {
         /*
-        - we will allow redeclaration of variables (so no check if already declared)
         TODO
         - when declaration has optional initializer: check whether types are compatible
         */
 
         varDeclareStat.declaredType.accept(this);
         varDeclareStat.theType = varDeclareStat.declaredType.theType;
-        funDefVarTypes.put(varDeclareStat.varName, varDeclareStat.theType);
+        var previous = funDefVarTypes.put(varDeclareStat.varName, varDeclareStat.theType);
+        if (previous != null) {
+            reportError(varDeclareStat, "Attempt to redeclare variable '" + varDeclareStat.varName + "'");
+        }
     }
 
     @Override
@@ -329,7 +331,13 @@ public class TypeChecker implements Visitor {
         // Make sure the local variables lookup table is empty before proceeding
         funDefVarTypes.clear();
 
-        funDef.params.forEach(p -> funDefVarTypes.put(p.name(), p.type().theType));
+        funDef.params.forEach(p -> {
+            var previous = funDefVarTypes.put(p.name(), p.type().theType);
+            if (previous != null) {
+                reportError(funDef, "Duplicate parameter name '" + p.name()
+                        + "' in function '" + funDef.name + "'");
+            }
+        });
 
         // Check return type consistency in the according node(s)
         // using "currentFun" and the "currentFunReturnCount" counter
