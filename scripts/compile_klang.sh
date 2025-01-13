@@ -18,12 +18,25 @@ source ./scripts/config.sh
 
 # Compile a list of klang files.
 # Parameters:
-#   $1    : output directory for generated files.
-#   $2... : One or more source file paths to compile.
+#   $1    : Which code to generate ("all", "jbc", "asm").
+#   $2    : Output directory for generated files.
+#   $3... : One or more source file paths to compile.
 #           Note that __RELATIVE PATHS__ are expected here.
 compile_klang_files() {
-    local outdir="${1}"
-    shift
+    local output_format_flags=()
+    if [[ "$1" == "jbc" ]]; then
+        output_format_flags+="--jbc"
+    elif [[ "$1" == "asm" ]]; then
+        output_format_flags+="--asm"
+    elif [[ "$1" == "all" ]]; then
+        output_format_flags=("--jbc" "--asm")
+    else
+        echo "Unknown output code format option: '${1}'"
+        return 1
+    fi
+
+    local outdir="${2}"
+    shift 2
     local files=${@}
 
     local classpath=$(_join_array "DEPENDENCIES[@]" ":")
@@ -31,10 +44,10 @@ compile_klang_files() {
     classpath="${RELEASE_WORK_DIR}/classes:${classpath}"
  
     java --enable-preview -cp "${classpath}" \
-        cc.crochethk.compilerbau.praktikum.KlangCompiler --output "${outdir}" -- $files
+        cc.crochethk.compilerbau.praktikum.KlangCompiler ${output_format_flags[@]} --output "${outdir}" -- $files
 }
 
 # Do not execute if the script is being sourced
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    compile_klang_files "${1}" "$(find "${2}" -regex ".+\.[kK]$")"
+    compile_klang_files all "${1}" "$(find "${2}" -regex ".+\.[kK]$")"
 fi

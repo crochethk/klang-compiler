@@ -16,7 +16,7 @@ run_klang_file() {
     # Get relative filepath
     local rel_filepath="$(realpath --relative-to="$(pwd)" "${1}")"
 
-    compile_klang_files "${outdir}" "${rel_filepath}"
+    compile_klang_files jbc "${outdir}" "${rel_filepath}"
 
     local file_dirname="$(dirname ${rel_filepath})"
 

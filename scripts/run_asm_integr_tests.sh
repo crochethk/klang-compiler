@@ -63,7 +63,7 @@ for test_file in ${file_list}; do
     # Compile the test's corresponding source file
     echo "Compiling '${asm_test_klang_files_dir}/${test_file_name_no_ext}.k' to assembly"
     dependencies_cp=$(_join_array "DEPENDENCIES[@]" ":")
-    compile_klang_files "${src_file_compile_dir}" "${asm_test_klang_files_dir}/${test_file_name_no_ext}.k"
+    compile_klang_files asm "${src_file_compile_dir}" "${asm_test_klang_files_dir}/${test_file_name_no_ext}.k"
     if [ $? -ne 0 ]; then
         echo -e "\n\e[31m>>> ERROR. Test failed! <<<\e[0m\n"
         continue
