@@ -93,7 +93,7 @@ public class TypeChecker implements Visitor {
     }
 
     private String prettyTheTypeName(Node n) {
-        return n.theType.getClass().getSimpleName();
+        return n.theType.prettyTypeName();
     };
 
     @Override
@@ -126,7 +126,8 @@ public class TypeChecker implements Visitor {
 
                 if (!field.type().theType.isCompatible(arg.theType)) {
                     reportError(constCall, "Invalid argument type for field '" + field.name()
-                            + "': Expected '" + field.type() + "' but found incompatible '" + arg.theType + "'");
+                            + "': Expected '" + prettyTheTypeName(field.type())
+                            + "' but found incompatible '" + prettyTheTypeName(arg) + "'");
                 }
             }
         }
@@ -139,38 +140,48 @@ public class TypeChecker implements Visitor {
         binOpExpr.rhs.accept(this);
         var lhsType = binOpExpr.lhs.theType;
         var rhsType = binOpExpr.rhs.theType;
-        if (lhsType.isReference() || rhsType.isReference()) {
-            if (!binOpExpr.op.isComparison()) {
-                reportError(binOpExpr, "RefType incompatible with binary operator '" + binOpExpr.op + "'");
-            }
-        }
+        var op = binOpExpr.op;
 
         Type exprType;
-        if (binOpExpr.op.isBoolean()) {
+        if (op.isBoolean()) {
             exprType = Type.BOOL_T;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
                 reportBinOpExprErrorMsg(binOpExpr);
             }
-        } else if (binOpExpr.op.isArithmetic()) {
-            exprType = binOpExpr.lhs.theType;
-            if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
+        } else if (op.isArithmetic()) {
+            exprType = lhsType;
+            if (!lhsType.isNumeric() || !rhsType.isNumeric() || !rhsType.equals(exprType)) {
                 reportBinOpExprErrorMsg(binOpExpr);
             }
-        } else if (binOpExpr.op.isComparison()) {
+        } else if (op.isEqualityComparison()) {
             exprType = Type.BOOL_T;
-            if (!(lhsType.equals(rhsType) && lhsType.isNumeric() && rhsType.isNumeric())) {
-                reportBinOpExprErrorMsg(binOpExpr);
+            var isComparable = lhsType.isReference() && rhsType.isReference()
+                    || lhsType.equals(rhsType);
+            if (!isComparable) {
+                reportBinOpExprErrorMsg(binOpExpr, "Operand types must be equal or RefType");
+            }
+        } else if (op.isOrdinalComparison()) {
+            exprType = Type.BOOL_T;
+            var isComparable = lhsType.equals(rhsType) && lhsType.isNumeric();
+            if (!isComparable) {
+                reportBinOpExprErrorMsg(binOpExpr,
+                        "Operand types must be of equal, primitive, numerical kind");
             }
         } else {
-            throw new UnsupportedOperationException("Unknown binary operator: " + binOpExpr.op);
+            throw new UnsupportedOperationException("Unknown binary operator: " + op);
         }
 
         binOpExpr.theType = Objects.requireNonNull(exprType, "Expected valid Type object but was null");
     }
 
     private void reportBinOpExprErrorMsg(BinOpExpr expr) {
+        reportBinOpExprErrorMsg(expr, null);
+    }
+
+    private void reportBinOpExprErrorMsg(BinOpExpr expr, String hint) {
         reportError(expr, "Can't use binary '" + expr.op.toLexeme() + "' with operands "
-                + prettyTheTypeName(expr.lhs) + ", " + prettyTheTypeName(expr.rhs));
+                + prettyTheTypeName(expr.lhs) + ", " + prettyTheTypeName(expr.rhs)
+                + (hint == null ? "" : " (" + hint + ")"));
     }
 
     @Override
@@ -182,11 +193,11 @@ public class TypeChecker implements Visitor {
 
         if (op.isBoolean() && (operandType.isNumeric() || operandType.isReference())) {
             reportError(unaryOpExpr, "Boolean operator incompatible with '"
-                    + operandType + "' operand");
+                    + operandType.prettyTypeName() + "' operand");
         }
         if (op.isArithmetic() && !operandType.isNumeric()) {
             reportError(unaryOpExpr, "Arithmetic operator '" + op
-                    + "' incompatible with '" + operandType + "' operand");
+                    + "' incompatible with '" + operandType.prettyTypeName() + "' operand");
         }
     }
 
@@ -234,8 +245,8 @@ public class TypeChecker implements Visitor {
                     + varAssignStat.targetVarName + "'");
         } else if (!(varType.isCompatible(exprType))) {
             reportError(varAssignStat, "Attempt to assign value of type '"
-                    + exprType + "' to variable '" + varAssignStat.targetVarName
-                    + "' of incompatible type '" + varType + "'");
+                    + exprType.prettyTypeName() + "' to variable '" + varAssignStat.targetVarName
+                    + "' of incompatible type '" + varType.prettyTypeName() + "'");
         }
 
         varAssignStat.theType = varType;
@@ -250,8 +261,8 @@ public class TypeChecker implements Visitor {
         ifElseStat.otherwise.accept(this);
 
         if (!condType.equals(Type.BOOL_T)) {
-            reportError(ifElseStat.condition,
-                    "Condition must evaluate to boolean but is '" + condType + "'");
+            reportError(ifElseStat.condition, "Condition must evaluate to boolean but is '"
+                    + condType.prettyTypeName() + "'");
         }
 
         ifElseStat.theType = thenType;
@@ -289,8 +300,8 @@ public class TypeChecker implements Visitor {
         returnStat.expr.accept(this);
         var exprType = returnStat.expr.theType;
         if (!retType.isCompatible(exprType)) {
-            reportError(returnStat, "Expected return type '" + retType
-                    + "' but found incompatible '" + exprType + "'");
+            reportError(returnStat, "Expected return type '" + retType.prettyTypeName()
+                    + "' but found incompatible '" + exprType.prettyTypeName() + "'");
         }
     }
 
@@ -307,7 +318,7 @@ public class TypeChecker implements Visitor {
         // TODO handle non-default packages
         type.theType = Type.of(type.typeToken, "" /*default package */);
         if (!type.isBuiltin && !structDefs.containsKey(type.typeToken)) {
-            reportError(type, "Unknown type '" + type.typeToken + "'");
+            reportError(type, "Undefined type '" + type.typeToken + "'");
         }
     }
 
@@ -345,7 +356,7 @@ public class TypeChecker implements Visitor {
 
         // Infer 'void' for no returns
         if (currentFunReturnCount == 0 && !funDef.returnType.theType.equals(Type.VOID_T)) {
-            reportError(funDef, "Declared return type '" + funDef.returnType.theType
+            reportError(funDef, "Declared return type '" + prettyTheTypeName(funDef.returnType)
                     + "' but no return statement was found");
         }
 

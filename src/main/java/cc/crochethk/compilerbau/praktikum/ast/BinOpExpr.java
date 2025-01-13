@@ -34,9 +34,20 @@ public class BinOpExpr extends Node {
         }
 
         public boolean isComparison() {
+            return isEqualityComparison() || isOrdinalComparison();
+        }
+
+        public boolean isOrdinalComparison() {
             return switch (this) {
-                case eq, neq, gt, gteq, lt, lteq -> true;
-                case add, sub, mult, div, mod, pow, and, or -> false;
+                case gt, gteq, lt, lteq -> true;
+                default -> false;
+            };
+        }
+
+        public boolean isEqualityComparison() {
+            return switch (this) {
+                case eq, neq -> true;
+                default -> false;
             };
         }
 

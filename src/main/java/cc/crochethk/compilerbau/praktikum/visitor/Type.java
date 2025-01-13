@@ -45,6 +45,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         return this.equals(LONG_T) || this.equals(DOUBLE_T);
     }
 
+    /** Tests whether this and other are compatible in regarding assignment. */
     public default boolean isCompatible(Type other) {
         return this.isReference() && other == Type.NULL_T
                 || other.isReference() && this == Type.NULL_T
@@ -56,13 +57,11 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
     final Type BOOL_T = new PrimType(TypeKind.BooleanType, AsmTypeKind.BooleanType);
     final Type DOUBLE_T = new PrimType(TypeKind.DoubleType, AsmTypeKind.DoubleType);
     final Type VOID_T = new PrimType(TypeKind.VoidType, AsmTypeKind.VoidType);
-
     /**
-     * Not an actual type. Just placeholder to avoid null, where the type
+     * Not an actual type. Just placeholder to avoid NPE, where the type
      * couldn't be determined during type check.
      */
     final Type UNKNOWN_T = new RefType("UNKNOWN", "", "const void*");
-
     /** Placeholder type for "intentionally" unknown (e.g. null) reference types. */
     final Type NULL_T = new RefType("Object", "java.lang", "void*");
 
@@ -82,6 +81,38 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         }
     }
 
+    final String STRING_T_NAME = "string";
+    final String LONG_T_NAME = "i64";
+    final String BOOL_T_NAME = "bool";
+    final String DOUBLE_T_NAME = "f64";
+    final String VOID_T_NAME = "void";
+    final String NULL_T_NAME = "NULL";
+
+    default String klangName() {
+        var t = this;
+        if (t == STRING_T) {
+            return STRING_T_NAME;
+        } else if (t == LONG_T) {
+            return LONG_T_NAME;
+        } else if (t == BOOL_T) {
+            return BOOL_T_NAME;
+        } else if (t == DOUBLE_T) {
+            return DOUBLE_T_NAME;
+        } else if (t == VOID_T) {
+            return VOID_T_NAME;
+        } else if (t == NULL_T) {
+            return NULL_T_NAME;
+        } else if (t instanceof RefType customT) {
+            return customT.className;
+        } else {
+            throw new IllegalArgumentException("Unknown type kind: " + t);
+        }
+    }
+
+    default String prettyTypeName() {
+        return this.getClass().getSimpleName() + "[" + klangName() + "]";
+    }
+
     /**
      * Convert given source type token to a corresponding JVM type representation.
      * @param typeName The type name as defined in the source / by grammar.
@@ -89,11 +120,11 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
      */
     static Type of(String typeName, String packageName) {
         return switch (typeName) {
-            case "string" -> STRING_T;
-            case "i64" -> LONG_T;
-            case "bool" -> BOOL_T;
-            case "f64" -> DOUBLE_T;
-            case "void" -> VOID_T;
+            case STRING_T_NAME -> STRING_T;
+            case LONG_T_NAME -> LONG_T;
+            case BOOL_T_NAME -> BOOL_T;
+            case DOUBLE_T_NAME -> DOUBLE_T;
+            case VOID_T_NAME -> VOID_T;
             default -> new RefType(typeName, packageName, "struct " + typeName + "*");
         };
     }
