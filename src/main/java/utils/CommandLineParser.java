@@ -48,8 +48,8 @@ public class CommandLineParser {
             return this;
         }
 
-        public ArgumentBuilder flag(String name, boolean isDefault) {
-            arguments.put(name, new Argument(name, false, false, "" + isDefault));
+        public ArgumentBuilder flag(String name) {
+            arguments.put(name, new Argument(name, false, false, null));
             return this;
         }
 
@@ -117,6 +117,7 @@ public class CommandLineParser {
                 parsedArguments.put(key, args[i + 1]);
                 i++; // Skip the value as we've consumed it
             } else {
+                // Flag provided
                 parsedArguments.put(key, "true");
             }
 
@@ -147,10 +148,10 @@ public class CommandLineParser {
     private void applyDefaults() {
         for (Map.Entry<String, Argument> entry : argumentDefinitions.entrySet()) {
             String key = entry.getKey();
-            Argument arg = entry.getValue();
+            Argument argDef = entry.getValue();
 
-            if (!parsedArguments.containsKey(key) && arg.defaultValue != null) {
-                parsedArguments.put(key, arg.defaultValue);
+            if (!parsedArguments.containsKey(key) && argDef.defaultValue != null) {
+                parsedArguments.put(key, argDef.defaultValue);
             }
         }
     }
@@ -168,7 +169,7 @@ public class CommandLineParser {
 
     public boolean hasFlag(String flagName) {
         if (!argumentDefinitions.containsKey(flagName)) {
-            throw new IllegalArgumentException("Flag not found: " + flagName);
+            throw new IllegalArgumentException("Unkown flag: " + flagName);
         }
         String value = parsedArguments.get(flagName);
         return value != null && value.equals("true");
@@ -199,7 +200,7 @@ public class CommandLineParser {
             CommandLineParser exampleParser = new CommandLineParser.ArgumentBuilder()
                     .requiredArg("a-required-option")
                     .optionalArg("the-optional-option", "the default value, if not present")
-                    .flag("enable-something", false)
+                    .flag("enable-something")
                     .withTrailingArgs()
                     .parse(args);
 
