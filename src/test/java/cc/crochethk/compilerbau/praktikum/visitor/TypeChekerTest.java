@@ -91,40 +91,295 @@ public class TypeChekerTest extends NodeMocker {
 
     @Nested
     class BinOpExprTests {
-        @Test
-        void nullOperandShouldReportErr_1() {
-            var lhs = i64Lit(123);
-            var rhs = NULL_LIT;
-            var fun = funDef("fun", List.of(), List.of(
-                    varDeclareStat("var", I64_TN),
-                    varAssignStat("var", binOpExpr(lhs, BinaryOp.add, rhs))));
+        @Nested
+        class ComparisonOperators {
+            // ------ equality
+            @Test
+            void equalityWithMixedRefTypesIsOk() {
+                var stDef = EMPTY_STRUCT;
+                var structObj = constructorCall(stDef.name);
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", BOOL_TN),
+                        varAssignStat("var", binOpExpr(structObj, BinaryOp.eq, NULL_LIT)),
+                        varAssignStat("var", binOpExpr(NULL_LIT, BinaryOp.eq, structObj)),
+                        varAssignStat("var", binOpExpr(structObj, BinaryOp.eq, stringLit("some string"))),
+                        varAssignStat("var", binOpExpr(structObj, BinaryOp.neq, NULL_LIT)),
+                        varAssignStat("var", binOpExpr(NULL_LIT, BinaryOp.neq, structObj)),
+                        varAssignStat("var", binOpExpr(structObj, BinaryOp.neq, stringLit("some string")))//
+                ));
+                checkProgOf(List.of(fun), List.of(stDef));
+                assertReportedErrors(0);
+            }
 
-            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
-            assertReportedErrors(2);
+            @Test
+            void equalityWithCompatiblePrimTypesIsOk() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", BOOL_TN),
+                        varAssignStat("var", binOpExpr(boolLit(true), BinaryOp.eq, boolLit(false))),
+                        varAssignStat("var", binOpExpr(f64Lit(42), BinaryOp.eq, f64Lit(42))),
+                        varAssignStat("var", binOpExpr(boolLit(true), BinaryOp.neq, boolLit(false))),
+                        varAssignStat("var", binOpExpr(f64Lit(42), BinaryOp.neq, f64Lit(42)))//
+                ));
+                checkProgOf(List.of(fun), List.of());
+                assertReportedErrors(0);
+            }
+
+            @Test
+            void shouldReportErrOnEqualityWithIncompatiblePrimTypes() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", BOOL_TN),
+                        varAssignStat("var", binOpExpr(boolLit(true), BinaryOp.eq, i64Lit(1))),
+                        varAssignStat("var", binOpExpr(i64Lit(0), BinaryOp.eq, f64Lit(0))),
+                        varAssignStat("var", binOpExpr(boolLit(true), BinaryOp.neq, i64Lit(1))),
+                        varAssignStat("var", binOpExpr(i64Lit(0), BinaryOp.neq, f64Lit(0)))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+                assertReportedErrors(4);
+            }
+
+            @Test
+            void shouldReportErrOnEqualityComparisonOfPrimAndRefType() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", BOOL_TN),
+                        varAssignStat("var", binOpExpr(boolLit(true), BinaryOp.eq, stringLit("foo bar"))),
+                        varAssignStat("var", binOpExpr(NULL_LIT, BinaryOp.eq, i64Lit(0))),
+                        varAssignStat("var", binOpExpr(boolLit(true), BinaryOp.neq, stringLit("foo bar"))),
+                        varAssignStat("var", binOpExpr(NULL_LIT, BinaryOp.neq, i64Lit(0)))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+                assertReportedErrors(4);
+            }
+
+            // ------ ordinal
+            @Test
+            void shouldReportErrOnOrdinalComparisonOfNonNumericalType() {
+                var voidFun = funDef("voidFun", List.of(), List.of());
+                var voidExpr = funCall("voidFun");
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", BOOL_TN),
+                        varAssignStat("var", binOpExpr(boolLit(true), BinaryOp.gt, boolLit(false))),
+                        varAssignStat("var", binOpExpr(voidExpr, BinaryOp.gteq, boolLit(false))),
+                        varAssignStat("var", binOpExpr(boolLit(false), BinaryOp.lt, voidExpr)),
+                        varAssignStat("var", binOpExpr(voidExpr, BinaryOp.lteq, voidExpr))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun, voidFun), List.of()));
+                assertReportedErrors(4);
+            }
+
+            @Test
+            void shouldReportErrOnOrdinalComparisonOfIncompatibleNumericalTypes() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", BOOL_TN),
+                        varAssignStat("var", binOpExpr(f64Lit(1), BinaryOp.gt, i64Lit(2))),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.gteq, f64Lit(2))),
+                        varAssignStat("var", binOpExpr(f64Lit(1), BinaryOp.lt, i64Lit(2))),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.lteq, f64Lit(2)))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+                assertReportedErrors(4);
+            }
+
+            @Test
+            void shouldReportErrOnOrdinalComparisonOfPrimAndRefTypes() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", BOOL_TN),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.gt, stringLit("foo bar"))),
+                        varAssignStat("var", binOpExpr(NULL_LIT, BinaryOp.gteq, f64Lit(0))),
+                        varAssignStat("var", binOpExpr(boolLit(true), BinaryOp.lt, stringLit("foo bar"))),
+                        varAssignStat("var", binOpExpr(NULL_LIT, BinaryOp.lteq, boolLit(false)))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+                assertReportedErrors(4);
+            }
+
+            @Test
+            void ordinalComparisonOnEqualNumericalTypesIsOk() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", BOOL_TN),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.gt, i64Lit(2))),
+                        varAssignStat("var", binOpExpr(f64Lit(3), BinaryOp.gteq, f64Lit(4))),
+                        varAssignStat("var", binOpExpr(f64Lit(1), BinaryOp.lt, f64Lit(2))),
+                        varAssignStat("var", binOpExpr(i64Lit(3), BinaryOp.lteq, i64Lit(4)))//
+                ));
+                checkProgOf(List.of(fun), List.of());
+                assertReportedErrors(0);
+            }
         }
 
-        @Test
-        void nullOperandShouldReportErr_2() {
-            var lhs = NULL_LIT;
-            var rhs = i64Lit(123);
-            var fun = funDef("fun", List.of(), List.of(
-                    varDeclareStat("var", I64_TN),
-                    varAssignStat("var", binOpExpr(lhs, BinaryOp.add, rhs))));
+        @Nested
+        class ArithmeticOperators {
+            @Test
+            void addTwoI64IsOk() {
+                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.add, i64Lit(456));
+                assertReportedErrors(0);
+            }
 
-            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
-            assertReportedErrors(3);
+            @Test
+            void subTwoI64IsOk() {
+                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.sub, i64Lit(456));
+                assertReportedErrors(0);
+            }
+
+            @Test
+            void multTwoI64IsOk() {
+                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.mult, i64Lit(456));
+                assertReportedErrors(0);
+            }
+
+            @Test
+            void divTwoI64IsOk() {
+                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.div, i64Lit(456));
+                assertReportedErrors(0);
+            }
+
+            @Test
+            void modTwoI64IsOk() {
+                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.mod, i64Lit(456));
+                assertReportedErrors(0);
+            }
+
+            // -----------
+            @Test
+            void addTwoF64IsOk() {
+                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.add, f64Lit(4.56d));
+                assertReportedErrors(0);
+            }
+
+            @Test
+            void subTwoF64IsOk() {
+                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.sub, f64Lit(4.56d));
+                assertReportedErrors(0);
+            }
+
+            @Test
+            void multTwoF64IsOk() {
+                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.mult, f64Lit(4.56d));
+                assertReportedErrors(0);
+            }
+
+            @Test
+            void divTwoF64IsOk() {
+                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.div, f64Lit(4.56d));
+                assertReportedErrors(0);
+            }
+
+            @Test
+            void modTwoF64IsOk() {
+                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.mod, f64Lit(4.56d));
+                assertReportedErrors(0);
+            }
+            //----------- with errors
+            /*
+            OK, when: lhs, rhs == numeric && lhs, rhs == same equal types
+            NOT, ok:
+                - different NUMERIC types
+                - NUMERIC and not-numeric PRIMtype
+                - Numeric and Reftype
+             */
+
+            @Test
+            void shouldReportErrOnIncompatibleNumericOperands_1() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", I64_TN),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.add, f64Lit(2.3))),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.sub, f64Lit(2.3))),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.mult, f64Lit(2.3))),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.div, f64Lit(2.3))),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.mod, f64Lit(2.3)))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+                assertReportedErrors(5);
+            }
+
+            @Test
+            void shouldReportErrOnIncompatibleNumericOperands_2() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", F64_TN),
+                        varAssignStat("var", binOpExpr(f64Lit(2.3), BinaryOp.add, i64Lit(1))),
+                        varAssignStat("var", binOpExpr(f64Lit(2.3), BinaryOp.sub, i64Lit(1))),
+                        varAssignStat("var", binOpExpr(f64Lit(2.3), BinaryOp.mult, i64Lit(1))),
+                        varAssignStat("var", binOpExpr(f64Lit(2.3), BinaryOp.div, i64Lit(1))),
+                        varAssignStat("var", binOpExpr(f64Lit(2.3), BinaryOp.mod, i64Lit(1)))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+                assertReportedErrors(5);
+            }
+
+            @Test
+            void shouldReportErrOnIncompatiblePrimTypes_1() {
+                var voidFun = funDef("voidFun", List.of(), List.of());
+                var voidExpr = funCall("voidFun");
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", I64_TN), varDeclareStat("b", BOOL_TN),
+                        varAssignStat("var", binOpExpr(i64Lit(1), BinaryOp.add, boolLit(true))),
+                        varAssignStat("var", binOpExpr(voidExpr, BinaryOp.mult, i64Lit(1))),
+                        varAssignStat("b", binOpExpr(boolLit(true), BinaryOp.mod, i64Lit(1)))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun, voidFun), List.of()));
+                assertReportedErrors(4);
+            }
+
+            @Test
+            void shouldReportErrOnPrimWithRefType() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("i", I64_TN), varDeclareStat("s", STRING_TN),
+                        varAssignStat("s", binOpExpr(stringLit(""), BinaryOp.sub, i64Lit(1))),
+                        varAssignStat("i", binOpExpr(i64Lit(0), BinaryOp.mult, stringLit(""))),
+                        varAssignStat("s", binOpExpr(stringLit(""), BinaryOp.div, boolLit(false))),
+                        varAssignStat("s", binOpExpr(stringLit(""), BinaryOp.mod, stringLit("")))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+                assertReportedErrors(4);
+            }
         }
 
-        @Test
-        void nullOperandShouldReportErr_3() {
-            var lhs = NULL_LIT;
-            var rhs = NULL_LIT;
-            var fun = funDef("fun", List.of(), List.of(
-                    varDeclareStat("var", I64_TN),
-                    varAssignStat("var", binOpExpr(lhs, BinaryOp.add, rhs))));
+        @Nested
+        class BooleanOperators {
+            @Test
+            void andTwoBoolIsOk() {
+                testBinaryOpWithBoolResult(boolLit(false), BinaryOp.and, boolLit(true));
+                assertReportedErrors(0);
+            }
 
-            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
-            assertReportedErrors(2);
+            @Test
+            void orTwoBoolIsOk() {
+                testBinaryOpWithBoolResult(boolLit(true), BinaryOp.or, boolLit(false));
+                assertReportedErrors(0);
+            }
+
+            @Test
+            void shouldReportErrOnNonBoolPrimType() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("b", BOOL_TN),
+                        // lhs non-bool prim
+                        varAssignStat("b", binOpExpr(i64Lit(1), BinaryOp.or, boolLit(true))),
+                        // rhs non-bool prim
+                        varAssignStat("b", binOpExpr(boolLit(true), BinaryOp.or, i64Lit(1))),
+                        // lhs, rhs non-bool prim
+                        varAssignStat("b", binOpExpr(i64Lit(1), BinaryOp.and, f64Lit(2.3)))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+                assertReportedErrors(3);
+            }
+
+            @Test
+            void shouldReportErrOnNonBoolRefType() {
+                var fun = funDef("fun", List.of(), List.of(varDeclareStat("b", BOOL_TN),
+                        // lhs reftype
+                        varAssignStat("b", binOpExpr(stringLit(""), BinaryOp.or, boolLit(true))),
+                        // rhs reftype
+                        varAssignStat("b", binOpExpr(boolLit(true), BinaryOp.or, NULL_LIT)),
+                        // lhs, rhs reftype
+                        varAssignStat("b", binOpExpr(NULL_LIT, BinaryOp.and, stringLit("")))//
+                ));
+                assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+                assertReportedErrors(3);
+            }
+        }
+
+        private void testBinaryOpWithI64Result(Node lhs, BinaryOp op, Node rhs) {
+            _testBinaryOpWith(lhs, op, rhs, I64_TN);
+        }
+
+        private void testBinaryOpWithF64Result(Node lhs, BinaryOp op, Node rhs) {
+            _testBinaryOpWith(lhs, op, rhs, F64_TN);
+        }
+
+        private void testBinaryOpWithBoolResult(Node lhs, BinaryOp op, Node rhs) {
+            _testBinaryOpWith(lhs, op, rhs, BOOL_TN);
+        }
+
+        private void _testBinaryOpWith(Node lhs, BinaryOp op, Node rhs, TypeNode expResultType) {
+            var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", expResultType),
+                    varAssignStat("var", binOpExpr(lhs, op, rhs))));
+            checkProgOf(List.of(fun), List.of());
         }
     }
 

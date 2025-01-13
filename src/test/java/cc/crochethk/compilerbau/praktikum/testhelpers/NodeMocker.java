@@ -100,7 +100,7 @@ public class NodeMocker {
 
     /** Call without args */
     public FunCall funCall(String name) {
-        return funCall(name);
+        return funCall(name, List.of());
     }
 
     public ConstructorCall constructorCall(String structName, List<Node> args) {
