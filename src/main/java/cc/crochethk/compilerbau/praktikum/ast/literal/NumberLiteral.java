@@ -12,11 +12,13 @@ public abstract class NumberLiteral<T> extends LiteralExpr<T> {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof NumberLiteral other) {
             return this.hasTypeAnnotation == other.hasTypeAnnotation && super.equals(other);
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

@@ -30,4 +30,15 @@ public abstract class Node implements Visitable {
     public boolean returnsControlFlow() {
         return false;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof Node other) {
+            return srcPos.equals(other.srcPos);
+        }
+        return false;
+    }
 }
