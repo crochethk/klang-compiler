@@ -12,6 +12,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.antlr.v4.gui.TreeViewer;
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
@@ -113,8 +114,8 @@ public class KlangCompiler {
      * returns its root node.
      */
     private Node buildAst(Reader inputCode) throws IOException {
-        var lexer = applyLexer(inputCode);
-        var parser = new KlangParser(new CommonTokenStream(lexer));
+        var lexer = buildLexer(CharStreams.fromReader(inputCode));
+        var parser = buildParser(lexer);
         var antlrTree = parser.start();
         if (cfg.showParseTree()) {
             showParseTreeVisualization(parser, antlrTree);
@@ -128,8 +129,16 @@ public class KlangCompiler {
         return antlrTree.result;
     }
 
-    private static Lexer applyLexer(Reader inputText) throws IOException {
-        return new KlangLexer(CharStreams.fromReader(inputText));
+    static Lexer buildLexer(CharStream input) {
+        var lx = new KlangLexer(input);
+        lx.addErrorListener(ThrowingErrorListener.INSTANCE);
+        return lx;
+    }
+
+    static KlangParser buildParser(Lexer lx) {
+        var parser = new KlangParser(new CommonTokenStream(lx));
+        parser.addErrorListener(ThrowingErrorListener.INSTANCE);
+        return parser;
     }
 
     public static void main(String[] args) {

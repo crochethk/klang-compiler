@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,8 +33,8 @@ public class TreeBuilderTest extends NodeMocker {
     }
 
     private <C extends ParserRuleContext> C parse(String s, Function<KlangParser, C> contextGetter) {
-        var lexer = new KlangLexer(CharStreams.fromString(s));
-        return contextGetter.apply(new KlangParser(new CommonTokenStream(lexer)));
+        var lexer = KlangCompiler.buildLexer(CharStreams.fromString(s));
+        return contextGetter.apply(KlangCompiler.buildParser(lexer));
     }
 
     @Test
