@@ -14,12 +14,11 @@ import org.junit.jupiter.api.Nested;
 import cc.crochethk.compilerbau.praktikum.TreeBuilder.*;
 import cc.crochethk.compilerbau.praktikum.antlr.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
+import cc.crochethk.compilerbau.praktikum.testhelpers.NodeMocker;
 import utils.SourcePos;
 
-public class TreeBuilderTest {
+public class TreeBuilderTest extends NodeMocker {
     private TreeBuilder treeBuilder;
-
-    private final SourcePos srcPosMock = new SourcePos(0, 0);
 
     @BeforeEach
     public void setUp() {
@@ -29,6 +28,7 @@ public class TreeBuilderTest {
     private class TreeBuilderTestHelper extends TreeBuilder {
         @Override
         protected SourcePos getSourcePos(ParserRuleContext ctx) {
+            // Mock source code position for built nodes.
             return srcPosMock;
         }
     }
@@ -38,21 +38,17 @@ public class TreeBuilderTest {
         return contextGetter.apply(new KlangParser(new CommonTokenStream(lexer)));
     }
 
-    public SourcePos srcPos() {
-        return srcPosMock;
-    }
-
     @Test
     void testExitNullLit() {
         var ctx = parse("null", p -> p.nullLit());
         treeBuilder.exitNullLit(ctx);
-        assertEquals(new NullLit(srcPosMock), ctx.result);
+        assertEquals(NULL_LIT, ctx.result);
     }
 
     @Test
-    void testLiteralExprEqualsDoesNotThrowWithNullValues() {
-        var nullLit = new NullLit(srcPosMock);
-        var nonNullNullLit = new NullLit(srcPosMock);
+    void testLiteralExprEqualsDoesNotThrowWithNullValueField() {
+        var nullLit = NULL_LIT;
+        var nonNullNullLit = new NullLit(NULL_LIT.srcPos);
         nonNullNullLit.value = new Object();
 
         assertDoesNotThrow(() -> assertFalse(nullLit.equals(nonNullNullLit)));
@@ -89,42 +85,42 @@ public class TreeBuilderTest {
         public void buildWithMixedEscapeSequences() {
             var ctx = parse("\"esc. \\\\\\quote \\\" inside\\n String\"", p -> p.string());
             treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(), "esc. \\uote \" inside\n String"), ctx.result);
+            assertEquals(stringLit("esc. \\uote \" inside\n String"), ctx.result);
         }
 
         @Test
         public void buildBasicStringLit() {
             var ctx = parse("\"hello world\"", p -> p.string());
             treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(), "hello world"), ctx.result);
+            assertEquals(stringLit("hello world"), ctx.result);
         }
 
         @Test
         public void buildEmptyStringLit() {
             var ctx = parse("\"\"", p -> p.string());
             treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(), ""), ctx.result);
+            assertEquals(stringLit(""), ctx.result);
         }
 
         @Test
         public void buildMultiLineStringLit() {
             var ctx = parse("\"Hello\nWorld\"", p -> p.string());
             treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(), "Hello\nWorld"), ctx.result);
+            assertEquals(stringLit("Hello\nWorld"), ctx.result);
         }
 
         @Test
         public void buildEmptyMultiLineStringLit() {
             var ctx = parse("\"\n\"", p -> p.string());
             treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(), "\n"), ctx.result);
+            assertEquals(stringLit("\n"), ctx.result);
         }
 
         @Test
         public void buildUnescapedWhitespaceStringLit() {
             var ctx = parse("\" \r\t\n\"", p -> p.string());
             treeBuilder.exitString(ctx);
-            assertEquals(new StringLit(srcPos(), " \r\t\n"), ctx.result);
+            assertEquals(stringLit(" \r\t\n"), ctx.result);
         }
 
     }
@@ -135,14 +131,14 @@ public class TreeBuilderTest {
         public void buildBoolLitTrue() {
             var ctx = parse("true", p -> p.bool());
             treeBuilder.exitBool(ctx);
-            assertEquals(new BoolLit(srcPos(), true), ctx.result);
+            assertEquals(boolLit(true), ctx.result);
         }
 
         @Test
         public void buildBoolLitFalse() {
             var ctx = parse("false", p -> p.bool());
             treeBuilder.exitBool(ctx);
-            assertEquals(new BoolLit(srcPos(), false), ctx.result);
+            assertEquals(boolLit(false), ctx.result);
         }
     }
 
@@ -152,35 +148,35 @@ public class TreeBuilderTest {
         public void buildI64Lit() {
             var ctx = parse("123", p -> p.number());
             treeBuilder.exitNumber(ctx);
-            assertEquals(new I64Lit(srcPos(), 123, false), ctx.result);
+            assertEquals(i64Lit(123, false), ctx.result);
         }
 
         @Test
         public void buildI64LitWithTypeAnnot() {
             var ctx = parse("123 as i64", p -> p.number());
             treeBuilder.exitNumber(ctx);
-            assertEquals(new I64Lit(srcPos(), 123, true), ctx.result);
+            assertEquals(i64Lit(123, true), ctx.result);
         }
 
         @Test
         public void buildF64Lit() {
             var ctx = parse("1.23", p -> p.number());
             treeBuilder.exitNumber(ctx);
-            assertEquals(new F64Lit(srcPos(), 1.23d, false), ctx.result);
+            assertEquals(f64Lit(1.23d, false), ctx.result);
         }
 
         @Test
         public void buildF64LitWithTypeAnnot() {
             var ctx = parse("1.23 as f64", p -> p.number());
             treeBuilder.exitNumber(ctx);
-            assertEquals(new F64Lit(srcPos(), 1.23d, true), ctx.result);
+            assertEquals(f64Lit(1.23d, true), ctx.result);
         }
 
         @Test
         public void buildF64LitWithTypeAnnotFromI64() {
             var ctx = parse("123 as f64", p -> p.number());
             treeBuilder.exitNumber(ctx);
-            assertEquals(new F64Lit(srcPos(), 123.0d, true), ctx.result);
+            assertEquals(f64Lit(123.0d, true), ctx.result);
         }
 
         @Test

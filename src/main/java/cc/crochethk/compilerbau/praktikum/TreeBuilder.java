@@ -386,6 +386,11 @@ public class TreeBuilder extends KlangBaseListener {
     //
     // Helper methods and structs
     //
+
+    /**
+     * Constructs the source code position of the given context.
+     * Can be overriden e.g. to mock the position in unit tests.
+     */
     protected SourcePos getSourcePos(ParserRuleContext ctx) {
         return new SourcePos(
                 ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());

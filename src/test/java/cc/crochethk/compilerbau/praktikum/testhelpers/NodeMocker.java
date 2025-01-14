@@ -9,7 +9,7 @@ import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import utils.SourcePos;
 
 public class NodeMocker {
-    private final SourcePos srcPosMock = new SourcePos(-1, -1);
+    protected final SourcePos srcPosMock = new SourcePos(-1, -1);
 
     public final TypeNode STRING_TN = typeNode("string", true);
     public final TypeNode I64_TN = typeNode("i64", true);
