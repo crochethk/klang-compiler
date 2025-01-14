@@ -317,12 +317,12 @@ public class GenCHelpers extends CodeGenVisitor {
 
     private void writeConstructorSignature(SourceCodeBuilder scb, StructDef st) {
         scb.write("\n", st.theType.cTypeName(), " ");
-        scb.write(st.name, "$new(", formatParams(st.fields), ")");
+        scb.write(st.name, "$new$", "(", formatParams(st.fields), ")");
     }
 
     private void writeDestructorSignature(SourceCodeBuilder scb, StructDef st) {
         scb.write("\nvoid ");
-        scb.write(st.name, "$drop(", st.theType.cTypeName(), " this)");
+        scb.write(st.name, "$drop$(", st.theType.cTypeName(), " this)");
     }
 
     private void writeToStringSignature(SourceCodeBuilder scb, StructDef st) {

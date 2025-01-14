@@ -24,23 +24,23 @@ char* test_tostring2() {
 
 // use constructor and tostring
 char* test_tostring3() {
-    struct MyStruct* st = MyStruct$new(42, "fourtytwo");
+    struct MyStruct* st = MyStruct$new$(42, "fourtytwo");
     char* actual = MyStruct$to_string(st);
     printf("%s\n", actual);
     mu_assertstreq("MyStruct(42, fourtytwo)", actual);
-    MyStruct$drop(st);
+    MyStruct$drop$(st);
     return 0;
 }
 
 // struct with struct field
 char* test_tostring4() {
-    struct MyStruct* fieldstruct = MyStruct$new(11, "one-one");
-    struct UseOtherStruct* st = UseOtherStruct$new(1, "one", fieldstruct);
+    struct MyStruct* fieldstruct = MyStruct$new$(11, "one-one");
+    struct UseOtherStruct* st = UseOtherStruct$new$(1, "one", fieldstruct);
     char* actual = UseOtherStruct$to_string(st);
     printf("%s\n", actual);
     mu_assertstreq("UseOtherStruct(1, one, MyStruct(11, one-one))", actual);
-    MyStruct$drop(fieldstruct);
-    UseOtherStruct$drop(st);
+    MyStruct$drop$(fieldstruct);
+    UseOtherStruct$drop$(st);
     return 0;
 }
 

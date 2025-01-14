@@ -117,8 +117,9 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(ConstructorCall constructorCall) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+        var genFunName = constructorCall.structName + "$new$"; // -> see GenCHelpers
+        var funCall = new FunCall(constructorCall.srcPos, genFunName, constructorCall.args);
+        funCall.accept(this);
     }
 
     @Override
