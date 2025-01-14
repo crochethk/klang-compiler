@@ -3,7 +3,9 @@ package cc.crochethk.compilerbau.praktikum.visitor.codegen.asm;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
@@ -190,6 +192,8 @@ public class GenCHelpers extends CodeGenVisitor {
         header.write("};\n");
     }
 
+    private Map<String, StructDef> structDefs = null;
+
     @Override
     public void visit(Prog prog) {
         var guardName = fileNameNoExt().concat(EXT_H).replaceAll("[\\. ]", "_").toUpperCase();
@@ -206,8 +210,12 @@ public class GenCHelpers extends CodeGenVisitor {
         ccode.write("\n#include <string.h>", "\n");
         ccode.write("#include \"", fileNameNoExt(), EXT_H, "\"", "\n");
 
-        // Declare structs
-        prog.structDefs.forEach(st -> header.write("\nstruct ", st.name, ";"));
+        // Declare structs (and add to lookup table)
+        structDefs = new HashMap<>();
+        prog.structDefs.forEach(st -> {
+            header.write("\nstruct ", st.name, ";");
+            structDefs.put(st.name, st);
+        });
         header.write("\n");
 
         // Declare struct auto-methods
@@ -245,7 +253,7 @@ public class GenCHelpers extends CodeGenVisitor {
             // destructor
             writeDestructorSignature(ccode, st);
             ccode.write(" {");
-            ccode.writeIndented("free(this);");
+            writeDestructorDefinition(ccode, st.theType);
             ccode.write("\n}\n");
 
             // to_string
@@ -285,7 +293,6 @@ public class GenCHelpers extends CodeGenVisitor {
             ccode.writeIndented("return r;");
 
             ccode.write("\n}\n");
-            ccode.write("\n");
         });
 
         // Declare static funcitons
@@ -315,18 +322,77 @@ public class GenCHelpers extends CodeGenVisitor {
         return;
     }
 
+    // ------------------------
+
+    private void writeDestructorDefinition(SourceCodeBuilder scb, Type type) {
+        if (!type.isReference()) {
+            return;
+        }
+
+        if (type == Type.STRING_T) {
+            scb.writeIndented("free(this);");
+        } else {
+            // Drop RefType fields
+            var stDef = structDefs.get(type.klangName());
+            for (var f : stDef.fields) {
+                var fType = f.type().theType;
+                if (!fType.isReference()) {
+                    continue;
+                }
+
+                writeDestructorCall(scb, "this->" + f.name(), fType);
+                // if (fType == Type.STRING_T) {
+                //     scb.writeIndented("free(this->" + f.name() + ");");
+                // } else {
+                //     scb.writeIndented(fType.klangName()
+                //             + "$drop$(this->" + f.name() + ");");
+                // }
+            }
+            scb.writeIndented("free(this);");
+        }
+    }
+
+    private void writeConstructorSignature(SourceCodeBuilder scb, Type refType, List<Parameter> fields) {
+        scb.write("\n", refType.cTypeName(), " ");
+        scb.write(refType.klangName(), "$new$", "(", formatParams(fields), ")");
+    }
+
     private void writeConstructorSignature(SourceCodeBuilder scb, StructDef st) {
-        scb.write("\n", st.theType.cTypeName(), " ");
-        scb.write(st.name, "$new$", "(", formatParams(st.fields), ")");
+        writeConstructorSignature(scb, st.theType, st.fields);
+    }
+
+    private void writeDestructorSignature(SourceCodeBuilder scb, Type refType) {
+        scb.write("\nvoid ");
+        scb.write(getDestructorFullName(refType), "(", refType.cTypeName(), " this)");
     }
 
     private void writeDestructorSignature(SourceCodeBuilder scb, StructDef st) {
-        scb.write("\nvoid ");
-        scb.write(st.name, "$drop$(", st.theType.cTypeName(), " this)");
+        writeDestructorSignature(scb, st.theType);
+    }
+
+    private void writeToStringSignature(SourceCodeBuilder scb, Type refType) {
+        scb.write("\nchar* ");
+        scb.write(refType.klangName(), "$to_string(", refType.cTypeName(), " this)");
     }
 
     private void writeToStringSignature(SourceCodeBuilder scb, StructDef st) {
-        scb.write("\nchar* ");
-        scb.write(st.name, "$to_string(", st.theType.cTypeName(), " this)");
+        writeToStringSignature(scb, st.theType);
+    }
+
+    private String getDestructorFullName(Type refType) {
+        return refType.klangName() + "$drop$";
+    }
+
+    @Override
+    public void visit(DropStat dropStat) {
+        return;
+    }
+
+    private void writeDestructorCall(SourceCodeBuilder scb, String refTypeVarNameOrExprString, Type refType) {
+        if (refType == Type.STRING_T) {
+            scb.writeIndented("free(", refTypeVarNameOrExprString, ")");
+        } else {
+            scb.writeIndented(getDestructorFullName(refType), "(", refTypeVarNameOrExprString, ");");
+        }
     }
 }

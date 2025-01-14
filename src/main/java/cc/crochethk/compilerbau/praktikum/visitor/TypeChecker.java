@@ -314,6 +314,13 @@ public class TypeChecker implements Visitor {
     }
 
     @Override
+    public void visit(DropStat dropStat) {
+        dropStat.refTypeVar.accept(this);
+        if (!dropStat.refTypeVar.theType.isReference())
+            reportError(dropStat, "Only reference type variables can be dropped");
+    }
+
+    @Override
     public void visit(TypeNode type) {
         // TODO handle non-default packages
         type.theType = Type.of(type.typeToken, "" /*default package */);

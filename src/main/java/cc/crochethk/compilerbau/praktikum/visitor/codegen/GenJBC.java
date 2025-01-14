@@ -366,6 +366,18 @@ public class GenJBC extends CodeGenVisitor {
     }
 
     @Override
+    public void visit(DropStat dropStat) {
+        // JVM has a GC, i.e. frees automatically when there are no more
+        // references to an object.
+        // Thus technically, this statement wouldn't be necessary here.
+        // However to "simulate" dropping we simply overwrite the referencing
+        // variable with null.
+        var varSlot = varsManager.getSlot(dropStat.refTypeVar.name);
+        codeBuilder.aconst_null();
+        codeBuilder.astore(varSlot);
+    }
+
+    @Override
     public void visit(TypeNode type) {
         // -> skip
         return;

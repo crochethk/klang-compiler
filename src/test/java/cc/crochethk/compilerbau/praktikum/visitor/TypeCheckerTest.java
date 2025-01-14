@@ -516,6 +516,35 @@ public class TypeCheckerTest extends NodeMocker {
         }
     }
 
+    @Nested
+    class DropStatTests {
+        @Test
+        void nonRefTypeVarShouldReportErr_1() {
+            var varName = "intVar";
+            var fun = funDef("fun", List.of(param(varName, I64_TN)), List.of(dropStat(varName)));
+            assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
+            assertReportedErrors(1);
+        }
+
+        @Test
+        void dropStringVarIsOk() {
+            var varName = "s";
+            var fun = funDef("fun", List.of(param(varName, STRING_TN)), List.of(dropStat(varName)));
+            checkProgOf(List.of(fun), List.of());
+            assertReportedErrors(0);
+        }
+
+        @Test
+        void dropCustomRefTypeVarIsOk() {
+            var varName = "crtv";
+            var struct = structDef("SomeStruct", List.of(param("foo", I64_TN)));
+            var fun = funDef("fun", List.of(param(varName, typeNode(struct.name, false))),
+                    List.of(dropStat(varName)));
+            checkProgOf(List.of(fun), List.of(struct));
+            assertReportedErrors(0);
+        }
+    }
+
     /** Run TypeChecker on new Program consiting of given definitions */
     private void checkProgOf(List<FunDef> funDefs, List<StructDef> structDefs) {
         tc.visit(new Prog(new SourcePos(0, 0), funDefs, null, structDefs));

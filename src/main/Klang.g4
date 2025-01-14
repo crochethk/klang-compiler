@@ -39,6 +39,7 @@ statement
 	| varDeclarationOrAssignment
 	| KW_RETURN expr? SEMI
 	| KW_BREAK SEMI
+	| KW_DROP refTypeVarName=IDENT SEMI
 ;
 
 blockLikeStatement

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -185,6 +186,26 @@ public class TreeBuilderTest extends NodeMocker {
                 treeBuilder.exitNumber(ctx);
             });
             assertTrue(exception.getMessage().contains("Illegal type suffix"));
+        }
+    }
+
+    @Nested
+    class ExitStatementTests {
+        // TODO Test other alternatives...
+
+        @Test
+        public void buildDropStat() {
+            var ctx = parse("drop someVarName;", p -> p.statement());
+            treeBuilder.exitStatement(ctx);
+            assertEquals(dropStat("someVarName"), ctx.result);
+        }
+
+        /** This is actually more of a parser test... */
+        @Test
+        void buildDropWithoutNamedVarShouldThrow() {
+            var _ = assertThrows(InputMismatchException.class, () -> {
+                parse("drop getSomeRef();", p -> p.statement());
+            });
         }
     }
 }

@@ -46,6 +46,8 @@ public interface Visitor {
 
     void visit(BreakStat breakStat);
 
+    void visit(DropStat dropStat);
+
     void visit(TypeNode type);
 
     void visit(FunDef funDef);

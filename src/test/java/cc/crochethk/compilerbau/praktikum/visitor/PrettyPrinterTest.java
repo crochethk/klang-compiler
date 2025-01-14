@@ -174,4 +174,15 @@ public class PrettyPrinterTest extends NodeMocker {
                     }""", pp.scb.toString());
         }
     }
+
+    @Nested
+    class DropStatTests {
+        @Test
+        void testDropStatement() {
+            var varName = "theStructInstanceReference";
+            var dropStat = dropStat(varName);
+            pp.visit(dropStat);
+            assertEquals("drop " + varName + ";", pp.scb.toString());
+        }
+    }
 }

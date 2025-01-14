@@ -200,6 +200,13 @@ public class PrettyPrinter implements Visitor {
     }
 
     @Override
+    public void visit(DropStat dropStat) {
+        scb.write("drop ");
+        dropStat.refTypeVar.accept(this);
+        scb.write(";");
+    }
+
+    @Override
     public void visit(TypeNode type) {
         scb.write(type.typeToken);
     }

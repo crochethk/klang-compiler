@@ -3,16 +3,12 @@ package cc.crochethk.compilerbau.praktikum.ast;
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
 
-/**
- * Node type representing a variable name as part of an expression.
- * For example <code>x</code> in <code>1+x+3</code>.
- */
-public class Var extends Node {
-    public String name;
+public class DropStat extends Node {
+    public Var refTypeVar;
 
-    public Var(SourcePos srcPos, String name) {
+    public DropStat(SourcePos srcPos, Var namedInstance) {
         super(srcPos);
-        this.name = name;
+        this.refTypeVar = namedInstance;
     }
 
     @Override
@@ -25,8 +21,8 @@ public class Var extends Node {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof Var other) {
-            return name.equals(other.name) && super.equals(other);
+        if (obj instanceof DropStat other) {
+            return refTypeVar.equals(other.refTypeVar) && super.equals(other);
         }
         return false;
     }

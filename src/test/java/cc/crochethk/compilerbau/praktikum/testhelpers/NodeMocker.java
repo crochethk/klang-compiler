@@ -135,4 +135,12 @@ public class NodeMocker {
     public BreakStat breakStat() {
         return new BreakStat(srcPosMock);
     }
+
+    public DropStat dropStat(String varName) {
+        return dropStat(new Var(srcPosMock, varName));
+    }
+
+    public DropStat dropStat(Var var) {
+        return new DropStat(srcPosMock, var);
+    }
 }
