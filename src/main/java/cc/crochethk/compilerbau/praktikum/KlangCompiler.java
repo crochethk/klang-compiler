@@ -49,8 +49,10 @@ public class KlangCompiler {
             boolean generateAsm) {
     }
 
-    public void compile(Reader inputCode, final String packageName, final String className)
+    public Result compile(Reader inputCode, final String packageName, final String className)
             throws IOException {
+        Result compileResult = Result.Ok;
+
         var ast = buildAst(inputCode);
         var indent = " ".repeat(4);
 
@@ -72,8 +74,9 @@ public class KlangCompiler {
             var codeGenerator = new GenJBC(cfg.outputDir(), packageName, className);
             printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
 
-            runWithSuccessCheck(() -> ast.accept(codeGenerator), indent);
-
+            if (runWithSuccessCheck(() -> ast.accept(codeGenerator), indent).isErr()) {
+                compileResult = Result.Err;
+            }
         } else {
             System.out.println(indent + "No JBC generated (disabled).");
         }
@@ -88,15 +91,42 @@ public class KlangCompiler {
             var cHelpersGen = new GenCHelpers(cfg.outputDir(), packageName, className);
 
             // Generate files
-            runWithSuccessCheck(() -> {
+            var genResult = runWithSuccessCheck(() -> {
                 printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
                 ast.accept(codeGenerator);
 
                 printGeneratingFilesMessage(indent, cHelpersGen.outFilePaths());
                 ast.accept(cHelpersGen);
             }, indent);
+
+            if (genResult.isErr()) {
+                compileResult = Result.Err;
+            }
         } else {
             System.out.println(indent + "No assembly generated (disabled).");
+        }
+        return compileResult;
+    }
+
+    public enum Result {
+        Ok, Err;
+
+        public boolean isErr() {
+            return switch (this) {
+                case Err -> true;
+                default -> false;
+            };
+        }
+    };
+
+    private static Result runWithSuccessCheck(Runnable callable, String msgIndent) {
+        try {
+            callable.run();
+            System.out.println(msgIndent + "Success!");
+            return Result.Ok;
+        } catch (Exception e) {
+            System.err.println(msgIndent + "ERROR: " + e.getMessage());
+            return Result.Err;
         }
     }
 
@@ -231,23 +261,15 @@ public class KlangCompiler {
             var className = PathUtils.getFileNameNoExt(fp);
 
             try (var reader = new FileReader(file)) {
-                compiler.compile(reader, packageName, className);
+                if (compiler.compile(reader, packageName, className).isErr()) {
+                    throw new RuntimeException();
+                }
                 System.out.println(">>> All tasks finished successfully.\n");
             } catch (Exception e) {
                 System.out.println(">>> Errors occured while processing compilation tasks.");
                 System.err.println(e.getMessage());
                 System.exit(1);
             }
-        }
-    }
-
-    private static void runWithSuccessCheck(Runnable callable, String msgIndent) {
-        try {
-            callable.run();
-            System.out.println(msgIndent + "Success!");
-        } catch (RuntimeException e) {
-            System.out.println(msgIndent + "Failed!");
-            throw e;
         }
     }
 
