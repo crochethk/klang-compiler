@@ -45,4 +45,23 @@ if [ -z "${CONFIG_SH_SOURCED}" ]; then
     JAR_WORK_DIR="${BUILD_ARTIFACTS_BASE_DIR}/jar"
 
     # --------------------------------------------------------------------------
+    # Helper functions
+    # --------------------
+
+    #   $1 : Aarray reference whose elements to join
+    #   $2 : Symbol to use as separator
+    _join_array() {
+        if [[ $# -ne 2 ]]; then
+            echo "'${0}' (${LINENO}): $# args received but expected 2"
+            return 1
+        fi
+        local arr=("${!1}")
+        old_IFS="$IFS"
+        IFS="${2}"
+        # Join arr using IFS
+        result=$(echo "${arr[*]}")
+        # Restore the original value of IFS
+        IFS="$old_IFS"
+        echo "${result}"
+    }
 fi

@@ -1,24 +1,30 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-# This script, when directly executed, will bulk compile all klang files within
-# the given directory and its subdirectories.
-# It's assumed that the project was already compiled using
-# "scripts/compile_java -> compile_release".
+# This script, when directly executed, will if given...
+#   - ...a FILE_PATTERN as INPUT:   Compile all files matching the given pattern
+#   - ...a DIRECTORY as INPUT:      Compile all klang files within the given
+#           directory and its subdirectories
 #
 # Parameters:
-#   $1 : Output directory for generated files.
-#   $2 : Directory where to look for klang files.
+#   $1 : Output format ("jbc"|"asm"|"all")
+#   $2 : Output directory for generated files.
+#   $3 : Input klang file(pattern) or directory where to look for klang files.
 #
 # Example:
-#   scripts/compile_klang.sh ./build/out ./tests
+#   # Compile all ".k" files in "./tests/**"
+#   scripts/compile_klang.sh all ./build/out ./tests
+#
+#   # Compile all ".k" files in "./tests/" matching pattern "test_foo_*"
+#   scripts/compile_klang.sh all ./build/out "./tests/test_foo*"
 # ==============================================================================
 
 source ./scripts/config.sh
+source ./scripts/compile_java.sh
 
 # Compile a list of klang files.
 # Parameters:
-#   $1    : Which code to generate ("all", "jbc", "asm").
+#   $1    : Which code to generate ("jbc"|"asm"|"all").
 #   $2    : Output directory for generated files.
 #   $3... : One or more source file paths to compile.
 #           Note that __RELATIVE PATHS__ are expected here.
@@ -34,6 +40,7 @@ compile_klang_files() {
         echo "Unknown output code format option: '${1}'"
         return 1
     fi
+    compile_release
 
     local outdir="${2}"
     shift 2
@@ -49,5 +56,21 @@ compile_klang_files() {
 
 # Do not execute if the script is being sourced
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    compile_klang_files all "${1}" "$(find "${2}" -regex ".+\.[kK]$")"
+    if [[ $# -lt 3 ]]; then
+        echo "Provide at least 3 arguments"
+        exit 1
+    fi
+
+    outformat="$1"
+    outdir="$2"
+
+    if [[ -d "$3" ]]; then
+        # $3 is a directory
+        compile_klang_files "$outformat" "$outdir" "$(find "$3" -regex ".+\.[kK]$")"
+    else
+        # $3 is a filepattern or list of files
+        shift 2
+        compile_klang_files "$outformat" "$outdir" \
+            "$(find $@ -maxdepth 1 -wholename "*.k" -o -wholename "*.K" )"
+    fi
 fi

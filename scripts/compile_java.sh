@@ -57,23 +57,6 @@ _collect_changed_sources() {
     done
 }
 
-#   $1 : Aarray reference whose elements to join
-#   $2 : Symbol to use as separator
-_join_array() {
-    if [[ $# -ne 2 ]]; then
-        echo "'${0}' (${LINENO}): $# args received but expected 2"
-        return 1
-    fi
-    local arr=("${!1}")
-    old_IFS="$IFS"
-    IFS="${2}"
-    # Join arr using IFS
-    result=$(echo "${arr[*]}")
-    # Restore the original value of IFS
-    IFS="$old_IFS"
-    echo "${result}"
-}
-
 # Parameters:
 #   $1 : Target workdir (directory where files for this target will be saved)
 #   $2 : Array ref with paths to dependencies
@@ -126,3 +109,21 @@ compile_release() {
     _run_antlr_if_necessary
     _compile_sources "${RELEASE_WORK_DIR}" "DEPENDENCIES[@]" "RELEASE_SRC_DIRS[@]"
 }
+
+# Do not execute if the script is being sourced
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    if [[ "${1}" == "dev" ]]; then
+        compile_dev
+        exit_code=$?
+    elif [[ $# -eq 0 || "${1}" == "release" ]]; then
+        compile_release
+        exit_code=$?
+    else
+        echo "Invalid arguments provided"
+        exit_code=1
+    fi
+    if [[ $exit_code -ne 0 ]]; then
+        echo -e "\e[31m>>> ERROR while compiling java source files\e[0m\n"
+        exit 1
+    fi
+fi
