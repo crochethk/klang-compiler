@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
@@ -21,9 +22,14 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.SectionBuilder;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.helpers.GenCHeaders;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.helpers.GenCImpls;
 
 public class GenAsm extends CodeGenVisitor {
     private static final String FILE_EXT = ".s";
+
+    private GenCHeaders cHeaderGen;
+    private GenCImpls cImplsGen;
 
     /** Readonly data section (".rodata") */
     DataSection rodataSec = new DataSection.ReadOnlyData();
@@ -37,13 +43,18 @@ public class GenAsm extends CodeGenVisitor {
     /** Function argument registers */
     private final Register[] regs = { rdi, rsi, rdx, rcx, r8, r9 };
 
-    public GenAsm(String outputDir, String packageName, String className) {
+    public GenAsm(String outputDir, String packageName, String className) throws IOException {
         super(outputDir, packageName, className);
+        cHeaderGen = new GenCHeaders(outputDir, packageName, className);
+        cImplsGen = new GenCImpls(outputDir, packageName, className);
     }
 
     @Override
     public List<Path> outFilePaths() {
-        return List.of(Path.of(outDir, packageName + "." + className + FILE_EXT));
+        var asmOut = Path.of(outDir, packageName + "." + className + FILE_EXT);
+        var cOuts = Stream.concat(
+                cHeaderGen.outFilePaths().stream(), cImplsGen.outFilePaths().stream());
+        return Stream.concat(Stream.of(asmOut), cOuts).toList();
     }
 
     @Override
@@ -264,6 +275,10 @@ public class GenAsm extends CodeGenVisitor {
         // TODO Auto-generated method stub
         return;
     }
+    @Override
+    public void visit(DropStat dropStat) {
+        // TODO Auto-generated method stub <----------
+    }
 
     @Override
     public void visit(TypeNode type) {
@@ -349,6 +364,10 @@ public class GenAsm extends CodeGenVisitor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        // Create C helpers
+        prog.accept(cHeaderGen);
+        prog.accept(cImplsGen);
     }
 
     @Override

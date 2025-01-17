@@ -26,7 +26,6 @@ import cc.crochethk.compilerbau.praktikum.visitor.PrettyPrinter;
 import cc.crochethk.compilerbau.praktikum.visitor.TypeChecker;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenAsm;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.GenJBC;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.GenCHelpers;
 import lombok.Builder;
 import utils.CommandLineParser;
 import utils.PathUtils;
@@ -87,16 +86,11 @@ public class KlangCompiler {
         if (cfg.generateAsm()) {
             // Prepare for Assembly
             var codeGenerator = new GenAsm(cfg.outputDir(), packageName, className);
-            // Prepare for C helper files
-            var cHelpersGen = new GenCHelpers(cfg.outputDir(), packageName, className);
 
             // Generate files
             var genResult = runWithSuccessCheck(() -> {
                 printGeneratingFilesMessage(indent, codeGenerator.outFilePaths());
                 ast.accept(codeGenerator);
-
-                printGeneratingFilesMessage(indent, cHelpersGen.outFilePaths());
-                ast.accept(cHelpersGen);
             }, indent);
 
             if (genResult.isErr()) {
