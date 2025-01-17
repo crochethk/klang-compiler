@@ -129,16 +129,21 @@ public class TreeBuilder extends KlangBaseListener {
     @Override
     public void exitVarOrFunCall(KlangParser.VarOrFunCallContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.LPAR() != null) {
-            // function call
-            var args = ctx.args.stream().map(arg -> arg.result).toList();
-            ctx.result = new FunCall(srcPos, ctx.IDENT().getText(), args);
-        } else if (ctx.IDENT() != null && ctx.LPAR() == null) {
+        if (ctx.funCall() != null) {
+            ctx.result = ctx.funCall().result;
+        } else if (ctx.varName != null) {
             // variable access
-            ctx.result = new Var(srcPos, ctx.IDENT().getText());
+            ctx.result = new Var(srcPos, ctx.varName.getText());
         } else {
             throw new UnhandledAlternativeException(srcPos, "varOrFunCall", ctx.getText());
         }
+    }
+
+    @Override
+    public void exitFunCall(KlangParser.FunCallContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        var args = ctx.args.stream().map(arg -> arg.result).toList();
+        ctx.result = new FunCall(srcPos, ctx.name.getText(), args);
     }
 
     @Override

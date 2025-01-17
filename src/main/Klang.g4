@@ -111,12 +111,17 @@ ternaryElseBranch
 
 varOrFunCall
 	returns[Node result]:
-	// function call with one or more args
-	IDENT LPAR args+=expr (COMMA args+=expr)* RPAR
-	// function call without args
-	| IDENT LPAR RPAR
+	funCall
 	// variable reference
-	| IDENT
+	| varName=IDENT
+;
+
+funCall
+	returns[Node result]:
+	// function call with one or more args
+	name=IDENT LPAR args+=expr (COMMA args+=expr)* RPAR
+	// function call without args
+	| name=IDENT LPAR RPAR
 ;
 
 /* Number literals */
