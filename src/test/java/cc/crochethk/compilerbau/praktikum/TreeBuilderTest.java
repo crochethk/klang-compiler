@@ -2,6 +2,7 @@ package cc.crochethk.compilerbau.praktikum;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
 import java.util.function.Function;
 
 import org.antlr.v4.runtime.CharStreams;
@@ -174,6 +175,28 @@ public class TreeBuilderTest extends NodeMocker {
                 parseAndWalk("123.456 as i64", p -> p.number());
             });
             assertTrue(exception.getMessage().contains("Illegal type suffix"));
+        }
+    }
+
+    @Nested
+    class ExitVarOrFunCallTests {
+        @Test
+        void buildFunCallNoArgs() {
+            var ctx = parseAndWalk("foo()", p -> p.varOrFunCall());
+            assertEquals(funCall("foo"), ctx.result);
+        }
+
+        @Test
+        void buildFunCallWithArgs() {
+            var ctx = parseAndWalk("foo(bar, 123, baz())", p -> p.varOrFunCall());
+            assertEquals(funCall("foo", List.of(
+                    var("bar"), i64Lit(123), funCall("baz"))), ctx.result);
+        }
+
+        @Test
+        void buildVar() {
+            var ctx = parseAndWalk("foo", p -> p.varOrFunCall());
+            assertEquals(var("foo"), ctx.result);
         }
     }
 
