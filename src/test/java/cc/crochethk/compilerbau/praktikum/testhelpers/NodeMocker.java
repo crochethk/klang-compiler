@@ -4,6 +4,7 @@ import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import utils.SourcePos;
@@ -102,6 +103,29 @@ public class NodeMocker {
         return new FunCall(srcPosMock, name, args);
     }
 
+    public MemberAccessChain memberAccessChain(Node owner, List<MemberAccess> detachedMembers) {
+        return new MemberAccessChain(srcPosMock, owner, MemberAccess.chain(detachedMembers));
+    }
+
+    public MemberAccessChain memberAccessChain(Node owner, MemberAccess... detachedMembers) {
+        var dms = List.of(detachedMembers);
+        return memberAccessChain(owner, dms);
+    }
+
+    /** Shortcut for creating a detached FieldGet accessor */
+    public FieldGet fieldGet(String fieldName) {
+        return new FieldGet(srcPosMock, null, fieldName, null);
+    }
+
+    public FieldGet fieldGet(MemberAccess owner, String fieldName, MemberAccess next) {
+        return new FieldGet(srcPosMock, owner, fieldName, next);
+    }
+
+    /** Shortcut for creating a detached FieldSet accessor */
+    public FieldSet fieldSet(String fieldName) {
+        return new FieldSet(srcPosMock, null, fieldName, null);
+    }
+
     /** Call without args */
     public FunCall funCall(String name) {
         return funCall(name, List.of());
@@ -126,6 +150,10 @@ public class NodeMocker {
 
     public IfElseStat ifElseStat(Node condition, StatementList then, StatementList otherwise) {
         return new IfElseStat(srcPosMock, condition, then, otherwise);
+    }
+
+    public FieldAssignStat fieldAssignStat(Node owner, List<MemberAccess> accessors, Node expr) {
+        return new FieldAssignStat(srcPosMock, memberAccessChain(owner, accessors), expr);
     }
 
     public EmptyNode emptyNode() {

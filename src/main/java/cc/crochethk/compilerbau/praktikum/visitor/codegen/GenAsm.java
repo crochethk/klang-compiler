@@ -14,16 +14,13 @@ import java.util.stream.Stream;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.visitor.Type;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.CodeSection;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.DataSection;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.SectionBuilder;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.*;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.helpers.GenCHeaders;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.helpers.GenCImpls;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.helpers.*;
 
 public class GenAsm extends CodeGenVisitor {
     private static final String FILE_EXT = ".s";
@@ -62,6 +59,7 @@ public class GenAsm extends CodeGenVisitor {
         code.movq($(i64Lit.value), rax);
     }
 
+    /** Counter variable for local variabke lables enumeration */
     private int localConstantCounter = 0;
 
     @Override
@@ -126,9 +124,54 @@ public class GenAsm extends CodeGenVisitor {
         }
     }
 
+    /** Context helper variable for MemberAccessChain evaluation */
+    private Type maChainOwnerType = null;
+
+    @Override
+    public void visit(MemberAccessChain maChain) {
+        maChain.owner.accept(this); // -> init reference in rax
+
+        maChainOwnerType = maChain.owner.theType;
+        maChain.chain.accept(this);
+        maChainOwnerType = null;
+    }
+
+    @Override
+    public void visit(FieldGet fieldGet) {
+        // Call autoimplemented getter matching the targets owner type and 'targetName' field
+        var fgOwnerType = fieldGet.owner != null
+                ? fieldGet.owner.theType
+                : maChainOwnerType;
+
+        var getterFunName = GenCBase.getGetterFullName(fgOwnerType, fieldGet.targetName);
+        // Always assumes: 
+        //  - "owner" reference already in rax
+        //  - FunCall takes rax after evaluation an arg, putting it to the
+        //      according arg register
+        var thisArg = new EmptyNode(fieldGet.srcPos);
+        var funCall = new FunCall(fieldGet.srcPos, getterFunName, List.of(thisArg));
+        funCall.accept(this);
+        if (fieldGet.next != null) {
+            fieldGet.next.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(FieldSet fieldSet) {
+        /**
+         * Simply ignore. Work is done in the statement depending on this node
+         * (e.g. FieldAssignStat), since it has all information required.
+         */
+    }
+
+    @Override
+    public void visit(MethodCall methodCall) {
+        // TODO Auto-generated method stub
+    }
+
     @Override
     public void visit(ConstructorCall constructorCall) {
-        var genFunName = constructorCall.structName + "$new$"; // -> see GenCHelpers
+        var genFunName = GenCBase.getConstructorFullName(constructorCall.theType);
         var funCall = new FunCall(constructorCall.srcPos, genFunName, constructorCall.args);
         funCall.accept(this);
     }
@@ -242,6 +285,21 @@ public class GenAsm extends CodeGenVisitor {
     }
 
     @Override
+    public void visit(FieldAssignStat faStat) {
+        // traverse the member access chain --> at the end owner pointer is in rax
+        faStat.maChain.accept(this);
+
+        var field = faStat.maChain.chain.getLast();
+        var fieldOwnerType = field.owner != null
+                ? field.owner.theType
+                : faStat.maChain.owner.theType;
+        var setterFunName = GenCBase.getSetterFullName(fieldOwnerType, field.targetName);
+        var thisArg = new EmptyNode(faStat.srcPos);
+        var funCall = new FunCall(faStat.srcPos, setterFunName, List.of(thisArg, faStat.expr));
+        funCall.accept(this);
+    }
+
+    @Override
     public void visit(IfElseStat ifElseStat) {
         // TODO Auto-generated method stub
         return;
@@ -275,6 +333,7 @@ public class GenAsm extends CodeGenVisitor {
         // TODO Auto-generated method stub
         return;
     }
+
     @Override
     public void visit(DropStat dropStat) {
         // TODO Auto-generated method stub <----------

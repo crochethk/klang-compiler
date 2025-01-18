@@ -68,7 +68,11 @@ varDeclarationOrAssignment
 	// KW_LET varName=IDENT (COLON type)? SEMI  // optional type annotation
 	| KW_LET varName=IDENT COLON type SEMI
 	| varName=IDENT EQ expr SEMI
+	| structFieldAssignStat
 ;
+
+structFieldAssignStat
+	returns[FieldAssignStat result]: memberAccessor EQ expr SEMI;
 
 expr
 	returns[Node result]:
@@ -93,9 +97,19 @@ expr
 	| nullLit
 	| varOrFunCall
 	| constructorCall
+	| memberAccessor
 ;
 
-/* Foo { 123, 456, abc } (-> new Foo instance with 123, 456, abc (variable) values as fields) */
+memberAccessor
+	returns[MemberAccessChain result]:
+	owner=varOrFunCall (DOT memberChain+=fieldOrMethCall)+
+;
+fieldOrMethCall
+	returns[MemberAccess result]:
+	fieldName=IDENT
+	| methCall=funCall
+;
+
 constructorCall
 	returns[Node result]:
 	structName=IDENT LBRACE (

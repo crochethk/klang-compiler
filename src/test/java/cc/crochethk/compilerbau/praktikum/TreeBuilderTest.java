@@ -218,4 +218,28 @@ public class TreeBuilderTest extends NodeMocker {
             });
         }
     }
+
+    @Nested
+    class ExitMemberAccessorTests {
+        @Test
+        public void varThenSingleFieldChain() {
+            var ctx = parseAndWalk("var.field", p -> p.memberAccessor());
+            assertEquals(memberAccessChain(var("var"), fieldGet("field")), ctx.result);
+        }
+
+        @Test
+        public void varThenMultipleFieldsChain() {
+            var ctx = parseAndWalk("var.field1.field2.field3", p -> p.memberAccessor());
+            assertEquals(memberAccessChain(
+                    var("var"), fieldGet("field1"), fieldGet("field2"), fieldGet("field3")),
+                    ctx.result);
+        }
+
+        @Test
+        public void funCallThenSingleFieldChain() {
+            var ctx = parseAndWalk("fun().field", p -> p.memberAccessor());
+            assertNotEquals(memberAccessChain(funCall("var"), fieldGet("field")), ctx.result);
+            assertEquals(memberAccessChain(funCall("fun"), fieldGet("field")), ctx.result);
+        }
+    }
 }

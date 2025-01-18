@@ -22,6 +22,10 @@ public class GenCImpls extends GenCBase {
         implConstructor(codeBuilder, structDef);
         implDestructor(codeBuilder, structDef);
         implToString(codeBuilder, structDef);
+        structDef.fields.forEach(f -> {
+            implGetter(codeBuilder, structDef, f);
+            implSetter(codeBuilder, structDef, f);
+        });
     }
 
     private Map<String, StructDef> structDefs = null;
@@ -142,7 +146,25 @@ public class GenCImpls extends GenCBase {
         if (refType == Type.STRING_T) {
             scb.writeIndented("free(", refTypeCVarString, ");");
         } else {
-            scb.writeIndented(getDestructorFullName(refType), "(", refTypeCVarString, ");");
+            scb.writeIndented(GenCBase.getDestructorFullName(refType), "(", refTypeCVarString, ");");
         }
+    }
+
+    private void implGetter(SourceCodeBuilder scb, StructDef st, Parameter field) {
+        writeGetterSignature(scb, st, field);
+        scb.write(" {");
+        scb.increaseIndent();
+        scb.writeIndented("return this->", field.name(), ";");
+        scb.decreaseIndent();
+        scb.writeIndented("}\n");
+    }
+
+    private void implSetter(SourceCodeBuilder scb, StructDef st, Parameter field) {
+        writeSetterSignature(scb, st, field);
+        scb.write(" {");
+        scb.increaseIndent();
+        scb.writeIndented("this->", field.name(), " = value;");
+        scb.decreaseIndent();
+        scb.writeIndented("}\n");
     }
 }

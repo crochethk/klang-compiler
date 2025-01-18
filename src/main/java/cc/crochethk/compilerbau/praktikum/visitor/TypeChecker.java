@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
+import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 
 /** TypeChecker Visitor
@@ -90,6 +91,84 @@ public class TypeChecker implements Visitor {
                 }
             }
         }
+    }
+
+    @Override
+    public void visit(MemberAccessChain maChain) {
+        maChain.owner.accept(this);
+
+        final var chain = maChain.chain;
+        chain.theType = checkMemberAccessTargetType(maChain.owner, chain.targetName);
+        chain.accept(this);
+        var finalMember = chain.getLast();
+        Node finalMemberOwner = finalMember.owner != null ? finalMember.owner : maChain.owner;
+
+        // Basically the field or method-return-type of the end member
+        var finalType = checkMemberAccessTargetType(finalMemberOwner, finalMember.targetName);
+        finalMember.theType = finalType;
+        maChain.theType = finalType;
+    }
+
+    @Override
+    public void visit(MethodCall methodCall) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    /**
+     * @param structExpr Node whose type has a member name equal to 'targetName'.
+     * @param targetName
+     * @return The type of the target member or 'UNKNOWN_T' if type check error occurred.
+     */
+    private Type checkMemberAccessTargetType(Node structExpr, String targetName) {
+        var stDef = structDefs.get(structExpr.theType.klangName());
+        if (stDef == null) {
+            reportError(structExpr, "Node evaluates to '" + prettyTheTypeName(structExpr)
+                    + "' but must be a struct type instance.");
+            return Type.UNKNOWN_T;
+        }
+
+        // Check whether the field does exist in stDef and get its theType
+        var fieldTheType = stDef.fields.stream()
+                .filter(f -> f.name().equals(targetName))
+                .map(f -> f.type().theType)
+                .findFirst();
+
+        return fieldTheType.orElseGet(() -> {
+            reportError(structExpr, "Member '" + targetName + "' not defined for type '"
+                    + prettyTheTypeName(structExpr) + "'");
+            return Type.UNKNOWN_T;
+        });
+    }
+
+    @Override
+    public void visit(MemberAccess ma) {
+        /**
+         * - For 'ma.owner==null' we expect the type to already been set externally
+         * - 'ma.theType' will be the one the member 'targetName' resolves to
+         */
+        if (ma.owner != null) {
+            ma.theType = checkMemberAccessTargetType(ma.owner, ma.targetName);
+        } else if (ma.theType == null) {
+            throw new IllegalArgumentException("'MemberAccessor.owner' and 'MemberAccessor.theType' "
+                    + "must not be null simultaneously. Make sure if 'MemberAccessor.owner' is null, "
+                    + "MemberAccessor.theType has already been set externally!");
+        }
+
+        // Advance to next accessor if there is any
+        if (ma.next != null) {
+            ma.next.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(FieldGet fieldGet) {
+        visit((MemberAccess) fieldGet);
+    }
+
+    @Override
+    public void visit(FieldSet fieldSet) {
+        visit((MemberAccess) fieldSet);
     }
 
     private String prettyTheTypeName(Node n) {
@@ -244,12 +323,26 @@ public class TypeChecker implements Visitor {
             reportError(varAssignStat, "Assignment to undeclared variable '"
                     + varAssignStat.targetVarName + "'");
         } else if (!(varType.isCompatible(exprType))) {
-            reportError(varAssignStat, "Attempt to assign value of type '"
+            reportError(varAssignStat, "Attempt to assign expression of type '"
                     + exprType.prettyTypeName() + "' to variable '" + varAssignStat.targetVarName
                     + "' of incompatible type '" + varType.prettyTypeName() + "'");
         }
 
         varAssignStat.theType = varType;
+    }
+
+    @Override
+    public void visit(FieldAssignStat fieldAssStat) {
+        fieldAssStat.maChain.accept(this);
+        fieldAssStat.expr.accept(this);
+        var fType = fieldAssStat.maChain.theType;
+        var exprType = fieldAssStat.expr.theType;
+        fieldAssStat.theType = fType;
+        if (!fType.isCompatible(exprType)) {
+            reportError(fieldAssStat, "Attempt to assign expression of type '"
+                    + exprType.prettyTypeName() + "' to field '" + fieldAssStat.maChain.getLast().targetName
+                    + "' of incompatible type '" + fType.prettyTypeName() + "'");
+        }
     }
 
     @Override

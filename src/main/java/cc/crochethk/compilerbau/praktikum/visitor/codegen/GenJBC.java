@@ -25,6 +25,7 @@ import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.visitor.Type;
 import utils.PathUtils;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
 
 /**
  * Visitor that generates Java Byte Code by traversing the AST nodes.
@@ -521,5 +522,35 @@ public class GenJBC extends CodeGenVisitor {
         Integer getSlot(String varName) {
             return varSlots.get(varName);
         }
+    }
+
+    @Override
+    public void visit(MethodCall methodCall) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
+    public void visit(FieldGet fieldGet) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
+    public void visit(FieldSet fieldSet) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
+    public void visit(MemberAccessChain memberAccessChain) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    @Override
+    public void visit(FieldAssignStat fieldAssignStat) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 }

@@ -11,6 +11,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import cc.crochethk.compilerbau.praktikum.antlr.*;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
 import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import utils.SourcePos;
@@ -155,6 +156,35 @@ public class TreeBuilder extends KlangBaseListener {
     }
 
     @Override
+    public void exitFieldOrMethCall(KlangParser.FieldOrMethCallContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        if (ctx.fieldName != null) {
+            if (maChainIsSetter) {
+                ctx.result = new FieldSet(srcPos, null, ctx.fieldName.getText(), null);
+            } else {
+                ctx.result = new FieldGet(srcPos, null, ctx.fieldName.getText(), null);
+            }
+        } else if (ctx.methCall != null) {
+            if (maChainIsSetter) {
+                throw new UnsupportedOperationException("Cannot assign to a method call");
+            }
+            var args = ctx.methCall.args.stream().map(arg -> arg.result).toList();
+            ctx.result = new MethodCall(srcPos, null, ctx.methCall.name.getText(), args, null);
+        } else {
+            throw new UnhandledAlternativeException(srcPos, "fieldOrMethCall", ctx.getText());
+        }
+    }
+
+    @Override
+    public void exitMemberAccessor(KlangParser.MemberAccessorContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        var detachedMembers = ctx.memberChain.stream().map(
+                memCtx -> memCtx.result).toList();
+        var chain = MemberAccess.chain(detachedMembers);
+        ctx.result = new MemberAccessChain(srcPos, ctx.owner.result, chain);
+    }
+
+    @Override
     // On "EXIT": if a expr type matched, than this method is executed AFTER all 
     // components of the matched rule where already parsed. This means, we can safely
     // assume rule components have a result and we dont have to care about computing
@@ -217,6 +247,8 @@ public class TreeBuilder extends KlangBaseListener {
             ctx.result = ctx.nullLit().result;
         } else if (ctx.constructorCall() != null) {
             ctx.result = ctx.constructorCall().result;
+        } else if (ctx.memberAccessor() != null) {
+            ctx.result = ctx.memberAccessor().result;
         } else {
             throw new UnhandledAlternativeException(getSourcePos(ctx), "expr", ctx.getText());
         }
@@ -249,6 +281,8 @@ public class TreeBuilder extends KlangBaseListener {
             ctx.result = buildVarDeclareNode(srcPos, ctx);
         } else if (ctx.EQ() != null) {
             ctx.result = buildVarAssignNode(srcPos, ctx);
+        } else if (ctx.structFieldAssignStat() != null) {
+            ctx.result = ctx.structFieldAssignStat().result;
         } else {
             throw new UnhandledAlternativeException(
                     srcPos, "varDeclarationOrAssignment", ctx.getText());
@@ -261,6 +295,21 @@ public class TreeBuilder extends KlangBaseListener {
 
     private Node buildVarAssignNode(SourcePos srcPos, KlangParser.VarDeclarationOrAssignmentContext ctx) {
         return new VarAssignStat(srcPos, ctx.varName.getText(), ctx.expr().result);
+    }
+
+    @Override
+    public void enterStructFieldAssignStat(KlangParser.StructFieldAssignStatContext ctx) {
+        maChainIsSetter = true;
+    }
+
+    /** Helps in creating MemberAccessChain that should be used as a setter. */
+    private boolean maChainIsSetter = false;
+
+    @Override
+    public void exitStructFieldAssignStat(KlangParser.StructFieldAssignStatContext ctx) {
+        var srcPos = getSourcePos(ctx);
+        ctx.result = new FieldAssignStat(srcPos, ctx.memberAccessor().result, ctx.expr().result);
+        maChainIsSetter = false;
     }
 
     @Override
