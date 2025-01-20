@@ -4,3 +4,4 @@
 **.env
 lib/**/*-sources.jar
 /build
+*.code-workspace
