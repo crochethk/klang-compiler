@@ -388,13 +388,13 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Prog prog) {
-        prog.structDefs.forEach(structDef -> {
-            var previous = structDefs.put(structDef.name, structDef);
+        prog.structDefs.forEach(def -> {
+            var previous = structDefs.put(def.name, def);
             if (previous != null) {
-                reportError(structDef, "Struct type '" + structDef.name + "' defined multiple times");
+                reportError(def, "Struct type '" + def.name + "' defined multiple times");
             }
-            structDef.accept(this);
         });
+        prog.structDefs.forEach(def -> def.accept(this));
 
         // Before traversiing the tree, we need to make funDefs available for other "visit"s
         prog.funDefs.forEach(funDef -> {

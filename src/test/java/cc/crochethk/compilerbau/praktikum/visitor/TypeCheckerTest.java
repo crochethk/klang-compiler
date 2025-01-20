@@ -569,6 +569,17 @@ public class TypeCheckerTest extends NodeMocker {
         }
     }
 
+    @Nested
+    class ProgTests {
+        @Test
+        void structDefWithFieldOfStructDefinedLaterDoesNotFail() {
+            var firstStruct = structDef("First", List.of(param("otherRef", "Other", false)));
+            var otherStruct = structDef("Other", List.of(param("otherField", I64_TN)));
+            assertDoesNotThrow(() -> checkProgOf(List.of(), List.of(firstStruct, otherStruct)));
+            assertReportedErrors(0);
+        }
+    }
+
     /** Run TypeChecker on new Program consiting of given definitions */
     private void checkProgOf(List<FunDef> funDefs, List<StructDef> structDefs) {
         tc.visit(new Prog(new SourcePos(0, 0), funDefs, null, structDefs));
