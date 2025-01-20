@@ -41,4 +41,9 @@ public abstract class Node implements Visitable {
         }
         return false;
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
+    }
 }

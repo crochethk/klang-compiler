@@ -18,4 +18,10 @@ public class TypeNode extends Node {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName()
+                + "(typeToken=" + typeToken + ", isBuiltin=" + isBuiltin + ")";
+    }
 }

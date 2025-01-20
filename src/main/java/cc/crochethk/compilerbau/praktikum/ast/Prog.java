@@ -21,4 +21,10 @@ public class Prog extends Node {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "(funDefs=" + funDefs
+                + ", structDefs=" + structDefs + ", entryPoint=" + entryPoint + ")";
+    }
 }

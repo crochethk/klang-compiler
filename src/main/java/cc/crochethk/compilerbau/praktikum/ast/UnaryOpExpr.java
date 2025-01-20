@@ -52,4 +52,10 @@ public class UnaryOpExpr extends Node {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName()
+                + "(op=" + op + ", operand=" + operand + ")";
+    }
 }

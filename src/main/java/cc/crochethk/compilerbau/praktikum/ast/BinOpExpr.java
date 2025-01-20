@@ -70,4 +70,10 @@ public class BinOpExpr extends Node {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName()
+                + "(lhs=" + lhs + ", op=" + op + ", rhs=" + rhs + ")";
+    }
 }

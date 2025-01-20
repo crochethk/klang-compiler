@@ -18,4 +18,10 @@ public class IfElseStat extends Node {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "(condition=" + condition
+                + ", then=" + then + ", otherwise=" + otherwise + ")";
+    }
 }
