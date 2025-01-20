@@ -35,6 +35,8 @@ public class TypeCheckerTest extends NodeMocker {
             var funCall = funCall("fun", List.of(NULL_LIT));
             tc.visit(funCall);
             assertReportedErrors(1);
+            assertEquals(Type.LONG_T, funCall.theType);
+            assertEquals(Type.NULL_T, funCall.args.get(0).theType);
         }
 
         @Test
@@ -47,6 +49,8 @@ public class TypeCheckerTest extends NodeMocker {
             var funCall = funCall("fun", List.of(NULL_LIT));
             tc.visit(funCall);
             assertReportedErrors(0);
+            assertEquals(Type.VOID_T, funCall.theType);
+            assertEquals(Type.NULL_T, funCall.args.get(0).theType);
         }
     }
 
@@ -61,6 +65,7 @@ public class TypeCheckerTest extends NodeMocker {
             var constCall = constructorCall("Empty");
             tc.visit(constCall);
             assertReportedErrors(0);
+            assertEquals(Type.of(structDef.name, ""), constCall.theType);
         }
 
         // ------------ adjusted copy paste from FunCallTests ------------------
@@ -73,6 +78,8 @@ public class TypeCheckerTest extends NodeMocker {
             var constCall = constructorCall("Def", List.of(NULL_LIT));
             tc.visit(constCall);
             assertReportedErrors(1);
+            assertEquals(Type.of(def.name, ""), constCall.theType);
+            assertEquals(Type.NULL_T, constCall.args.get(0).theType);
         }
 
         @Test
@@ -85,6 +92,8 @@ public class TypeCheckerTest extends NodeMocker {
             var constCall = constructorCall("Def", List.of(NULL_LIT));
             tc.visit(constCall);
             assertReportedErrors(0);
+            assertEquals(Type.of(def.name, ""), constCall.theType);
+            assertEquals(Type.NULL_T, constCall.args.get(0).theType);
         }
         // ---------------------------------------------------------------------
     }
@@ -202,62 +211,62 @@ public class TypeCheckerTest extends NodeMocker {
         class ArithmeticOperators {
             @Test
             void addTwoI64IsOk() {
-                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.add, i64Lit(456));
+                testBinaryOpAssertI64Result(i64Lit(123), BinaryOp.add, i64Lit(456));
                 assertReportedErrors(0);
             }
 
             @Test
             void subTwoI64IsOk() {
-                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.sub, i64Lit(456));
+                testBinaryOpAssertI64Result(i64Lit(123), BinaryOp.sub, i64Lit(456));
                 assertReportedErrors(0);
             }
 
             @Test
             void multTwoI64IsOk() {
-                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.mult, i64Lit(456));
+                testBinaryOpAssertI64Result(i64Lit(123), BinaryOp.mult, i64Lit(456));
                 assertReportedErrors(0);
             }
 
             @Test
             void divTwoI64IsOk() {
-                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.div, i64Lit(456));
+                testBinaryOpAssertI64Result(i64Lit(123), BinaryOp.div, i64Lit(456));
                 assertReportedErrors(0);
             }
 
             @Test
             void modTwoI64IsOk() {
-                testBinaryOpWithI64Result(i64Lit(123), BinaryOp.mod, i64Lit(456));
+                testBinaryOpAssertI64Result(i64Lit(123), BinaryOp.mod, i64Lit(456));
                 assertReportedErrors(0);
             }
 
             // -----------
             @Test
             void addTwoF64IsOk() {
-                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.add, f64Lit(4.56d));
+                testBinaryOpAssertF64Result(f64Lit(1.23d), BinaryOp.add, f64Lit(4.56d));
                 assertReportedErrors(0);
             }
 
             @Test
             void subTwoF64IsOk() {
-                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.sub, f64Lit(4.56d));
+                testBinaryOpAssertF64Result(f64Lit(1.23d), BinaryOp.sub, f64Lit(4.56d));
                 assertReportedErrors(0);
             }
 
             @Test
             void multTwoF64IsOk() {
-                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.mult, f64Lit(4.56d));
+                testBinaryOpAssertF64Result(f64Lit(1.23d), BinaryOp.mult, f64Lit(4.56d));
                 assertReportedErrors(0);
             }
 
             @Test
             void divTwoF64IsOk() {
-                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.div, f64Lit(4.56d));
+                testBinaryOpAssertF64Result(f64Lit(1.23d), BinaryOp.div, f64Lit(4.56d));
                 assertReportedErrors(0);
             }
 
             @Test
             void modTwoF64IsOk() {
-                testBinaryOpWithF64Result(f64Lit(1.23d), BinaryOp.mod, f64Lit(4.56d));
+                testBinaryOpAssertF64Result(f64Lit(1.23d), BinaryOp.mod, f64Lit(4.56d));
                 assertReportedErrors(0);
             }
             //----------- with errors
@@ -325,13 +334,13 @@ public class TypeCheckerTest extends NodeMocker {
         class BooleanOperators {
             @Test
             void andTwoBoolIsOk() {
-                testBinaryOpWithBoolResult(boolLit(false), BinaryOp.and, boolLit(true));
+                testBinaryOpAssertBoolResult(boolLit(false), BinaryOp.and, boolLit(true));
                 assertReportedErrors(0);
             }
 
             @Test
             void orTwoBoolIsOk() {
-                testBinaryOpWithBoolResult(boolLit(true), BinaryOp.or, boolLit(false));
+                testBinaryOpAssertBoolResult(boolLit(true), BinaryOp.or, boolLit(false));
                 assertReportedErrors(0);
             }
 
@@ -364,22 +373,24 @@ public class TypeCheckerTest extends NodeMocker {
             }
         }
 
-        private void testBinaryOpWithI64Result(Node lhs, BinaryOp op, Node rhs) {
-            _testBinaryOpWith(lhs, op, rhs, I64_TN);
+        private void testBinaryOpAssertI64Result(Node lhs, BinaryOp op, Node rhs) {
+            assertEquals(Type.LONG_T, _testBinaryOpWith(lhs, op, rhs, I64_TN).theType);
         }
 
-        private void testBinaryOpWithF64Result(Node lhs, BinaryOp op, Node rhs) {
-            _testBinaryOpWith(lhs, op, rhs, F64_TN);
+        private void testBinaryOpAssertF64Result(Node lhs, BinaryOp op, Node rhs) {
+            assertEquals(Type.DOUBLE_T, _testBinaryOpWith(lhs, op, rhs, F64_TN).theType);
         }
 
-        private void testBinaryOpWithBoolResult(Node lhs, BinaryOp op, Node rhs) {
-            _testBinaryOpWith(lhs, op, rhs, BOOL_TN);
+        private void testBinaryOpAssertBoolResult(Node lhs, BinaryOp op, Node rhs) {
+            assertEquals(Type.BOOL_T, _testBinaryOpWith(lhs, op, rhs, BOOL_TN).theType);
         }
 
-        private void _testBinaryOpWith(Node lhs, BinaryOp op, Node rhs, TypeNode expResultType) {
+        private BinOpExpr _testBinaryOpWith(Node lhs, BinaryOp op, Node rhs, TypeNode expResultType) {
+            var expr = binOpExpr(lhs, op, rhs);
             var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", expResultType),
-                    varAssignStat("var", binOpExpr(lhs, op, rhs))));
+                    varAssignStat("var", expr)));
             checkProgOf(List.of(fun), List.of());
+            return expr;
         }
     }
 
@@ -483,11 +494,21 @@ public class TypeCheckerTest extends NodeMocker {
     @Nested
     class ReturnStatTests {
         @Test
+        void emptyReturnIsVoidType() {
+            var stat = returnStat();
+            var fun = funDef("fun", List.of(), List.of(stat));
+            checkProgOf(List.of(fun), List.of());
+            assertReportedErrors(0);
+            assertEquals(Type.VOID_T, stat.theType);
+        }
+
+        @Test
         void nullWithReturnPrimitiveShouldReportErr_1() {
             var stat = returnStat(NULL_LIT);
             var fun = funDef("fun", List.of(), List.of(stat));
             assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(1);
+            assertEquals(Type.VOID_T, stat.theType);
         }
 
         @Test
@@ -496,6 +517,7 @@ public class TypeCheckerTest extends NodeMocker {
             var fun = funDef("fun", List.of(), I64_TN, List.of(stat));
             assertThrows(TypeCheckFailedException.class, () -> checkProgOf(List.of(fun), List.of()));
             assertReportedErrors(1);
+            assertEquals(Type.LONG_T, stat.theType);
         }
 
         @Test
@@ -504,6 +526,7 @@ public class TypeCheckerTest extends NodeMocker {
             var fun = funDef("fun", List.of(), STRING_TN, List.of(stat));
             checkProgOf(List.of(fun), List.of());
             assertReportedErrors(0);
+            assertEquals(Type.STRING_T, stat.theType);
         }
 
         @Test
@@ -513,6 +536,7 @@ public class TypeCheckerTest extends NodeMocker {
             var fun = funDef("fun", List.of(), typeNode(struct.name, false), List.of(stat));
             checkProgOf(List.of(fun), List.of(struct));
             assertReportedErrors(0);
+            assertEquals(Type.of(struct.name, ""), stat.theType);
         }
     }
 

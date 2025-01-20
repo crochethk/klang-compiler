@@ -50,6 +50,10 @@ public class NodeMocker {
         return new ReturnStat(srcPosMock, expr);
     }
 
+    public ReturnStat returnStat() {
+        return new ReturnStat(srcPosMock, emptyNode());
+    }
+
     public I64Lit i64Lit(long value, boolean hasTypeAnnotation) {
         return new I64Lit(srcPosMock, value, hasTypeAnnotation);
     }
