@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast.literal;
 
+import java.util.Objects;
+
 import cc.crochethk.compilerbau.praktikum.ast.Node;
 import utils.SourcePos;
 
@@ -14,15 +16,17 @@ public abstract class LiteralExpr<T> extends Node {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), value);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj instanceof LiteralExpr other) {
-            if (this.value == null)
-                return other.value == null;
-            else
-                return value.equals(other.value) && super.equals(other);
+            return Objects.equals(this.value, other.value) && super.equals(other);
         }
         return false;
     }

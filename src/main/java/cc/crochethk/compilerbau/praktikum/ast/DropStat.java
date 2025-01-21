@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
+import java.util.Objects;
+
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
 
@@ -17,12 +19,17 @@ public class DropStat extends Node {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), refTypeVar);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj instanceof DropStat other) {
-            return refTypeVar.equals(other.refTypeVar) && super.equals(other);
+            return Objects.equals(refTypeVar, other.refTypeVar) && super.equals(other);
         }
         return false;
     }

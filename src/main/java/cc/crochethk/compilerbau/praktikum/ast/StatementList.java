@@ -1,6 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
 import java.util.List;
+import java.util.Objects;
 
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
@@ -26,5 +27,21 @@ public class StatementList extends Node {
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "(statements=" + statements + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), statements);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof StatementList other) {
+            return Objects.equals(statements, other.statements) && super.equals(other);
+        }
+        return false;
     }
 }

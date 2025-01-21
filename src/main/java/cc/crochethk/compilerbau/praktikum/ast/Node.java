@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
+import java.util.Objects;
+
 import cc.crochethk.compilerbau.praktikum.visitor.Type;
 import utils.SourcePos;
 
@@ -32,12 +34,22 @@ public abstract class Node implements Visitable {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((srcPos == null) ? 0 : srcPos.hashCode());
+        result = prime * result + ((theType == null) ? 0 : theType.hashCode());
+        return result;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj instanceof Node other) {
-            return srcPos.equals(other.srcPos);
+            return Objects.equals(srcPos, other.srcPos)
+                    && Objects.equals(theType, other.theType);
         }
         return false;
     }

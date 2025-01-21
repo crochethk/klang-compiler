@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
+import java.util.Objects;
+
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
 
@@ -23,5 +25,23 @@ public class TypeNode extends Node {
     public String toString() {
         return this.getClass().getSimpleName()
                 + "(typeToken=" + typeToken + ", isBuiltin=" + isBuiltin + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), typeToken, isBuiltin);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof TypeNode other) {
+            return Objects.equals(typeToken, other.typeToken)
+                    && Objects.equals(isBuiltin, other.isBuiltin)
+                    && super.equals(other);
+        }
+        return false;
     }
 }

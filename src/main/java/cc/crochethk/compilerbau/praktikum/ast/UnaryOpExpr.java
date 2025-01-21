@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
+import java.util.Objects;
+
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
 
@@ -57,5 +59,23 @@ public class UnaryOpExpr extends Node {
     public String toString() {
         return this.getClass().getSimpleName()
                 + "(op=" + op + ", operand=" + operand + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), op, operand);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof UnaryOpExpr other) {
+            return Objects.equals(op, other.op)
+                    && Objects.equals(operand, other.operand)
+                    && super.equals(other);
+        }
+        return false;
     }
 }

@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
+import java.util.Objects;
+
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
 
@@ -23,5 +25,24 @@ public class IfElseStat extends Node {
     public String toString() {
         return this.getClass().getSimpleName() + "(condition=" + condition
                 + ", then=" + then + ", otherwise=" + otherwise + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), condition, otherwise, then);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof IfElseStat other) {
+            return Objects.equals(condition, other.condition)
+                    && Objects.equals(then, other.then)
+                    && Objects.equals(otherwise, other.otherwise)
+                    && super.equals(other);
+        }
+        return false;
     }
 }

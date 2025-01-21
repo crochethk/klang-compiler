@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast.literal;
 
+import java.util.Objects;
+
 import utils.SourcePos;
 
 public abstract class NumberLiteral<T> extends LiteralExpr<T> {
@@ -8,6 +10,11 @@ public abstract class NumberLiteral<T> extends LiteralExpr<T> {
     public NumberLiteral(SourcePos srcPos, T value, boolean hasTypeAnnotation) {
         super(srcPos, value);
         this.hasTypeAnnotation = hasTypeAnnotation;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), hasTypeAnnotation);
     }
 
     @Override

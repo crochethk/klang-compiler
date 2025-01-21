@@ -1,5 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.ast;
 
+import java.util.Objects;
+
 import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
 import utils.SourcePos;
 
@@ -75,5 +77,24 @@ public class BinOpExpr extends Node {
     public String toString() {
         return this.getClass().getSimpleName()
                 + "(lhs=" + lhs + ", op=" + op + ", rhs=" + rhs + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), lhs, op, rhs);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof BinOpExpr other) {
+            return Objects.equals(lhs, other.lhs)
+                    && Objects.equals(op, other.op)
+                    && Objects.equals(rhs, other.rhs)
+                    && super.equals(other);
+        }
+        return false;
     }
 }
