@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
+import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.visitor.SourceCodeBuilder;
 import cc.crochethk.compilerbau.praktikum.visitor.Type;
@@ -53,7 +54,7 @@ public abstract class GenCBase extends CodeGenVisitor {
         var refType = st.theType;
         List<Parameter> fields = st.fields;
         scb.writeIndented(refType.cTypeName(), " ",
-                refType.klangName(), "$new$", "(", formatParams(fields), ")");
+                getConstructorFullName(refType), "(", formatParams(fields), ")");
     }
 
     protected void writeDestructorSignature(SourceCodeBuilder scb, StructDef st) {
@@ -62,14 +63,42 @@ public abstract class GenCBase extends CodeGenVisitor {
                 getDestructorFullName(refType), "(", refType.cTypeName(), " this)");
     }
 
-    protected String getDestructorFullName(Type refType) {
-        return refType.klangName() + "$drop$";
-    }
-
     protected void writeToStringSignature(SourceCodeBuilder scb, StructDef st) {
         var refType = st.theType;
         scb.writeIndented("char* ",
                 refType.klangName(), "$to_string(", refType.cTypeName(), " this)");
+    }
+
+    protected void writeGetterSignature(SourceCodeBuilder scb, StructDef st, Parameter field) {
+        var refType = st.theType;
+        scb.writeIndented(field.type().theType.cTypeName(), " ",
+                getGetterFullName(refType, field.name()), "(", refType.cTypeName(), " this)");
+    }
+
+    protected void writeSetterSignature(SourceCodeBuilder scb, StructDef st, Parameter field) {
+        var refType = st.theType;
+        scb.writeIndented("void ", getSetterFullName(refType, field.name()),
+                "(", refType.cTypeName(), " this, ", field.type().theType.cTypeName(), " value", ")");
+    }
+
+    /** Full name of the {@code refType}'s constructor function */
+    public static String getConstructorFullName(Type refType) {
+        return refType.klangName() + "$new$";
+    }
+
+    /** Full name of the {@code refType}'s destructor function */
+    public static String getDestructorFullName(Type refType) {
+        return refType.klangName() + "$drop$";
+    }
+
+    /** Full name of the {@code refType} field's getter function */
+    public static String getGetterFullName(Type refType, String fieldName) {
+        return refType.klangName() + "$get_" + fieldName + "$";
+    }
+
+    /** Full name of the {@code refType} field's setter function */
+    public static String getSetterFullName(Type refType, String fieldName) {
+        return refType.klangName() + "$set_" + fieldName + "$";
     }
 
     protected String formatParams(List<Parameter> params) {
@@ -94,7 +123,7 @@ public abstract class GenCBase extends CodeGenVisitor {
         return type.theType.cTypeName();
     }
 
-    // --------------------[ Empty Visitor Overrides ]--------------------------
+    // --------------------[ Default Visitor Overrides ]------------------------
     @Override
     public void visit(I64Lit i64Lit) {
     }
@@ -124,6 +153,22 @@ public abstract class GenCBase extends CodeGenVisitor {
     }
 
     @Override
+    public void visit(MemberAccessChain memberAccessChain) {
+    }
+
+    @Override
+    public void visit(MethodCall methodCall) {
+    }
+
+    @Override
+    public void visit(FieldGet fieldGet) {
+    }
+
+    @Override
+    public void visit(FieldSet fieldSet) {
+    }
+
+    @Override
     public void visit(ConstructorCall constructorCall) {
     }
 
@@ -145,6 +190,10 @@ public abstract class GenCBase extends CodeGenVisitor {
 
     @Override
     public void visit(VarAssignStat varAssignStat) {
+    }
+
+    @Override
+    public void visit(FieldAssignStat fieldAssignStat) {
     }
 
     @Override
@@ -173,6 +222,7 @@ public abstract class GenCBase extends CodeGenVisitor {
 
     @Override
     public void visit(TypeNode type) {
+        codeBuilder.write(formatTypeNode(type));
     }
 
     @Override

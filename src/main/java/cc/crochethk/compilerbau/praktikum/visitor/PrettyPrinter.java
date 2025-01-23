@@ -6,6 +6,7 @@ import java.io.Writer;
 import java.util.List;
 
 import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.ast.*;
 
@@ -73,6 +74,37 @@ public class PrettyPrinter implements Visitor {
     }
 
     @Override
+    public void visit(MemberAccessChain maChain) {
+        maChain.owner.accept(this);
+        maChain.chain.accept(this);
+    }
+
+    @Override
+    public void visit(MemberAccess memberAccess) {
+        scb.write(".", memberAccess.targetName);
+        if (memberAccess.next != null) {
+            memberAccess.next.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(MethodCall methodCall) {
+        // TODO
+        // visit((MemberAccess) methodCall);
+        // + parentheses and args
+    }
+
+    @Override
+    public void visit(FieldGet fieldGet) {
+        visit((MemberAccess) fieldGet);
+    }
+
+    @Override
+    public void visit(FieldSet fieldSet) {
+        visit((MemberAccess) fieldSet);
+    }
+
+    @Override
     public void visit(ConstructorCall constructorCall) {
         var cc = constructorCall;
         scb.write(cc.structName, "{");
@@ -132,6 +164,14 @@ public class PrettyPrinter implements Visitor {
     public void visit(VarAssignStat varAssignStat) {
         scb.write(varAssignStat.targetVarName, " = ");
         varAssignStat.expr.accept(this);
+        scb.write(";");
+    }
+
+    @Override
+    public void visit(FieldAssignStat fieldAssignStat) {
+        fieldAssignStat.maChain.accept(this);
+        scb.write(" = ");
+        fieldAssignStat.expr.accept(this);
         scb.write(";");
     }
 

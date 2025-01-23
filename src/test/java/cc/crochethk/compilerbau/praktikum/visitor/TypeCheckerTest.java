@@ -55,6 +55,61 @@ public class TypeCheckerTest extends NodeMocker {
     }
 
     @Nested
+    class MemberAccessChainTests {
+        private StructDef simpleStruct;
+        private StructDef structWithStructField;
+
+        @BeforeEach
+        void setUp() {
+            simpleStruct = structDef("SimpleStruct", List.of(
+                    param("primField", I64_TN)));
+            structWithStructField = structDef("StructWithStructField", List.of(
+                    param("structField", typeNode(simpleStruct.name, false))));
+        }
+
+        @Test
+        void chainOfOneField() {
+            var customType = simpleStruct;
+            // "value=p1.primField"
+            var maChain = memberAccessChain(var("p1"), fieldGet("primField"));
+            var fun = funDef("fun",
+                    List.of(param("p1", customType.name, false),
+                            param("value", I64_TN)),
+                    List.of(varAssignStat("value", maChain)));
+
+            checkProgOf(List.of(fun), List.of(customType));
+            assertReportedErrors(0);
+
+            assertEquals(Type.LONG_T, maChain.theType);
+            assertEquals(Type.of(simpleStruct.name, ""), maChain.owner.theType);
+            assertEquals(Type.LONG_T, maChain.chain.theType);
+            assertNull(maChain.chain.next);
+        }
+
+        @Test
+        void chainOfMultipleFields() {
+            var customType = structWithStructField;
+
+            // "p1.structField.primField"
+            var maChain = memberAccessChain(var("p1"), fieldGet("structField"), fieldGet("primField"));
+
+            var fun = funDef("fun",
+                    List.of(param("p1", customType.name, false),
+                            param("value", I64_TN)),
+                    List.of(varAssignStat("value", maChain)));
+
+            checkProgOf(List.of(fun), List.of(customType, simpleStruct));
+            assertReportedErrors(0);
+
+            assertEquals(Type.LONG_T, maChain.theType);
+            assertEquals(Type.of(customType.name, ""), maChain.owner.theType);
+            assertEquals(Type.of(simpleStruct.name, ""), maChain.chain.theType);
+            assertEquals(Type.LONG_T, maChain.chain.next.theType);
+            assertNull(maChain.chain.next.next);
+        }
+    }
+
+    @Nested
     class ConstructorCallTests {
         @Test
         void emptyStruct() {

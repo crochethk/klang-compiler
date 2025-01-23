@@ -1,6 +1,7 @@
 package cc.crochethk.compilerbau.praktikum.visitor;
 
 import cc.crochethk.compilerbau.praktikum.ast.*;
+import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 
 public interface Visitor {
@@ -24,6 +25,17 @@ public interface Visitor {
 
     void visit(FunCall funCall);
 
+    default void visit(MemberAccess memberAccess) {
+    }
+
+    void visit(MemberAccessChain memberAccessChain);
+
+    void visit(MethodCall methodCall);
+
+    void visit(FieldGet fieldGet);
+
+    void visit(FieldSet fieldSet);
+
     void visit(ConstructorCall constructorCall);
 
     void visit(BinOpExpr binOpExpr);
@@ -35,6 +47,8 @@ public interface Visitor {
     void visit(VarDeclareStat varDeclareStat);
 
     void visit(VarAssignStat varAssignStat);
+
+    void visit(FieldAssignStat fieldAssignStat);
 
     void visit(IfElseStat ifElseStat);
 

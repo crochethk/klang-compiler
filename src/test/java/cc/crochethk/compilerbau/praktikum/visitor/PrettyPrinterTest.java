@@ -37,6 +37,31 @@ public class PrettyPrinterTest extends NodeMocker {
     }
 
     @Nested
+    class MemberAccessChainTests {
+        @Test
+        void varThenSingleFieldChain() {
+            var maChain = memberAccessChain(var("var"), fieldGet("field"));
+            pp.visit(maChain);
+            assertEquals("var.field", pp.scb.toString());
+        }
+
+        @Test
+        void varThenMultipleFieldsChain() {
+            var maChain = memberAccessChain(var("var"), fieldGet("field1"),
+                    fieldGet("field2"), fieldGet("field3"));
+            pp.visit(maChain);
+            assertEquals("var.field1.field2.field3", pp.scb.toString());
+        }
+
+        @Test
+        void funCallThenSingleFieldChain() {
+            var maChain = memberAccessChain(funCall("fun"), fieldGet("field"));
+            pp.visit(maChain);
+            assertEquals("fun().field", pp.scb.toString());
+        }
+    }
+
+    @Nested
     class ConstructorCallTests {
         @Test
         void emptyStruct_emptyArgsList() {
@@ -140,6 +165,34 @@ public class PrettyPrinterTest extends NodeMocker {
                       return;
                     }
                     """, pp.scb.toString());
+        }
+    }
+
+    @Nested
+    class FieldAssignStatTests {
+        @Test
+        void varThenSingleFieldAssignLit() {
+            var stat = fieldAssignStat(var("var"), List.of(fieldSet("field")), i64Lit(1234));
+            pp.visit(stat);
+            assertEquals("var.field = 1234;", pp.scb.toString());
+        }
+
+        @Test
+        void varThenMultipleFieldsAssignLit() {
+            var stat = fieldAssignStat(var("var"), List.of(
+                    fieldGet("field1"), fieldGet("field2"),
+                    fieldSet("field3")), i64Lit(1234));
+            pp.visit(stat);
+            assertEquals("var.field1.field2.field3 = 1234;", pp.scb.toString());
+        }
+
+        @Test
+        void funCallThenSingleFieldAssignOtherField() {
+            var stat = fieldAssignStat(
+                    funCall("fun"), List.of(fieldSet("field")),
+                    memberAccessChain(var("foo"), fieldGet("bar")));
+            pp.visit(stat);
+            assertEquals("fun().field = foo.bar;", pp.scb.toString());
         }
     }
 

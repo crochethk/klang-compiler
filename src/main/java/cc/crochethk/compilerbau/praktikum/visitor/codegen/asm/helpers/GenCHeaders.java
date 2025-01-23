@@ -9,11 +9,6 @@ public class GenCHeaders extends GenCBase {
     }
 
     @Override
-    public void visit(TypeNode type) {
-        codeBuilder.write(formatTypeNode(type));
-    }
-
-    @Override
     public void visit(FunDef funDef) {
         codeBuilder.writeIndent();
         // Write function signature
@@ -67,6 +62,14 @@ public class GenCHeaders extends GenCBase {
             // to_string
             writeToStringSignature(codeBuilder, st);
             codeBuilder.write(";");
+
+            // field getters and setters
+            st.fields.forEach(f -> {
+                writeGetterSignature(codeBuilder, st, f);
+                codeBuilder.write(";");
+                writeSetterSignature(codeBuilder, st, f);
+                codeBuilder.write(";");
+            });
 
             codeBuilder.write("\n");
         });
