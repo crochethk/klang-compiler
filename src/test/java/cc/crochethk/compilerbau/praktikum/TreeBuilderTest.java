@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Nested;
 
 import cc.crochethk.compilerbau.praktikum.TreeBuilder.*;
 import cc.crochethk.compilerbau.praktikum.antlr.*;
+import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
 import cc.crochethk.compilerbau.praktikum.ast.literal.*;
 import cc.crochethk.compilerbau.praktikum.testhelpers.NodeMocker;
 import utils.SourcePos;
@@ -216,6 +217,27 @@ public class TreeBuilderTest extends NodeMocker {
             var _ = assertThrows(InputMismatchException.class, () -> {
                 parseAndWalk("drop getSomeRef();", p -> p.statement());
             });
+        }
+    }
+
+    @Nested
+    class FieldAssignStatTests {
+        @Test
+        public void lastMemberAccessIsSetter() {
+            var ctx = parseAndWalk("some.field=value;", p -> p.structFieldAssignStat());
+            assertEquals(fieldAssignStat(var("some"), List.of(fieldSet("field")), var("value")), ctx.result);
+            assertTrue(ctx.result.maChain.getLast() instanceof FieldSet);
+            assertFalse(ctx.result.maChain.getLast() instanceof FieldGet);
+        }
+
+        @Test
+        public void multipleChainedFields() {
+            var ctx = parseAndWalk("some.field1.field2.field3=value;", p -> p.structFieldAssignStat());
+            assertEquals(fieldAssignStat(
+                    var("some"), List.of(fieldGet("field1"), fieldGet("field2"), fieldSet("field3")),
+                    var("value")), ctx.result);
+            assertTrue(ctx.result.maChain.getLast() instanceof FieldSet);
+            assertFalse(ctx.result.maChain.getLast() instanceof FieldGet);
         }
     }
 

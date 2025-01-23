@@ -159,15 +159,8 @@ public class TreeBuilder extends KlangBaseListener {
     public void exitFieldOrMethCall(KlangParser.FieldOrMethCallContext ctx) {
         var srcPos = getSourcePos(ctx);
         if (ctx.fieldName != null) {
-            if (maChainIsSetter) {
-                ctx.result = new FieldSet(srcPos, null, ctx.fieldName.getText(), null);
-            } else {
-                ctx.result = new FieldGet(srcPos, null, ctx.fieldName.getText(), null);
-            }
+            ctx.result = new FieldGet(srcPos, null, ctx.fieldName.getText(), null);
         } else if (ctx.methCall != null) {
-            if (maChainIsSetter) {
-                throw new UnsupportedOperationException("Cannot assign to a method call");
-            }
             var args = ctx.methCall.args.stream().map(arg -> arg.result).toList();
             ctx.result = new MethodCall(srcPos, null, ctx.methCall.name.getText(), args, null);
         } else {
@@ -178,6 +171,15 @@ public class TreeBuilder extends KlangBaseListener {
     @Override
     public void exitMemberAccessor(KlangParser.MemberAccessorContext ctx) {
         var srcPos = getSourcePos(ctx);
+
+        // Make last element a FieldSet if its a setter context
+        var last = ctx.memberChain.getLast();
+        if (isFieldSetCtx && last.fieldName != null) {
+            var fieldGet = last.result;
+            last.result = new FieldSet(
+                    fieldGet.srcPos, fieldGet.owner, fieldGet.targetName, fieldGet.next);
+        }
+
         var detachedMembers = ctx.memberChain.stream().map(
                 memCtx -> memCtx.result).toList();
         var chain = MemberAccess.chain(detachedMembers);
@@ -299,17 +301,17 @@ public class TreeBuilder extends KlangBaseListener {
 
     @Override
     public void enterStructFieldAssignStat(KlangParser.StructFieldAssignStatContext ctx) {
-        maChainIsSetter = true;
+        isFieldSetCtx = true;
     }
 
     /** Helps in creating MemberAccessChain that should be used as a setter. */
-    private boolean maChainIsSetter = false;
+    private boolean isFieldSetCtx = false;
 
     @Override
     public void exitStructFieldAssignStat(KlangParser.StructFieldAssignStatContext ctx) {
         var srcPos = getSourcePos(ctx);
         ctx.result = new FieldAssignStat(srcPos, ctx.memberAccessor().result, ctx.expr().result);
-        maChainIsSetter = false;
+        isFieldSetCtx = false;
     }
 
     @Override

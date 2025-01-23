@@ -343,6 +343,9 @@ public class TypeChecker implements Visitor {
                     + exprType.prettyTypeName() + "' to field '" + fieldAssStat.maChain.getLast().targetName
                     + "' of incompatible type '" + fType.prettyTypeName() + "'");
         }
+        if (fieldAssStat.maChain.getLast() instanceof MethodCall) {
+            reportError(fieldAssStat, "Cannot assign to a method call");
+        }
     }
 
     @Override
