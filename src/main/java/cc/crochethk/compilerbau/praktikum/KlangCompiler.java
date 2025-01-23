@@ -248,6 +248,7 @@ public class KlangCompiler {
         var compiler = new KlangCompiler(config);
         var filePaths = files.stream().map(src -> Path.of(src)).toList();
         for (var fp : filePaths) {
+            System.out.println(String.format("--------[ %s ]--------", fp.toString()));
             var file = fp.toFile();
 
             var fpBase = PathUtils.getParentOrEmpty(fp).normalize();
