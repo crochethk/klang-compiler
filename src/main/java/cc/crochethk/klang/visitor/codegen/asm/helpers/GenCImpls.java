@@ -94,7 +94,8 @@ public class GenCImpls extends GenCBase {
                     }
                 } else {
                     scb.writeIndented("fStr = malloc(22);");
-                    scb.writeIndented("sprintf(fStr,\"%ld\", this->", f.name(), ");");
+                    scb.writeIndented("sprintf(fStr,\"", getTypeFormat(f.type().theType),
+                            "\", this->", f.name(), ");");
                 }
 
                 // "+3" for the ", " or ")" suffix after each field (I guess)
@@ -112,6 +113,16 @@ public class GenCImpls extends GenCBase {
         scb.writeIndented("return r;");
         scb.decreaseIndent();
         scb.writeIndented("}\n");
+    }
+
+    private static final Map<Type, String> TYPE_FORMATS = Map.of(
+            Type.BOOL_T, "%d",
+            Type.DOUBLE_T, "%f",
+            Type.LONG_T, "%ld",
+            Type.STRING_T, "%s");
+
+    private String getTypeFormat(Type t) {
+        return TYPE_FORMATS.getOrDefault(t, "%p");
     }
 
     private void writeDestructorDefinition(SourceCodeBuilder scb, Type type) {
