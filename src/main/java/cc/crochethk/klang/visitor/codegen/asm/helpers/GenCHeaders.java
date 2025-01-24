@@ -44,12 +44,23 @@ public class GenCHeaders extends GenCBase {
         codeBuilder.writeIndented("#include <stdbool.h>", "\n");
 
         // Declare structs
+        codeBuilder.writeIndented("// ----------[ Struct declarations ]----------\n");
         prog.structDefs.forEach(st -> codeBuilder.writeIndented("struct ", st.name, ";"));
         codeBuilder.write("\n");
+
+        // Declare static functions
+        codeBuilder.writeIndented("// ----------[ Function signatures ]----------\n");
+        prog.funDefs.forEach(f -> f.accept(this));
+        codeBuilder.write("\n");
+
+        // Generate struct definitions
+        codeBuilder.writeIndented("// ----------[ Struct definitions ]----------\n");
+        prog.structDefs.forEach(st -> st.accept(this));
 
         // Declare struct auto-methods
         // - Normal methods: <RefTypeName>$<methName>
         // - Internal methods: <RefTypeName>$<methName>$
+        codeBuilder.writeIndented("// ----------[ Auto-Method Signatures ]----------\n");
         prog.structDefs.forEach(st -> {
             // constructor
             writeConstructorSignature(codeBuilder, st);
@@ -73,13 +84,6 @@ public class GenCHeaders extends GenCBase {
 
             codeBuilder.write("\n");
         });
-
-        // Declare static funcitons
-        prog.funDefs.forEach(f -> f.accept(this));
-        codeBuilder.write("\n");
-
-        // Generate struct definitions
-        prog.structDefs.forEach(st -> st.accept(this));
 
         codeBuilder.writeIndented("#endif // ", guardName, "\n");
 
