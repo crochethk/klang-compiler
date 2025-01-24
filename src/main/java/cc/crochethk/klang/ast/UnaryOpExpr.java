@@ -1,8 +1,8 @@
-package cc.crochethk.compilerbau.praktikum.ast;
+package cc.crochethk.klang.ast;
 
 import java.util.Objects;
 
-import cc.crochethk.compilerbau.praktikum.visitor.Visitor;
+import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
 public class UnaryOpExpr extends Node {

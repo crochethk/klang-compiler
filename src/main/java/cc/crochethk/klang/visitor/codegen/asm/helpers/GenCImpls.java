@@ -1,11 +1,11 @@
-package cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.helpers;
+package cc.crochethk.klang.visitor.codegen.asm.helpers;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.visitor.SourceCodeBuilder;
-import cc.crochethk.compilerbau.praktikum.visitor.Type;
+import cc.crochethk.klang.ast.*;
+import cc.crochethk.klang.visitor.SourceCodeBuilder;
+import cc.crochethk.klang.visitor.Type;
 
 /**
  * Generates a C-File containing helper implementations for some of the 

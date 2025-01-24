@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum.visitor;
+package cc.crochethk.klang.visitor;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 
-import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.praktikum.testhelpers.NodeMocker;
+import cc.crochethk.klang.ast.*;
+import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.klang.testhelpers.NodeMocker;
 
 public class PrettyPrinterTest extends NodeMocker {
     private PrettyPrinter pp;

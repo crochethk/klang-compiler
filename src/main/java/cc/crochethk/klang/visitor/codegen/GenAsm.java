@@ -1,8 +1,8 @@
-package cc.crochethk.compilerbau.praktikum.visitor.codegen;
+package cc.crochethk.klang.visitor.codegen;
 
-import static cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Const.$;
-import static cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register.*;
-import static cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.XmmRegister.*;
+import static cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Const.$;
+import static cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Register.*;
+import static cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegister.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,15 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
-import cc.crochethk.compilerbau.praktikum.ast.literal.*;
-import cc.crochethk.compilerbau.praktikum.visitor.Type;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.*;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
-import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.helpers.*;
+import cc.crochethk.klang.ast.*;
+import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.klang.ast.MemberAccess.*;
+import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.visitor.Type;
+import cc.crochethk.klang.visitor.codegen.asm.*;
+import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.MemAddr;
+import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Register;
+import cc.crochethk.klang.visitor.codegen.asm.helpers.*;
 import utils.Utf8Helper;
 
 public class GenAsm extends CodeGenVisitor {

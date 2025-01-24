@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum.visitor.codegen;
+package cc.crochethk.klang.visitor.codegen;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,13 +19,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.UnaryOpExpr.UnaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.literal.*;
-import cc.crochethk.compilerbau.praktikum.visitor.Type;
+import cc.crochethk.klang.ast.*;
+import cc.crochethk.klang.ast.UnaryOpExpr.UnaryOp;
+import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.visitor.Type;
 import utils.PathUtils;
-import cc.crochethk.compilerbau.praktikum.ast.BinOpExpr.BinaryOp;
-import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
+import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
+import cc.crochethk.klang.ast.MemberAccess.*;
 
 /**
  * Visitor that generates Java Byte Code by traversing the AST nodes.
@@ -89,7 +89,7 @@ public class GenJBC extends CodeGenVisitor {
     @Override
     public void visit(Var var) {
         var slot = varsManager.getSlot(var.name);
-
+        // codeBuilder.loadLocal(var.theType.jvmTypeKind(), slot);
         switch (var.theType.jvmTypeKind()) {
             case LongType -> codeBuilder.lload(slot);
             case DoubleType -> codeBuilder.dload(slot);
@@ -211,8 +211,8 @@ public class GenJBC extends CodeGenVisitor {
                 }
             }
             default -> {
-                throw new UnsupportedOperationException("Comparison operator '" + cmpOp
-                        + "' not supported for operand types '" + jvmTypeKind + ", " + jvmTypeKind + "'");
+                throw new UnsupportedOperationException("JBC generator currently does not support '"
+                        + cmpOp + "' with the operand types '" + jvmTypeKind + ", " + jvmTypeKind + "'");
             }
         }
     }

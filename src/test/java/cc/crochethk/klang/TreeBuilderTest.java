@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum;
+package cc.crochethk.klang;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,11 +13,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 
-import cc.crochethk.compilerbau.praktikum.TreeBuilder.*;
-import cc.crochethk.compilerbau.praktikum.antlr.*;
-import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
-import cc.crochethk.compilerbau.praktikum.ast.literal.*;
-import cc.crochethk.compilerbau.praktikum.testhelpers.NodeMocker;
+import cc.crochethk.klang.TreeBuilder.*;
+import cc.crochethk.klang.antlr.*;
+import cc.crochethk.klang.ast.MemberAccess.*;
+import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.testhelpers.NodeMocker;
 import utils.SourcePos;
 
 public class TreeBuilderTest extends NodeMocker {

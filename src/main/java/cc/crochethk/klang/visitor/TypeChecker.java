@@ -1,4 +1,4 @@
-package cc.crochethk.compilerbau.praktikum.visitor;
+package cc.crochethk.klang.visitor;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import cc.crochethk.compilerbau.praktikum.ast.*;
-import cc.crochethk.compilerbau.praktikum.ast.MemberAccess.*;
-import cc.crochethk.compilerbau.praktikum.ast.literal.*;
+import cc.crochethk.klang.ast.*;
+import cc.crochethk.klang.ast.MemberAccess.*;
+import cc.crochethk.klang.ast.literal.*;
 
 /** TypeChecker Visitor
  * The main task of this Visitor is to semantically check typing of the visited AST.
