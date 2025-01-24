@@ -7,7 +7,7 @@ if [ -z "${CONFIG_SH_SOURCED}" ]; then
     # ---- Antlr config
     ANTLR_GRAMMAR_FILE="src/main/Klang.g4"
     ANTLR_JAR=lib/antlr4-4.13.2-complete.jar
-    ANTLR_GEN_FILES_PACKAGE=cc.crochethk.compilerbau.praktikum.antlr
+    ANTLR_GEN_FILES_PACKAGE=cc.crochethk.klang.antlr
     ANTLR_OUT_BASE="src/main/gen/"
     # ----
 

@@ -30,7 +30,7 @@ cd "${cwd_bak}"
 # Create jar containing all class files, using the specified main class
 # jar path and filename
 jar_path="${BUILD_ARTIFACTS_BASE_DIR}/klangc.jar"
-jar --create --file "${jar_path}" --main-class cc.crochethk.compilerbau.praktikum.KlangCompiler -C "${classes_out_dir}" .
+jar --create --file "${jar_path}" --main-class cc.crochethk.klang.KlangCompiler -C "${classes_out_dir}" .
 echo "Jar created: '${jar_path}'"
 
 # Create helper script to execute jar
