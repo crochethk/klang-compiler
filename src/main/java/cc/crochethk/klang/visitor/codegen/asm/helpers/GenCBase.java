@@ -66,7 +66,7 @@ public abstract class GenCBase extends CodeGenVisitor {
     protected void writeToStringSignature(SourceCodeBuilder scb, StructDef st) {
         var refType = st.theType;
         scb.writeIndented("char* ",
-                refType.klangName(), "$to_string(", refType.cTypeName(), " this)");
+                getToStringFullName(refType), "(", refType.cTypeName(), " this)");
     }
 
     protected void writeGetterSignature(SourceCodeBuilder scb, StructDef st, Parameter field) {
@@ -81,22 +81,27 @@ public abstract class GenCBase extends CodeGenVisitor {
                 "(", refType.cTypeName(), " this, ", field.type().theType.cTypeName(), " value", ")");
     }
 
-    /** Full name of the {@code refType}'s constructor function */
+    /** Full name of the {@code refType}'s constructor C function */
     public static String getConstructorFullName(Type refType) {
         return refType.klangName() + "$new$";
     }
 
-    /** Full name of the {@code refType}'s destructor function */
+    /** Full name of the {@code refType}'s destructor C function */
     public static String getDestructorFullName(Type refType) {
         return refType.klangName() + "$drop$";
     }
 
-    /** Full name of the {@code refType} field's getter function */
+    /** Full name of the {@code refType}'s to_string C function */
+    public static String getToStringFullName(Type refType) {
+        return refType.klangName() + "$to_string";
+    }
+
+    /** Full name of the {@code refType} field's getter C function */
     public static String getGetterFullName(Type refType, String fieldName) {
         return refType.klangName() + "$get_" + fieldName + "$";
     }
 
-    /** Full name of the {@code refType} field's setter function */
+    /** Full name of the {@code refType} field's setter C function */
     public static String getSetterFullName(Type refType, String fieldName) {
         return refType.klangName() + "$set_" + fieldName + "$";
     }

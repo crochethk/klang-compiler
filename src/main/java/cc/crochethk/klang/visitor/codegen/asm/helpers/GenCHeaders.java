@@ -27,10 +27,11 @@ public class GenCHeaders extends GenCBase {
             f.type().accept(this);
             codeBuilder.write(" ", f.name(), ";");
         }
+        // add dummy field if empty
+        if (structDef.fields.isEmpty())
+            codeBuilder.writeIndented("char _$dummy$_;");
         codeBuilder.decreaseIndent();
-        if (!structDef.fields.isEmpty())
-            codeBuilder.writeIndent();
-        codeBuilder.write("};\n");
+        codeBuilder.writeIndented("};\n");
     }
 
     @Override

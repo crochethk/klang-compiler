@@ -1,5 +1,6 @@
 package cc.crochethk.klang.visitor.codegen.asm.helpers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,39 +79,63 @@ public class GenCImpls extends GenCBase {
         writeToStringSignature(scb, st);
         scb.write(" {");
         scb.increaseIndent();
-        scb.writeIndented("char* r = strdup(\"", st.name, "(\");");
-        if (!st.fields.isEmpty()) {
-            scb.writeIndented("char* fStr;");
-            scb.writeIndented("char* tmpRes;");
-            for (var it = st.fields.iterator(); it.hasNext();) {
-                var f = it.next();
-                // Put current field's stringified value to "fStr"
-                if (f.type().theType.isReference()) {
-                    scb.writeIndented("fStr = ");
-                    if (f.type().theType == Type.STRING_T) {
-                        scb.write("strdup(this->", f.name(), ");");
-                    } else {
-                        scb.write(f.type().typeToken, "$to_string(this->", f.name(), ");");
-                    }
-                } else {
-                    scb.writeIndented("fStr = malloc(22);");
-                    scb.writeIndented("sprintf(fStr,\"", getTypeFormat(f.type().theType),
-                            "\", this->", f.name(), ");");
-                }
 
-                // "+3" for the ", " or ")" suffix after each field (I guess)
-                scb.writeIndented("tmpRes = malloc(strlen(r)+strlen(fStr)+3);");
-                scb.writeIndented("tmpRes[0] = '\\0';"); // set strlen to 0
-                scb.writeIndented("tmpRes = strcat(tmpRes,r);"); // copy current result
-                scb.writeIndented("tmpRes = strcat(tmpRes,fStr);"); // append field value
-                scb.writeIndented("tmpRes = strcat(tmpRes,", (it.hasNext() ? "\", \"" : "\"\""), ");");
-                scb.writeIndented("free(r);");
-                scb.writeIndented("free(fStr);");
-                scb.writeIndented("r = tmpRes;");
+        // "%s, %ld, ..."
+        StringBuilder fmt = new StringBuilder();
+        StringBuilder fmtArgs = new StringBuilder();
+
+        fmt.append(st.name).append("(");
+
+        var tmpVarNames = new ArrayList<String>();
+
+        for (var it = st.fields.iterator(); it.hasNext();) {
+            var field = it.next();
+            var fType = field.type().theType;
+
+            if (fType.isReference() && fType != Type.STRING_T) {
+                var tmpVarName = "str_" + field.name();
+                tmpVarNames.add(tmpVarName);
+
+                // Declare a temp variable and assign the delegated "to_string" outcome
+                scb.writeIndented("char* ", tmpVarName, " = ",
+                        getToStringFullName(fType), "(this->", field.name(), ");");
+
+                fmt.append("%s");
+                fmtArgs.append(tmpVarName);
+            } else {
+                // field type has a matching C format specifier
+                fmt.append(getTypeFormat(fType));
+                fmtArgs.append("this->").append(field.name());
+            }
+
+            // if not last, add trailing comma
+            if (it.hasNext()) {
+                fmt.append(", ");
+                fmtArgs.append(", ");
             }
         }
-        scb.writeIndented("r = strcat(r, \")\");");
-        scb.writeIndented("return r;");
+        fmt.append(")");
+        var fmtArgsStr = fmtArgs.toString();
+
+        scb.writeIndented("const char* fmt = \"", fmt.toString(), "\";");
+        // Calculate required buffer size
+        scb.writeIndented("int bufsize = 1 + snprintf(NULL, 0, fmt");
+        if (!st.fields.isEmpty()) {
+            scb.write(", ", fmtArgsStr);
+        }
+        scb.write(");");
+        // Allocate buffer
+        scb.writeIndented("char* buffer = (char*)malloc(bufsize);");
+        // Format result into buffer
+        scb.writeIndented("snprintf(buffer, bufsize, fmt");
+        if (!st.fields.isEmpty()) {
+            scb.write(", ", fmtArgsStr);
+        }
+        scb.write(");");
+        // Release temporary strings
+        tmpVarNames.forEach(varName -> scb.writeIndented("free(", varName, ");"));
+
+        scb.writeIndented("return buffer;");
         scb.decreaseIndent();
         scb.writeIndented("}\n");
     }
@@ -119,7 +144,7 @@ public class GenCImpls extends GenCBase {
             Type.BOOL_T, "%d",
             Type.DOUBLE_T, "%f",
             Type.LONG_T, "%ld",
-            Type.STRING_T, "%s");
+            Type.STRING_T, "\\\"%s\\\"");
 
     private String getTypeFormat(Type t) {
         return TYPE_FORMATS.getOrDefault(t, "%p");
