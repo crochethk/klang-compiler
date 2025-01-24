@@ -59,23 +59,30 @@ public class GenAsm extends CodeGenVisitor {
         code.movq($(i64Lit.value), rax);
     }
 
-    /** Counter variable for local variabke lables enumeration */
-    private int localConstantCounter = 0;
-
     @Override
     public void visit(F64Lit f64Lit) {
         // Create constant definition
         long allBits = Double.doubleToRawLongBits(f64Lit.value);
         int lowBits = (int) allBits;
         int highBits = (int) (allBits >> 32);
-        rodataSec.write("\n.LC" + localConstantCounter + ":");
+
+        var label = nextLitConstantLabel();
+        rodataSec.write("\n", label, ":");
         rodataSec.writeIndented(".long\t" + lowBits);
         rodataSec.writeIndented(".long\t" + highBits);
 
-        code.movsd(new MemAddr(".LC" + localConstantCounter, rip), xmm0);
+        // "movsd	.LC{n}(%rip), %xmm0"
+        code.movsd(new MemAddr(label, rip), xmm0);
         code.movq(xmm0, rax);
+    }
 
-        localConstantCounter += 1;
+    /** Counter variable for local variabke lables enumeration */
+    private int _literalConstantCounter = 0;
+
+    private String nextLitConstantLabel() {
+        var label = ".LC" + _literalConstantCounter;
+        _literalConstantCounter += 1;
+        return label;
     }
 
     @Override
@@ -93,13 +100,11 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(NullLit nullLit) {
         code.movq($(0), rax);
-        return;
     }
 
     @Override
     public void visit(Var var) {
         code.movq(stack.get(var.name), rax);
-        return;
     }
 
     @Override
@@ -314,7 +319,6 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(StatementList statementList) {
         statementList.statements.forEach(s -> s.accept(this));
-        return;
     }
 
     @Override
@@ -431,7 +435,7 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(EmptyNode emptyNode) {
-        return;
+        // nop
     }
 
     class StackManager {
