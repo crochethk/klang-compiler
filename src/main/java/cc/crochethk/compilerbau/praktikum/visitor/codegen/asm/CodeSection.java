@@ -1,5 +1,8 @@
 package cc.crochethk.compilerbau.praktikum.visitor.codegen.asm;
 
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
+import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
+
 /**
  * SectionBuilder representing the ".text" section of the assembly and providing
  * a convenient interface for generating instructions.
@@ -12,8 +15,8 @@ public class CodeSection extends SectionBuilder {
         super(".text");
     }
 
-    public void movq(OperandSpecifier source, OperandSpecifier destination) {
-        writeIndented("movq", "\t", source.operandSpec(), ", ", destination.operandSpec());
+    public void movq(OperandSpecifier src, OperandSpecifier dst) {
+        writeSrcDstInstruction("movq", src, dst);
     }
 
     public void pushq(OperandSpecifier source) {
@@ -25,8 +28,8 @@ public class CodeSection extends SectionBuilder {
      * @param source
      * @param destination The destination XmmRegister or MemAddress
      */
-    public void movsd(OperandSpecifier source, OperandSpecifier destination) {
-        writeIndented("movsd", "\t", source.operandSpec(), ", ", destination.operandSpec());
+    public void movsd(OperandSpecifier src, OperandSpecifier dst) {
+        writeSrcDstInstruction("movsd", src, dst);
     }
 
     public void call(String name) {
@@ -43,16 +46,25 @@ public class CodeSection extends SectionBuilder {
 
     /** Add source to destination */
     public void addq(OperandSpecifier src, OperandSpecifier dst) {
-        writeIndented("addq", "\t", src.operandSpec(), ", ", dst.operandSpec());
+        writeSrcDstInstruction("addq", src, dst);
     }
 
     /** Subtract source from destination */
     public void subq(OperandSpecifier src, OperandSpecifier dst) {
-        writeIndented("subq", "\t", src.operandSpec(), ", ", dst.operandSpec());
+        writeSrcDstInstruction("subq", src, dst);
     }
 
     /** Multiply destination by source */
     public void imulq(OperandSpecifier src, OperandSpecifier dst) {
-        writeIndented("imulq", "\t", src.operandSpec(), ", ", dst.operandSpec());
+        writeSrcDstInstruction("imulq", src, dst);
+    }
+
+    /** Calculate an effective address and put it into {@code dst} register */
+    public void leaq(MemAddr src, Register dst) {
+        writeSrcDstInstruction("leaq", src, dst);
+    }
+
+    private void writeSrcDstInstruction(String instr, OperandSpecifier src, OperandSpecifier dst) {
+        writeIndented(instr, "\t", src.operandSpec(), ", ", dst.operandSpec());
     }
 }

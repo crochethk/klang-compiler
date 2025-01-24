@@ -21,6 +21,7 @@ import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.*;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.OperandSpecifier.Register;
 import cc.crochethk.compilerbau.praktikum.visitor.codegen.asm.helpers.*;
+import utils.Utf8Helper;
 
 public class GenAsm extends CodeGenVisitor {
     private static final String FILE_EXT = ".s";
@@ -92,8 +93,14 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(StringLit stringLit) {
-        // TODO Auto-generated method stub
-        return;
+        var escapedStr = Utf8Helper.octalEscapeNonAscii(stringLit.value);
+
+        var label = nextLitConstantLabel();
+        rodataSec.write("\n", label, ":");
+        rodataSec.writeIndented(".string\t\"", escapedStr, "\"");
+
+        // Calculate pointer to string literal at runtime
+        code.leaq(new MemAddr(label, rip), rax);
     }
 
     @Override
