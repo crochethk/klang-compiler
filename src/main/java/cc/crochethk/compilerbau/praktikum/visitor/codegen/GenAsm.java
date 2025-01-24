@@ -87,8 +87,7 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(BoolLit boolLit) {
-        // TODO Auto-generated method stub
-        return;
+        code.movq(boolLit.value ? $(1) : $(0), rax);
     }
 
     @Override
