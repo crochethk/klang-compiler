@@ -414,6 +414,7 @@ public class TypeChecker implements Visitor {
         dropStat.refTypeVar.accept(this);
         if (!dropStat.refTypeVar.theType.isReference())
             reportError(dropStat, "Only reference type variables can be dropped");
+        dropStat.theType = Type.VOID_T;
     }
 
     @Override

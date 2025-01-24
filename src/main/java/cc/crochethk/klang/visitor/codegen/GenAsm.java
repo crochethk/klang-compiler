@@ -346,7 +346,10 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(DropStat dropStat) {
-        // TODO Auto-generated method stub <----------
+        var thisArg = dropStat.refTypeVar;
+        var funName = GenCBase.getDestructorFullName(thisArg.theType);
+        var destructor = new FunCall(dropStat.srcPos, funName, List.of(thisArg));
+        destructor.accept(this);
     }
 
     @Override

@@ -120,7 +120,8 @@ public class GenCImpls extends GenCBase {
         }
 
         if (type == Type.STRING_T) {
-            scb.writeIndented("free(this);");
+            // scb.writeIndented("free(this);");
+            // scb.writeIndented("string$drop$(this);");
         } else {
             // Drop RefType fields
             var stDef = structDefs.get(type.klangName());
@@ -144,7 +145,7 @@ public class GenCImpls extends GenCBase {
      */
     private void writeDestructorCall(SourceCodeBuilder scb, String refTypeCVarString, Type refType) {
         if (refType == Type.STRING_T) {
-            scb.writeIndented("free(", refTypeCVarString, ");");
+            // scb.writeIndented("free(", refTypeCVarString, ");");
         } else {
             scb.writeIndented(GenCBase.getDestructorFullName(refType), "(", refTypeCVarString, ");");
         }
