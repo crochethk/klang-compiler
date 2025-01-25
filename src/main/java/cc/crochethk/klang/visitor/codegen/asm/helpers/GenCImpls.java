@@ -72,7 +72,7 @@ public class GenCImpls extends GenCBase {
         writeDestructorSignature(scb, st);
         scb.write(" {");
         scb.increaseIndent();
-        writeDestructorDefinition(scb, st.theType);
+        scb.writeIndented("free(this);");
         scb.decreaseIndent();
         scb.writeIndented("}\n");
     }
@@ -150,43 +150,6 @@ public class GenCImpls extends GenCBase {
 
     private String getTypeFormat(Type t) {
         return TYPE_FORMATS.getOrDefault(t, "%p");
-    }
-
-    private void writeDestructorDefinition(SourceCodeBuilder scb, Type type) {
-        if (!type.isReference()) {
-            return;
-        }
-
-        if (type == Type.STRING_T) {
-            // scb.writeIndented("free(this);");
-            // scb.writeIndented("string$drop$(this);");
-        } else {
-            // Drop RefType fields
-            var stDef = structDefs.get(type.klangName());
-            for (var f : stDef.fields) {
-                var fType = f.type().theType;
-                if (!fType.isReference()) {
-                    continue;
-                }
-                writeDestructorCall(scb, "this->" + f.name(), fType);
-            }
-            scb.writeIndented("free(this);");
-        }
-    }
-
-    /**
-     * Write a C statement that frees memory of the object referenced by the given
-     * named reftype variable.
-     * @param refTypeCVarString a String representing a C pointer variable.
-     *          E.g. "this->field", where "field" is a reftype field in a struct
-     *          instance referenced by the pointer "this").
-     */
-    private void writeDestructorCall(SourceCodeBuilder scb, String refTypeCVarString, Type refType) {
-        if (refType == Type.STRING_T) {
-            // scb.writeIndented("free(", refTypeCVarString, ");");
-        } else {
-            scb.writeIndented(GenCBase.getDestructorFullName(refType), "(", refTypeCVarString, ");");
-        }
     }
 
     private void implGetter(SourceCodeBuilder scb, StructDef st, Parameter field) {
