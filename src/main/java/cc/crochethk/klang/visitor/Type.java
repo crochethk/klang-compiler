@@ -52,7 +52,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
                 || this.equals(other);
     }
 
-    final Type STRING_T = new RefType("String", "java.lang", "const char*");
+    final Type STRING_T = new RefType("String", "java.lang", "char*");
     final Type LONG_T = new PrimType(TypeKind.LongType, AsmTypeKind.LongType);
     final Type BOOL_T = new PrimType(TypeKind.BooleanType, AsmTypeKind.BooleanType);
     final Type DOUBLE_T = new PrimType(TypeKind.DoubleType, AsmTypeKind.DoubleType);

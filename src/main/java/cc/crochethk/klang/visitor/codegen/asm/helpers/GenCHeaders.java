@@ -1,6 +1,11 @@
 package cc.crochethk.klang.visitor.codegen.asm.helpers;
 
+import java.util.List;
+
 import cc.crochethk.klang.ast.*;
+import cc.crochethk.klang.visitor.SourceCodeBuilder;
+import cc.crochethk.klang.visitor.Type;
+import utils.SourcePos;
 
 /** Generates a C-Header file based on the traversed AST. */
 public class GenCHeaders extends GenCBase {
@@ -41,8 +46,12 @@ public class GenCHeaders extends GenCBase {
         codeBuilder.write("// Auto-generated C header file");
         codeBuilder.writeIndented("#ifndef ", guardName);
         codeBuilder.writeIndented("#define ", guardName, "\n");
+
+        codeBuilder.writeIndented("#include <stdbool.h>");
         codeBuilder.writeIndented("#include <stdint.h>");
-        codeBuilder.writeIndented("#include <stdbool.h>", "\n");
+        codeBuilder.writeIndented("#include <stdio.h>");
+        codeBuilder.writeIndented("#include <stdlib.h>");
+        codeBuilder.writeIndented("#include <string.h>", "\n");
 
         // Declare structs
         codeBuilder.writeIndented("// ----------[ Struct declarations ]----------\n");
@@ -86,9 +95,36 @@ public class GenCHeaders extends GenCBase {
             codeBuilder.write("\n");
         });
 
-        codeBuilder.writeIndented("#endif // ", guardName, "\n");
+        codeBuilder.writeIndented("// ----------[ klang 'stdlib' ]----------\n");
+        writeStringHelpersSignatures(codeBuilder);
 
+        codeBuilder.writeIndented("\n#endif // ", guardName, "\n");
         // Dump source code to file
         writeCFile(codeBuilder);
+    }
+
+    private void writeStringHelpersSignatures(SourceCodeBuilder scb) {
+        // Declare string helper functions
+        var strTypeNode = new TypeNode(new SourcePos(-1, -1), Type.STRING_T.klangName(), true);
+        strTypeNode.theType = Type.STRING_T;
+
+        writeConstructorSignature(scb, Type.STRING_T, List.of(
+                new Parameter("str", strTypeNode)));
+        scb.write(";");
+
+        writeDestructorSignature(scb, Type.STRING_T);
+        scb.write(";");
+
+        writeToStringSignature(scb, Type.STRING_T);
+        scb.write(";");
+
+        scb.writeIndented("size_t ", Type.STRING_T.klangName(), "$len(const ",
+                Type.STRING_T.cTypeName(), " this)");
+        scb.write(";");
+
+        scb.writeIndented("char* ", Type.STRING_T.klangName(), "$concat(",
+                "const ", Type.STRING_T.cTypeName(), " this, ",
+                "const ", Type.STRING_T.cTypeName(), " other)");
+        scb.write(";");
     }
 }

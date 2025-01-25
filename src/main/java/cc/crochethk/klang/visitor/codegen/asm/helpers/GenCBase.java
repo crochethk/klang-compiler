@@ -51,23 +51,35 @@ public abstract class GenCBase extends CodeGenVisitor {
 
     // --------------------[ Builtins Generation ]------------------------------
     protected void writeConstructorSignature(SourceCodeBuilder scb, StructDef st) {
-        var refType = st.theType;
-        List<Parameter> fields = st.fields;
-        scb.writeIndented(refType.cTypeName(), " ",
-                getConstructorFullName(refType), "(", formatParams(fields), ")");
+        writeConstructorSignature(scb, st.theType, st.fields);
     }
 
+    protected void writeConstructorSignature(SourceCodeBuilder scb, Type refType,
+            List<Parameter> params) {
+        scb.writeIndented(refType.cTypeName(), " ",
+                getConstructorFullName(refType), "(", formatParams(params), ")");
+    }
+    // ---
+
     protected void writeDestructorSignature(SourceCodeBuilder scb, StructDef st) {
-        var refType = st.theType;
+        writeDestructorSignature(scb, st.theType);
+    }
+
+    protected void writeDestructorSignature(SourceCodeBuilder scb, Type refType) {
         scb.writeIndented("void ",
                 getDestructorFullName(refType), "(", refType.cTypeName(), " this)");
     }
+    // ---
 
     protected void writeToStringSignature(SourceCodeBuilder scb, StructDef st) {
-        var refType = st.theType;
+        writeToStringSignature(scb, st.theType);
+    }
+
+    protected void writeToStringSignature(SourceCodeBuilder scb, Type refType) {
         scb.writeIndented("char* ",
                 getToStringFullName(refType), "(", refType.cTypeName(), " this)");
     }
+    // ---
 
     protected void writeGetterSignature(SourceCodeBuilder scb, StructDef st, Parameter field) {
         var refType = st.theType;

@@ -2,11 +2,13 @@ package cc.crochethk.klang.visitor.codegen.asm.helpers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.visitor.SourceCodeBuilder;
 import cc.crochethk.klang.visitor.Type;
+import utils.SourcePos;
 
 /**
  * Generates a C-File containing helper implementations for some of the 
@@ -34,9 +36,6 @@ public class GenCImpls extends GenCBase {
     @Override
     public void visit(Prog prog) {
         // C preamble
-        codeBuilder.write("#include <stdio.h>");
-        codeBuilder.writeIndented("#include <stdlib.h>");
-        codeBuilder.writeIndented("#include <string.h>");
         codeBuilder.writeIndented("#include \"", fileNameNoExt(), ".h", "\"", "\n");
 
         // Add struct definitions to lookup table
@@ -45,6 +44,9 @@ public class GenCImpls extends GenCBase {
 
         // Generate struct auto-method implementations
         prog.structDefs.forEach(st -> st.accept(this));
+
+        codeBuilder.writeIndented("// ----------[ klang 'stdlib' ]----------\n");
+        implStringHelpers(codeBuilder);
 
         // Dump source code to file
         writeCFile(codeBuilder);
@@ -201,6 +203,58 @@ public class GenCImpls extends GenCBase {
         scb.write(" {");
         scb.increaseIndent();
         scb.writeIndented("this->", field.name(), " = value;");
+        scb.decreaseIndent();
+        scb.writeIndented("}\n");
+    }
+
+    private void implStringHelpers(SourceCodeBuilder scb) {
+        // Declare string helper functions
+        var strTypeNode = new TypeNode(new SourcePos(-1, -1), Type.STRING_T.klangName(), true);
+        strTypeNode.theType = Type.STRING_T;
+
+        writeConstructorSignature(scb, Type.STRING_T, List.of(
+                new Parameter("str", strTypeNode)));
+        scb.write(" {");
+        scb.increaseIndent();
+        scb.writeIndented("return strdup(str);");
+        scb.decreaseIndent();
+        scb.writeIndented("}\n");
+
+        writeDestructorSignature(scb, Type.STRING_T);
+        scb.write(" {");
+        scb.increaseIndent();
+        scb.writeIndented("free(this);");
+        scb.decreaseIndent();
+        scb.writeIndented("}\n");
+
+        writeToStringSignature(scb, Type.STRING_T);
+        scb.write(" {");
+        scb.increaseIndent();
+        scb.writeIndented("return this;");
+        scb.decreaseIndent();
+        scb.writeIndented("}\n");
+
+        scb.writeIndented("size_t ", Type.STRING_T.klangName(), "$len(const ",
+                Type.STRING_T.cTypeName(), " this)");
+        scb.write(" {");
+        scb.increaseIndent();
+        scb.writeIndented("return strlen(this);");
+        scb.decreaseIndent();
+        scb.writeIndented("}\n");
+
+        scb.writeIndented("char* ", Type.STRING_T.klangName(), "$concat(",
+                "const ", Type.STRING_T.cTypeName(), " this, ",
+                "const ", Type.STRING_T.cTypeName(), " other)");
+        scb.write(" {");
+        scb.increaseIndent();
+        scb.writeIndented("size_t res_len = strlen(this) + strlen(other) + 1;");
+        scb.writeIndented("char* buffer = (char*)malloc(res_len);");
+        scb.writeIndented("if (!buffer)");
+        scb.increaseIndent();
+        scb.writeIndented("return NULL;");
+        scb.decreaseIndent();
+        scb.writeIndented("snprintf(buffer, res_len, \"%s%s\", this, other);");
+        scb.writeIndented("return buffer;");
         scb.decreaseIndent();
         scb.writeIndented("}\n");
     }
