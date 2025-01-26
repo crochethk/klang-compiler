@@ -392,16 +392,24 @@ public class TreeBuilder extends KlangBaseListener {
     }
 
     @Override
-    public void exitParam(KlangParser.ParamContext ctx) {
+    public void exitParameter(KlangParser.ParameterContext ctx) {
         ctx.result = new Parameter(ctx.name.getText(), ctx.type().result);
+    }
+
+    private List<Parameter> buildParamsList(KlangParser.ParamsContext ctx) {
+        return ctx != null
+                ? ctx.list.stream().map(p -> p.result).toList()
+                : List.of();
     }
 
     @Override
     public void exitFunctionDef(KlangParser.FunctionDefContext ctx) {
         var srcPos = getSourcePos(ctx);
         var name = ctx.name.getText();
-        var returnType = ctx.type() != null ? ctx.type().result : new TypeNode(srcPos, "void", true);
-        List<Parameter> params = ctx.param().stream().map(p -> p.result).toList();
+        var returnType = ctx.type() != null
+                ? ctx.type().result
+                : new TypeNode(srcPos, "void", true);
+        var params = buildParamsList(ctx.params());
         var body = ctx.funBody.result;
         ctx.result = new FunDef(srcPos, name, params, returnType, body);
     }
@@ -410,9 +418,8 @@ public class TreeBuilder extends KlangBaseListener {
     public void exitStructDef(KlangParser.StructDefContext ctx) {
         var srcPos = getSourcePos(ctx);
         var name = ctx.name.getText();
-        List<Parameter> params = ctx.param().stream().map(p -> p.result).toList();
+        var params = buildParamsList(ctx.params());
         ctx.result = new StructDef(srcPos, name, params);
-
     }
 
     @Override

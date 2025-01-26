@@ -9,30 +9,26 @@ grammar Klang;
 start
 	returns[Prog result]: definition* EOF;
 
-definition: functionDef | structDef;
+definition: KW_FUN functionDef | structDef;
 
 functionDef
 	returns[FunDef result]:
-	KW_FUN name=IDENT LPAR (param (COMMA param)* COMMA?)? RPAR //
-	(RARROW type)? LBRACE funBody=statementList RBRACE
-;
-
-methodDef
-	returns[FunDef result]:
-	name=IDENT LPAR (param (COMMA param)* COMMA?)? RPAR //
+	name=IDENT LPAR params? RPAR //
 	(RARROW type)? LBRACE funBody=statementList RBRACE
 ;
 
 structDef
 	returns[StructDef result]:
 	KW_STRUCT name=IDENT LBRACE (
-		param (COMMA param)* COMMA? TRIDASH methodDef+
-		| (param (COMMA param)* COMMA?)? TRIDASH?
-		| TRIDASH? methodDef+
+		params TRIDASH (methodDefs+=functionDef)+
+		| params? TRIDASH?
+		| TRIDASH? (methodDefs+=functionDef)+
 	) RBRACE
 ;
 
-param
+params: list+=parameter (COMMA list+=parameter)* COMMA?;
+
+parameter
 	returns[Parameter result]: name=IDENT COLON type;
 
 type
