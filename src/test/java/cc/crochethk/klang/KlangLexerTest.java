@@ -55,11 +55,6 @@ public class KlangLexerTest {
         }
 
         @Test
-        public void testINCREMENT() {
-            assertEquals(List.of(KlangLexer.INCREMENT, KlangLexer.EOF), getTokenTypesFromText("++"));
-        }
-
-        @Test
         public void testADD() {
             assertEquals(List.of(KlangLexer.ADD, KlangLexer.EOF), getTokenTypesFromText("+"));
         }
@@ -67,11 +62,6 @@ public class KlangLexerTest {
         @Test
         public void testSUB() {
             assertEquals(List.of(KlangLexer.SUB, KlangLexer.EOF), getTokenTypesFromText("-"));
-        }
-
-        @Test
-        public void testDECREMENT() {
-            assertEquals(List.of(KlangLexer.DECREMENT, KlangLexer.EOF), getTokenTypesFromText("--"));
         }
 
         @Test
@@ -379,18 +369,6 @@ public class KlangLexerTest {
         void testOperators_2() {
             assertEquals(List.of(KlangLexer.NEQ, KlangLexer.EQEQ, KlangLexer.EOF),
                     getTokenTypesFromText("!==="));
-        }
-
-        @Test
-        void testOperators_3() {
-            assertEquals(List.of(KlangLexer.DECREMENT, KlangLexer.SUB, KlangLexer.EOF),
-                    getTokenTypesFromText("---"));
-        }
-
-        @Test
-        void testOperators_4() {
-            assertEquals(List.of(KlangLexer.INCREMENT, KlangLexer.ADD, KlangLexer.EOF),
-                    getTokenTypesFromText("+++"));
         }
 
         @Test

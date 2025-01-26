@@ -173,9 +173,7 @@ DQUOTE: '"';
 
 TRUE: 'true';
 FALSE: 'false';
-INCREMENT: '++';
 ADD: '+';
-DECREMENT: '--';
 SUB: '-';
 POW: '**';
 MULT: '*';
