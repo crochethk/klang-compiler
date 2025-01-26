@@ -17,9 +17,19 @@ functionDef
 	(RARROW type)? LBRACE funBody=statementList RBRACE
 ;
 
+methodDef
+	returns[FunDef result]:
+	name=IDENT LPAR (param (COMMA param)* COMMA?)? RPAR //
+	(RARROW type)? LBRACE funBody=statementList RBRACE
+;
+
 structDef
 	returns[StructDef result]:
-	KW_STRUCT name=IDENT LBRACE (param (COMMA param)* COMMA?)? RBRACE
+	KW_STRUCT name=IDENT LBRACE (
+		param (COMMA param)* COMMA? TRIDASH methodDef+
+		| (param (COMMA param)* COMMA?)? TRIDASH?
+		| TRIDASH? methodDef+
+	) RBRACE
 ;
 
 param
@@ -170,7 +180,7 @@ LIT_STRING: DQUOTE (ESCAPE_SEQ | NOT_SPECIAL_CHAR)* DQUOTE;
 fragment ESCAPE_SEQ: '\\' .;
 fragment NOT_SPECIAL_CHAR: ~["\\];
 DQUOTE: '"';
-
+TRIDASH: '---';
 TRUE: 'true';
 FALSE: 'false';
 ADD: '+';

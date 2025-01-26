@@ -45,6 +45,16 @@ public class KlangLexerTest {
         }
 
         @Test
+        public void testDQUOTE() {
+            assertEquals(List.of(KlangLexer.DQUOTE, KlangLexer.EOF), getTokenTypesFromText("\""));
+        }
+
+        @Test
+        public void testTRIDASH() {
+            assertEquals(List.of(KlangLexer.TRIDASH, KlangLexer.EOF), getTokenTypesFromText("---"));
+        }
+
+        @Test
         public void testTRUE() {
             assertEquals(List.of(KlangLexer.TRUE, KlangLexer.EOF), getTokenTypesFromText("true"));
         }
