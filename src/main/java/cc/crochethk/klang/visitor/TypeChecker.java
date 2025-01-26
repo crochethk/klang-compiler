@@ -420,8 +420,9 @@ public class TypeChecker implements Visitor {
     @Override
     public void visit(TypeNode type) {
         // TODO handle non-default packages
-        type.theType = Type.of(type.typeToken, "" /*default package */);
-        if (!type.isBuiltin && !structDefs.containsKey(type.typeToken)) {
+        var theType = Type.of(type.typeToken, "" /*default package */);
+        type.theType = theType;
+        if (!theType.isBuiltin() && !structDefs.containsKey(type.typeToken)) {
             reportError(type, "Undefined type '" + type.typeToken + "'");
         }
     }

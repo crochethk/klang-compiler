@@ -122,7 +122,7 @@ public class PrettyPrinterTest extends NodeMocker {
         void multipleFieldsStruct() {
             pp.visit(structDef("structuredData", List.of(
                     param("one", F64_TN), param("two", STRING_TN),
-                    param("thr33", I64_TN), param("four", "OtherStruct", false))));
+                    param("thr33", I64_TN), param("four", "OtherStruct"))));
             assertEquals("""
                     struct structuredData {
                       one: f64,
@@ -153,7 +153,7 @@ public class PrettyPrinterTest extends NodeMocker {
         void multipleParamsAndStatements() {
             pp.visit(funDef("fun_3", List.of(
                     param("p1", I64_TN),
-                    param("p2", "CustomType", false),
+                    param("p2", "CustomType"),
                     param("p3", STRING_TN)),
                     VOID_TN,
                     List.of(

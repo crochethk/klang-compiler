@@ -8,12 +8,10 @@ import utils.SourcePos;
 public class TypeNode extends Node {
     public String typeToken;
     // public String packageToken;
-    public boolean isBuiltin;
 
-    public TypeNode(SourcePos srcPos, String typeToken, boolean isBuiltinType) {
+    public TypeNode(SourcePos srcPos, String typeToken) {
         super(srcPos);
         this.typeToken = typeToken;
-        this.isBuiltin = isBuiltinType;
     }
 
     @Override
@@ -24,12 +22,12 @@ public class TypeNode extends Node {
     @Override
     public String toString() {
         return this.getClass().getSimpleName()
-                + "(typeToken=" + typeToken + ", isBuiltin=" + isBuiltin + ")";
+                + "(typeToken=" + typeToken + ")";
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), typeToken, isBuiltin);
+        return Objects.hash(super.hashCode(), typeToken);
     }
 
     @Override
@@ -38,9 +36,7 @@ public class TypeNode extends Node {
             return true;
         }
         if (obj instanceof TypeNode other) {
-            return Objects.equals(typeToken, other.typeToken)
-                    && Objects.equals(isBuiltin, other.isBuiltin)
-                    && super.equals(other);
+            return Objects.equals(typeToken, other.typeToken) && super.equals(other);
         }
         return false;
     }

@@ -52,6 +52,10 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
                 || this.equals(other);
     }
 
+    public default boolean isBuiltin() {
+        return isPrimitive() || this == STRING_T;
+    }
+
     final Type STRING_T = new RefType("String", "java.lang", "char*");
     final Type LONG_T = new PrimType(TypeKind.LongType, AsmTypeKind.LongType);
     final Type BOOL_T = new PrimType(TypeKind.BooleanType, AsmTypeKind.BooleanType);

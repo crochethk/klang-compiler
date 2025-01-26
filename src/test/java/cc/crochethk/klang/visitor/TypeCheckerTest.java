@@ -42,7 +42,7 @@ public class TypeCheckerTest extends NodeMocker {
         @Test
         void nullArgForRefParamIsOk() {
             var customType = structDef("CustomType", List.of());
-            var fun = funDef("fun", List.of(param("p1", "CustomType", false)), List.of());
+            var fun = funDef("fun", List.of(param("p1", "CustomType")), List.of());
             checkProgOf(List.of(fun), List.of(customType));
             assertReportedErrors(0);
 
@@ -64,7 +64,7 @@ public class TypeCheckerTest extends NodeMocker {
             simpleStruct = structDef("SimpleStruct", List.of(
                     param("primField", I64_TN)));
             structWithStructField = structDef("StructWithStructField", List.of(
-                    param("structField", typeNode(simpleStruct.name, false))));
+                    param("structField", typeNode(simpleStruct.name))));
         }
 
         @Test
@@ -73,7 +73,7 @@ public class TypeCheckerTest extends NodeMocker {
             // "value=p1.primField"
             var maChain = memberAccessChain(var("p1"), fieldGet("primField"));
             var fun = funDef("fun",
-                    List.of(param("p1", customType.name, false),
+                    List.of(param("p1", customType.name),
                             param("value", I64_TN)),
                     List.of(varAssignStat("value", maChain)));
 
@@ -94,7 +94,7 @@ public class TypeCheckerTest extends NodeMocker {
             var maChain = memberAccessChain(var("p1"), fieldGet("structField"), fieldGet("primField"));
 
             var fun = funDef("fun",
-                    List.of(param("p1", customType.name, false),
+                    List.of(param("p1", customType.name),
                             param("value", I64_TN)),
                     List.of(varAssignStat("value", maChain)));
 
@@ -140,7 +140,7 @@ public class TypeCheckerTest extends NodeMocker {
         @Test
         void nullArgForRefParamIsOk() {
             var customType = structDef("CustomType", List.of());
-            var def = structDef("Def", List.of(param("p1", "CustomType", false)));
+            var def = structDef("Def", List.of(param("p1", "CustomType")));
             checkProgOf(List.of(), List.of(customType, def));
             assertReportedErrors(0);
 
@@ -588,7 +588,7 @@ public class TypeCheckerTest extends NodeMocker {
         void nullOkWithReturnRefType_2() {
             var stat = returnStat(NULL_LIT);
             var struct = structDef("SomeStruct", List.of());
-            var fun = funDef("fun", List.of(), typeNode(struct.name, false), List.of(stat));
+            var fun = funDef("fun", List.of(), typeNode(struct.name), List.of(stat));
             checkProgOf(List.of(fun), List.of(struct));
             assertReportedErrors(0);
             assertEquals(Type.of(struct.name, ""), stat.theType);
@@ -617,7 +617,7 @@ public class TypeCheckerTest extends NodeMocker {
         void dropCustomRefTypeVarIsOk() {
             var varName = "crtv";
             var struct = structDef("SomeStruct", List.of(param("foo", I64_TN)));
-            var fun = funDef("fun", List.of(param(varName, typeNode(struct.name, false))),
+            var fun = funDef("fun", List.of(param(varName, typeNode(struct.name))),
                     List.of(dropStat(varName)));
             checkProgOf(List.of(fun), List.of(struct));
             assertReportedErrors(0);
@@ -628,7 +628,7 @@ public class TypeCheckerTest extends NodeMocker {
     class ProgTests {
         @Test
         void structDefWithFieldOfStructDefinedLaterDoesNotFail() {
-            var firstStruct = structDef("First", List.of(param("otherRef", "Other", false)));
+            var firstStruct = structDef("First", List.of(param("otherRef", "Other")));
             var otherStruct = structDef("Other", List.of(param("otherField", I64_TN)));
             assertDoesNotThrow(() -> checkProgOf(List.of(), List.of(firstStruct, otherStruct)));
             assertReportedErrors(0);

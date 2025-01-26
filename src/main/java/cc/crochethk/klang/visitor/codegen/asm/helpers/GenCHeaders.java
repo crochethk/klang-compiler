@@ -105,7 +105,7 @@ public class GenCHeaders extends GenCBase {
 
     private void writeStringHelpersSignatures(SourceCodeBuilder scb) {
         // Declare string helper functions
-        var strTypeNode = new TypeNode(new SourcePos(-1, -1), Type.STRING_T.klangName(), true);
+        var strTypeNode = new TypeNode(new SourcePos(-1, -1), Type.STRING_T.klangName());
         strTypeNode.theType = Type.STRING_T;
 
         writeConstructorSignature(scb, Type.STRING_T, List.of(

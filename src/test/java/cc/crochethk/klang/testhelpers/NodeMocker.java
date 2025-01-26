@@ -12,17 +12,17 @@ import utils.SourcePos;
 public class NodeMocker {
     protected final SourcePos srcPosMock = new SourcePos(-1, -1);
 
-    public final TypeNode STRING_TN = typeNode("string", true);
-    public final TypeNode I64_TN = typeNode("i64", true);
-    public final TypeNode BOOL_TN = typeNode("bool", true);
-    public final TypeNode F64_TN = typeNode("f64", true);
-    public final TypeNode VOID_TN = typeNode("void", true);
+    public final TypeNode STRING_TN = typeNode("string");
+    public final TypeNode I64_TN = typeNode("i64");
+    public final TypeNode BOOL_TN = typeNode("bool");
+    public final TypeNode F64_TN = typeNode("f64");
+    public final TypeNode VOID_TN = typeNode("void");
 
     public final NullLit NULL_LIT = new NullLit(srcPosMock);
     protected final StructDef EMPTY_STRUCT = new StructDef(srcPosMock, "Empty", List.of());
 
-    public Parameter param(String paramName, String typeName, boolean isBuiltin) {
-        return param(paramName, typeNode(typeName, isBuiltin));
+    public Parameter param(String paramName, String typeName) {
+        return param(paramName, typeNode(typeName));
     }
 
     public Parameter param(String paramName, TypeNode tn) {
@@ -43,8 +43,8 @@ public class NodeMocker {
         return new StructDef(srcPosMock, name, fields);
     }
 
-    public TypeNode typeNode(String typeName, boolean isBuiltin) {
-        return new TypeNode(srcPosMock, typeName, isBuiltin);
+    public TypeNode typeNode(String typeName) {
+        return new TypeNode(srcPosMock, typeName);
     }
 
     public ReturnStat returnStat(Node expr) {
