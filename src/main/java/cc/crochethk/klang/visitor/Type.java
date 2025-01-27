@@ -2,10 +2,11 @@ package cc.crochethk.klang.visitor;
 
 import java.lang.classfile.TypeKind;
 import java.lang.constant.ClassDesc;
+import java.util.Map;
 
 /**
  * Basically a wrapper of TypeKind with some additional convenience
- * methods for mapping source types to JVM types, required for code generation.
+ * methods for mapping source types to JVM and C types, required for code generation.
  */
 public sealed interface Type permits Type.PrimType, Type.RefType {
     /**
@@ -92,25 +93,22 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
     final String VOID_T_NAME = "void";
     final String NULL_T_NAME = "NULL";
 
+    static final Map<Type, String> klangNameMap = Map.of(
+            STRING_T, STRING_T_NAME,
+            LONG_T, LONG_T_NAME,
+            BOOL_T, BOOL_T_NAME,
+            DOUBLE_T, DOUBLE_T_NAME,
+            VOID_T, VOID_T_NAME,
+            NULL_T, NULL_T_NAME);
+
     default String klangName() {
-        var t = this;
-        if (t == STRING_T) {
-            return STRING_T_NAME;
-        } else if (t == LONG_T) {
-            return LONG_T_NAME;
-        } else if (t == BOOL_T) {
-            return BOOL_T_NAME;
-        } else if (t == DOUBLE_T) {
-            return DOUBLE_T_NAME;
-        } else if (t == VOID_T) {
-            return VOID_T_NAME;
-        } else if (t == NULL_T) {
-            return NULL_T_NAME;
-        } else if (t instanceof RefType customT) {
-            return customT.className;
-        } else {
-            throw new IllegalArgumentException("Unknown type kind: " + t);
-        }
+        var name = klangNameMap.get(this);
+        if (name == null)
+            if (this instanceof RefType customT)
+                return customT.className();
+            else
+                throw new IllegalArgumentException("Unknown type kind: " + this);
+        return name;
     }
 
     default String prettyTypeName() {
