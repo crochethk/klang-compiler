@@ -215,6 +215,7 @@ public class TreeBuilderTest extends NodeMocker {
         @Test
         void buildDropWithoutNamedVarShouldThrow() {
             var _ = assertThrows(InputMismatchException.class, () -> {
+                System.out.println("---Test: buildDropWithoutNamedVarShouldThrow");
                 parseAndWalk("drop getSomeRef();", p -> p.statement());
             });
         }
