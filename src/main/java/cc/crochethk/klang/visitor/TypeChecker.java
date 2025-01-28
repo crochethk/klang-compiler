@@ -227,7 +227,7 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(MethodCall methodCall) {
-       visit((MemberAccess) methodCall);
+        visit((MemberAccess) methodCall);
     }
 
     private String prettyTheTypeName(Node n) {
@@ -608,11 +608,23 @@ public class TypeChecker implements Visitor {
 
         prog.theType = Type.VOID_T;
 
-        // Check optional entrypoint call
-        if (prog.entryPoint != null) {
-            prog.entryPoint.accept(this);
-            prog.theType = prog.entryPoint.theType;
-        }
+        // Check optional entrypoint function conventions
+        prog.entryPoint.ifPresent(entryPoint -> {
+            entryPoint.accept(this);
+            var epName = entryPoint.name;
+            var epDef = funDefs.get(epName);
+
+            if (epDef.params.size() > 0) {
+                reportError(prog, "'" + epName + "' function must not have any parameters.");
+            }
+            if (epDef.returnType.theType != Type.VOID_T) {
+                reportError(prog, "Main function must return '" + Type.VOID_T.prettyTypeName()
+                        + "', but returns '" + prettyTheTypeName(epDef.returnType) + "'.");
+            }
+
+            prog.theType = entryPoint.theType;
+        });
+
         if (errorsReported != 0) {
             throw new TypeCheckFailedException();
         }

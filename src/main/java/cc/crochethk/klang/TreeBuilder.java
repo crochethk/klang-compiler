@@ -1,7 +1,6 @@
 package cc.crochethk.klang;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -18,6 +17,8 @@ import cc.crochethk.klang.visitor.Type;
 import utils.SourcePos;
 
 public class TreeBuilder extends KlangBaseListener {
+    static final String ENTRY_POINT_NAME = "___main___";
+
     @Override
     public void exitNumber(KlangParser.NumberContext ctx) {
         /**
@@ -430,13 +431,13 @@ public class TreeBuilder extends KlangBaseListener {
 
         List<StructDef> structs = new ArrayList<>();
         List<FunDef> funs = new ArrayList<>();
-        boolean hasEntryPoint = false;
+        FunCall entryPoint = null;
 
         for (var def : ctx.definition()) {
             if (def.functionDef() != null) {
                 // watch for entry point
-                if (!hasEntryPoint && def.functionDef().result.name.equals("___main___")) {
-                    hasEntryPoint = true;
+                if (entryPoint == null && def.functionDef().result.name.equals(ENTRY_POINT_NAME)) {
+                    entryPoint = new FunCall(srcPos, ENTRY_POINT_NAME, List.of());
                 }
                 funs.add(def.functionDef().result);
             } else if (def.structDef() != null) {
@@ -444,9 +445,6 @@ public class TreeBuilder extends KlangBaseListener {
             }
         }
 
-        var entryPoint = hasEntryPoint
-                ? new FunCall(new SourcePos(-1, -1), "___main___", Collections.emptyList())
-                : null;
         ctx.result = new Prog(srcPos, funs, entryPoint, structs);
     }
 

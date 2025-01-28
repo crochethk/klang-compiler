@@ -2,6 +2,7 @@ package cc.crochethk.klang.ast;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
@@ -9,13 +10,13 @@ import utils.SourcePos;
 public class Prog extends Node {
     public List<FunDef> funDefs;
     public List<StructDef> structDefs;
-    public FunCall entryPoint;
+    public Optional<FunCall> entryPoint;
 
     public Prog(SourcePos srcPos, List<FunDef> funDefs, FunCall entryPoint, List<StructDef> structDefs) {
         super(srcPos);
         this.funDefs = funDefs;
         this.structDefs = structDefs;
-        this.entryPoint = entryPoint;
+        this.entryPoint = Optional.ofNullable(entryPoint);
     }
 
     @Override
