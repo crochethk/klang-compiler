@@ -477,6 +477,15 @@ public class TypeChecker implements Visitor {
     }
 
     @Override
+    public void visit(VoidResultExprStat voidResultExprStat) {
+        voidResultExprStat.expr.accept(this);
+        voidResultExprStat.theType = voidResultExprStat.expr.theType;
+        if (voidResultExprStat.theType != Type.VOID_T) {
+            reportError(voidResultExprStat, "Non-void result type must be assigned.");
+        }
+    }
+
+    @Override
     public void visit(TypeNode type) {
         // TODO handle non-default packages
         var theType = Type.of(type.typeToken, "" /*default package */);

@@ -452,7 +452,12 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(Prog prog) {
         prog.structDefs.forEach(stDef -> stDef.accept(this));
-        prog.funDefs.forEach(f -> f.accept(this));
+        prog.funDefs.forEach(f -> {
+            if (prog.entryPoint.isPresent() && f.name.equals(prog.entryPoint.get().name))
+                genFunDefWithName("main", f);
+            else
+                f.accept(this);
+        });
 
         var filePath = outFilePaths().get(0);
         try (var w = new FileWriter(filePath.toFile())) {

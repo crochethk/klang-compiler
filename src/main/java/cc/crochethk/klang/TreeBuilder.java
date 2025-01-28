@@ -374,6 +374,10 @@ public class TreeBuilder extends KlangBaseListener {
             ctx.result = new BreakStat(srcPos);
         } else if (ctx.KW_DROP() != null) {
             ctx.result = new DropStat(srcPos, new Var(srcPos, ctx.refTypeVarName.getText()));
+        } else if (ctx.funCall() != null) {
+            ctx.result = new VoidResultExprStat(srcPos, ctx.funCall().result);
+        } else if (ctx.memberAccessor() != null) {
+            ctx.result = new VoidResultExprStat(srcPos, ctx.memberAccessor().result);
         } else {
             throw new UnhandledAlternativeException(srcPos, "statement", ctx.getText());
         }

@@ -249,6 +249,12 @@ public class PrettyPrinter implements Visitor {
     }
 
     @Override
+    public void visit(VoidResultExprStat voidResultExprStat) {
+        voidResultExprStat.expr.accept(this);
+        scb.write(";");
+    }
+
+    @Override
     public void visit(TypeNode type) {
         scb.write(type.typeToken);
     }

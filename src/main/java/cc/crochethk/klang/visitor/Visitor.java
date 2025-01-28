@@ -62,6 +62,10 @@ public interface Visitor {
 
     void visit(DropStat dropStat);
 
+    default void visit(VoidResultExprStat voidResultExprStat) {
+        voidResultExprStat.expr.accept(this);
+    }
+
     void visit(TypeNode type);
 
     void visit(FunDef funDef);
