@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import cc.crochethk.klang.ast.*;
-import cc.crochethk.klang.visitor.SourceCodeBuilder;
 import cc.crochethk.klang.visitor.Type;
 import cc.crochethk.klang.visitor.codegen.GenAsm;
 import utils.SourcePos;
@@ -23,12 +22,12 @@ public class GenCImpls extends GenCBase {
 
     @Override
     public void visit(StructDef structDef) {
-        implConstructor(codeBuilder, structDef);
-        implDestructor(codeBuilder, structDef);
-        implToString(codeBuilder, structDef);
+        implConstructor(structDef);
+        implDestructor(structDef);
+        implToString(structDef);
         structDef.fields.forEach(f -> {
-            implGetter(codeBuilder, structDef, f);
-            implSetter(codeBuilder, structDef, f);
+            implGetter(structDef, f);
+            implSetter(structDef, f);
         });
     }
 
@@ -37,7 +36,7 @@ public class GenCImpls extends GenCBase {
     @Override
     public void visit(Prog prog) {
         // C preamble
-        codeBuilder.writeIndented("#include \"", fileNameNoExt(), ".h", "\"", "\n");
+        scb.writeIndented("#include \"", fileNameNoExt(), ".h", "\"", "\n");
 
         // Add struct definitions to lookup table
         structDefs = new HashMap<>();
@@ -46,19 +45,19 @@ public class GenCImpls extends GenCBase {
         // Generate struct auto-method implementations
         prog.structDefs.forEach(st -> st.accept(this));
 
-        codeBuilder.writeIndented("// ----------[ klang 'stdlib' ]----------\n");
-        implStringHelpers(codeBuilder);
+        scb.writeIndented("// ----------[ klang 'stdlib' ]----------\n");
+        implStringHelpers();
 
         // Dump source code to file
-        writeCFile(codeBuilder);
+        writeCFile();
     }
 
     // --------------------[ Builtins Generation ]------------------------------
 
-    private void implConstructor(SourceCodeBuilder scb, StructDef st) {
+    private void implConstructor(StructDef st) {
         var thisPtrT = st.theType.cTypeName();
         // constructor
-        writeConstructorSignature(scb, st);
+        writeConstructorSignature(st);
         scb.write(" {");
         scb.increaseIndent();
         scb.writeIndented(thisPtrT, " this = (", thisPtrT, ")malloc(sizeof(*this));");
@@ -69,8 +68,8 @@ public class GenCImpls extends GenCBase {
         scb.writeIndented("}\n");
     }
 
-    private void implDestructor(SourceCodeBuilder scb, StructDef st) {
-        writeDestructorSignature(scb, st);
+    private void implDestructor(StructDef st) {
+        writeDestructorSignature(st);
         scb.write(" {");
         scb.increaseIndent();
         scb.writeIndented("free(this);");
@@ -78,8 +77,8 @@ public class GenCImpls extends GenCBase {
         scb.writeIndented("}\n");
     }
 
-    private void implToString(SourceCodeBuilder scb, StructDef st) {
-        writeToStringSignature(scb, st);
+    private void implToString(StructDef st) {
+        writeToStringSignature(st);
         scb.write(" {");
         scb.increaseIndent();
 
@@ -153,8 +152,8 @@ public class GenCImpls extends GenCBase {
         return TYPE_FORMATS.getOrDefault(t, "%p");
     }
 
-    private void implGetter(SourceCodeBuilder scb, StructDef st, Parameter field) {
-        writeGetterSignature(scb, st, field);
+    private void implGetter(StructDef st, Parameter field) {
+        writeGetterSignature(st, field);
         scb.write(" {");
         scb.increaseIndent();
         scb.writeIndented("return this->", field.name(), ";");
@@ -162,8 +161,8 @@ public class GenCImpls extends GenCBase {
         scb.writeIndented("}\n");
     }
 
-    private void implSetter(SourceCodeBuilder scb, StructDef st, Parameter field) {
-        writeSetterSignature(scb, st, field);
+    private void implSetter(StructDef st, Parameter field) {
+        writeSetterSignature(st, field);
         scb.write(" {");
         scb.increaseIndent();
         scb.writeIndented("this->", field.name(), " = value;");
@@ -171,12 +170,12 @@ public class GenCImpls extends GenCBase {
         scb.writeIndented("}\n");
     }
 
-    private void implStringHelpers(SourceCodeBuilder scb) {
+    private void implStringHelpers() {
         // Declare string helper functions
         var strTypeNode = new TypeNode(new SourcePos(-1, -1), Type.STRING_T.klangName());
         strTypeNode.theType = Type.STRING_T;
 
-        writeConstructorSignature(scb, Type.STRING_T, List.of(
+        writeConstructorSignature(Type.STRING_T, List.of(
                 new Parameter("str", strTypeNode)));
         scb.write(" {");
         scb.increaseIndent();
@@ -184,14 +183,14 @@ public class GenCImpls extends GenCBase {
         scb.decreaseIndent();
         scb.writeIndented("}\n");
 
-        writeDestructorSignature(scb, Type.STRING_T);
+        writeDestructorSignature(Type.STRING_T);
         scb.write(" {");
         scb.increaseIndent();
         scb.writeIndented("free(this);");
         scb.decreaseIndent();
         scb.writeIndented("}\n");
 
-        writeToStringSignature(scb, Type.STRING_T);
+        writeToStringSignature(Type.STRING_T);
         scb.write(" {");
         scb.increaseIndent();
         scb.writeIndented("return this;");

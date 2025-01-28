@@ -16,12 +16,13 @@ import cc.crochethk.klang.visitor.codegen.GenAsm;
 public abstract class GenCBase extends CodeGenVisitor {
     private static final String INDENT_SEQ = "  ";
 
-    protected final SourceCodeBuilder codeBuilder;
+    /** The builder used to construct this instance's source code */
+    protected final SourceCodeBuilder scb;
     private final String fileExt;
 
     public GenCBase(String outputDir, String packageName, String className, String fileExt) {
         super(outputDir, packageName, className);
-        codeBuilder = new SourceCodeBuilder(INDENT_SEQ, 0);
+        scb = new SourceCodeBuilder(INDENT_SEQ, 0);
         this.fileExt = fileExt;
     }
 
@@ -42,7 +43,7 @@ public abstract class GenCBase extends CodeGenVisitor {
         return packageName + "." + className;
     }
 
-    protected void writeCFile(SourceCodeBuilder scb) {
+    protected void writeCFile() {
         try (var file = new FileWriter(filePath())) {
             file.write(scb.toString());
         } catch (IOException e) {
@@ -51,38 +52,37 @@ public abstract class GenCBase extends CodeGenVisitor {
     }
 
     // --------------------[ Builtins Generation ]------------------------------
-    protected void writeConstructorSignature(SourceCodeBuilder scb, StructDef st) {
-        writeConstructorSignature(scb, st.theType, st.fields);
+    protected void writeConstructorSignature(StructDef st) {
+        writeConstructorSignature(st.theType, st.fields);
     }
 
-    protected void writeConstructorSignature(SourceCodeBuilder scb, Type refType,
-            List<Parameter> params) {
+    protected void writeConstructorSignature(Type refType, List<Parameter> params) {
         scb.writeIndented(refType.cTypeName(), " ",
                 GenAsm.getConstructorFullName(refType), "(", formatParams(params), ")");
     }
     // ---
 
-    protected void writeDestructorSignature(SourceCodeBuilder scb, StructDef st) {
-        writeDestructorSignature(scb, st.theType);
+    protected void writeDestructorSignature(StructDef st) {
+        writeDestructorSignature(st.theType);
     }
 
-    protected void writeDestructorSignature(SourceCodeBuilder scb, Type refType) {
+    protected void writeDestructorSignature(Type refType) {
         scb.writeIndented("void ", GenAsm.getDestructorFullName(refType),
                 "(", refType.cTypeName(), " this)");
     }
     // ---
 
-    protected void writeToStringSignature(SourceCodeBuilder scb, StructDef st) {
-        writeToStringSignature(scb, st.theType);
+    protected void writeToStringSignature(StructDef st) {
+        writeToStringSignature(st.theType);
     }
 
-    protected void writeToStringSignature(SourceCodeBuilder scb, Type refType) {
+    protected void writeToStringSignature(Type refType) {
         scb.writeIndented("char* ", GenAsm.getToStringFullName(refType),
                 "(", refType.cTypeName(), " this)");
     }
     // ---
 
-    protected void writeGetterSignature(SourceCodeBuilder scb, StructDef st, Parameter field) {
+    protected void writeGetterSignature(StructDef st, Parameter field) {
         var refType = st.theType;
         scb.writeIndent();
         field.type().accept(this);
@@ -90,16 +90,16 @@ public abstract class GenCBase extends CodeGenVisitor {
                 "(", refType.cTypeName(), " this)");
     }
 
-    protected void writeSetterSignature(SourceCodeBuilder scb, StructDef st, Parameter field) {
+    protected void writeSetterSignature(StructDef st, Parameter field) {
         var refType = st.theType;
         scb.writeIndented("void ", GenAsm.getSetterFullName(refType, field.name()),
                 "(", refType.cTypeName(), " this, ", field.type().theType.cTypeName(), " value", ")");
     }
 
     protected void writeCFunSignature(TypeNode returnType, String funName, List<Parameter> params) {
-        codeBuilder.writeIndent();
+        scb.writeIndent();
         returnType.accept(this);
-        codeBuilder.write(" ", funName, "(", formatParams(params), ");");
+        scb.write(" ", funName, "(", formatParams(params), ");");
     }
 
     protected String formatParams(List<Parameter> params) {
@@ -223,7 +223,7 @@ public abstract class GenCBase extends CodeGenVisitor {
 
     @Override
     public void visit(TypeNode type) {
-        codeBuilder.write(formatTypeNode(type));
+        scb.write(formatTypeNode(type));
     }
 
     @Override
