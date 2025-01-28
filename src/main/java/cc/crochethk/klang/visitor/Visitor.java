@@ -68,6 +68,8 @@ public interface Visitor {
 
     void visit(StructDef structDef);
 
+    void visit(MethDef methDef);
+
     void visit(Prog prog);
 
     void visit(EmptyNode emptyNode);

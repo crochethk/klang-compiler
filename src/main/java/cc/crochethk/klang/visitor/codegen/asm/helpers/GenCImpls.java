@@ -8,6 +8,7 @@ import java.util.Map;
 import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.visitor.SourceCodeBuilder;
 import cc.crochethk.klang.visitor.Type;
+import cc.crochethk.klang.visitor.codegen.GenAsm;
 import utils.SourcePos;
 
 /**
@@ -100,7 +101,7 @@ public class GenCImpls extends GenCBase {
 
                 // Declare a temp variable and assign the delegated "to_string" outcome
                 scb.writeIndented("char* ", tmpVarName, " = ",
-                        getToStringFullName(fType), "(this->", field.name(), ");");
+                        GenAsm.getToStringFullName(fType), "(this->", field.name(), ");");
 
                 fmt.append("%s");
                 fmtArgs.append(tmpVarName);

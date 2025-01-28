@@ -14,6 +14,7 @@ import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.visitor.Type;
 import utils.SourcePos;
 
 public class TreeBuilder extends KlangBaseListener {
@@ -418,7 +419,9 @@ public class TreeBuilder extends KlangBaseListener {
         var srcPos = getSourcePos(ctx);
         var name = ctx.name.getText();
         var params = buildParamsList(ctx.params());
-        ctx.result = new StructDef(srcPos, name, params);
+        var methDefs = ctx.methodDefs.stream().map(
+                methDef -> new MethDef(srcPos, Type.of(name, ""), methDef.result)).toList();
+        ctx.result = new StructDef(srcPos, name, params, methDefs);
     }
 
     @Override

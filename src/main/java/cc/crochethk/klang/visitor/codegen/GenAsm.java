@@ -135,35 +135,59 @@ public class GenAsm extends CodeGenVisitor {
         }
     }
 
-    /** Context helper variable for MemberAccessChain evaluation */
+    /**
+     * Context helper variable for MemberAccessChain and MemberAccess nodes evaluation
+     */
     private Type maChainOwnerType = null;
+
+    /**
+     * Determines the ownerType of the given {@code MemberAccess} node. If its 
+     * owner is null the current {@code MemberAccessChain} ownerType is 
+     * returned.
+     */
+    private Type getMemberOwnerType(MemberAccess ma) {
+        return ma.owner != null ? ma.owner.theType : maChainOwnerType;
+    }
 
     @Override
     public void visit(MemberAccessChain maChain) {
         maChain.owner.accept(this); // -> init reference in rax
 
+        var oldOwner = maChainOwnerType;
         maChainOwnerType = maChain.owner.theType;
         maChain.chain.accept(this);
-        maChainOwnerType = null;
+        maChainOwnerType = oldOwner;
     }
 
     @Override
     public void visit(FieldGet fieldGet) {
         // Call autoimplemented getter matching the targets owner type and 'targetName' field
-        var fgOwnerType = fieldGet.owner != null
-                ? fieldGet.owner.theType
-                : maChainOwnerType;
+        var ownerType = getMemberOwnerType(fieldGet);
+        var getterFunName = getGetterFullName(ownerType, fieldGet.targetName);
 
-        var getterFunName = GenCBase.getGetterFullName(fgOwnerType, fieldGet.targetName);
-        // Always assumes: 
-        //  - "owner" reference already in rax
-        //  - FunCall takes rax after evaluation an arg, putting it to the
-        //      according arg register
+        // Assumption: "owner" reference already in rax (from previous MemberAccess nodes)
+        // Passing EmptyNode as arg, makes FunCall load the mentioned pointer from rax.
         var thisArg = new EmptyNode(fieldGet.srcPos);
         var funCall = new FunCall(fieldGet.srcPos, getterFunName, List.of(thisArg));
         funCall.accept(this);
         if (fieldGet.next != null) {
             fieldGet.next.accept(this);
+        }
+    }
+
+    @Override
+    public void visit(MethodCall methodCall) {
+        var ownerType = getMemberOwnerType(methodCall);
+        var asmMethName = getAsmMethodName(ownerType, methodCall.targetName);
+
+        // Assumption: "owner" reference already in rax (from previous MemberAccess nodes)
+        // Passing EmptyNode as first arg, makes FunCall load the mentioned pointer from rax.
+        var thisArg = new EmptyNode(methodCall.srcPos);
+        var allArgs = Stream.concat(Stream.of(thisArg), methodCall.args.stream()).toList();
+        var funCall = new FunCall(methodCall.srcPos, asmMethName, allArgs);
+        funCall.accept(this);
+        if (methodCall.next != null) {
+            methodCall.next.accept(this);
         }
     }
 
@@ -176,14 +200,9 @@ public class GenAsm extends CodeGenVisitor {
     }
 
     @Override
-    public void visit(MethodCall methodCall) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void visit(ConstructorCall constructorCall) {
-        var genFunName = GenCBase.getConstructorFullName(constructorCall.theType);
-        var funCall = new FunCall(constructorCall.srcPos, genFunName, constructorCall.args);
+        var fullConstName = getConstructorFullName(constructorCall.theType);
+        var funCall = new FunCall(constructorCall.srcPos, fullConstName, constructorCall.args);
         funCall.accept(this);
     }
 
@@ -304,7 +323,7 @@ public class GenAsm extends CodeGenVisitor {
         var fieldOwnerType = field.owner != null
                 ? field.owner.theType
                 : faStat.maChain.owner.theType;
-        var setterFunName = GenCBase.getSetterFullName(fieldOwnerType, field.targetName);
+        var setterFunName = getSetterFullName(fieldOwnerType, field.targetName);
         var thisArg = new EmptyNode(faStat.srcPos);
         var funCall = new FunCall(faStat.srcPos, setterFunName, List.of(thisArg, faStat.expr));
         funCall.accept(this);
@@ -347,25 +366,33 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(DropStat dropStat) {
         var thisArg = dropStat.refTypeVar;
-        var funName = GenCBase.getDestructorFullName(thisArg.theType);
+        var funName = getDestructorFullName(thisArg.theType);
         var destructor = new FunCall(dropStat.srcPos, funName, List.of(thisArg));
         destructor.accept(this);
     }
 
     @Override
     public void visit(TypeNode type) {
-        // TODO Auto-generated method stub
-        return;
     }
 
     @Override
     public void visit(FunDef funDef) {
+        genFunDefWithName(funDef.name, funDef);
+    }
+
+    /**
+     * Generates the function defintion for the given {@code FunDef} using a
+     * custom name instead of the one in {@code FunDef}.
+     * @param newFunName Name to use instead of {@code funDef.name}
+     * @param funDef
+     */
+    void genFunDefWithName(String newFunName, FunDef funDef) {
         var oldCtx = stack;
         stack = new StackManager(code);
 
-        code.writeIndented(".globl\t", funDef.name);
-        code.writeIndented(".type\t", funDef.name, ", @function");
-        code.write("\n", funDef.name, ":");
+        code.writeIndented(".globl\t", newFunName);
+        code.writeIndented(".type\t", newFunName, ", @function");
+        code.write("\n", newFunName, ":");
 
         /* Prologue */
         // Backup caller's and set callee's context
@@ -413,11 +440,18 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(StructDef structDef) {
-        // see GenCHelpers
+        structDef.methods.forEach(meth -> meth.accept(this));
+        // see also GenCHelpers
+    }
+
+    @Override
+    public void visit(MethDef methDef) {
+        genFunDefWithName(getAsmMethodName(methDef.owner().theType, methDef.name()), methDef.def);
     }
 
     @Override
     public void visit(Prog prog) {
+        prog.structDefs.forEach(stDef -> stDef.accept(this));
         prog.funDefs.forEach(f -> f.accept(this));
 
         var filePath = outFilePaths().get(0);
@@ -445,6 +479,36 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(EmptyNode emptyNode) {
         // nop
+    }
+
+    /** The {@code ownerType} method's respective assembly function name. */
+    public static String getAsmMethodName(Type ownerType, String methName) {
+        return ownerType.klangName() + "$" + methName;
+    }
+
+    /** The {@code refType} constructor's assembly function name. */
+    public static String getConstructorFullName(Type refType) {
+        return refType.klangName() + "$new$";
+    }
+
+    /** The {@code refType} destructor's assembly function name. */
+    public static String getDestructorFullName(Type refType) {
+        return refType.klangName() + "$drop$";
+    }
+
+    /** The {@code refType} to_string's assembly function name. */
+    public static String getToStringFullName(Type refType) {
+        return refType.klangName() + "$to_string";
+    }
+
+    /** The {@code refType} field getter's assembly function name. */
+    public static String getGetterFullName(Type refType, String fieldName) {
+        return refType.klangName() + "$get_" + fieldName + "$";
+    }
+
+    /** The {@code refType} field setter's assembly function name. */
+    public static String getSetterFullName(Type refType, String fieldName) {
+        return refType.klangName() + "$set_" + fieldName + "$";
     }
 
     class StackManager {
@@ -486,7 +550,6 @@ public class GenAsm extends CodeGenVisitor {
             if (size > 0) {
                 code.subq($(size), rsp);
                 alignedStackSize += size;
-                writeOffset = alignedStackSize; // synchronize write head
             }
             pendingAllocSize = 0;
         }
@@ -521,7 +584,12 @@ public class GenAsm extends CodeGenVisitor {
         }
 
         /**
-         * Stores an uninitialized element.
+         * "Stores" an uninitialized element, i.e. this simply reserves a slot of 
+         * {@code size} bytes on the stack. An actual memory position specifier
+         * can be later be retrieved using {@link #get(String)} and the specified 
+         * {@code name}.
+         * @param name A Name for the stored element for later reference.
+         * @param size How many bytes the element should occupy.
          * @see #store(String, int, OperandSpecifier)
          */
         public void store(String name, int size) {

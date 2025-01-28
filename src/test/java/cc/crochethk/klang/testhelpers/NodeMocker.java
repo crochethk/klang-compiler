@@ -7,6 +7,7 @@ import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.visitor.Type;
 import utils.SourcePos;
 
 public class NodeMocker {
@@ -19,7 +20,7 @@ public class NodeMocker {
     public final TypeNode VOID_TN = typeNode("void");
 
     public final NullLit NULL_LIT = new NullLit(srcPosMock);
-    protected final StructDef EMPTY_STRUCT = new StructDef(srcPosMock, "Empty", List.of());
+    protected final StructDef EMPTY_STRUCT = new StructDef(srcPosMock, "Empty", List.of(), List.of());
 
     public Parameter param(String paramName, String typeName) {
         return param(paramName, typeNode(typeName));
@@ -40,7 +41,21 @@ public class NodeMocker {
     }
 
     public StructDef structDef(String name, List<Parameter> fields) {
-        return new StructDef(srcPosMock, name, fields);
+        return structDef(name, fields, List.of());
+    }
+
+    public StructDef structDef(String name, List<Parameter> fields, List<MethDef> methods) {
+        return new StructDef(srcPosMock, name, fields, methods);
+    }
+
+    public MethDef methDef(Type ownerType, String methName, List<Parameter> params, TypeNode returnType,
+            List<Node> statements) {
+        return new MethDef(srcPosMock, ownerType, funDef(methName, params, returnType, statements));
+    }
+
+    /** MethDef mock with {@code void} return type */
+    public MethDef methDef(Type ownerType, String methName, List<Parameter> params, List<Node> statements) {
+        return methDef(ownerType, methName, params, VOID_TN, statements);
     }
 
     public TypeNode typeNode(String typeName) {
@@ -124,6 +139,11 @@ public class NodeMocker {
     /** Shortcut for creating a detached FieldSet accessor */
     public FieldSet fieldSet(String fieldName) {
         return new FieldSet(srcPosMock, null, fieldName, null);
+    }
+
+    /** Shortcut for creating a detached FieldGet accessor */
+    public MethodCall methodCall(String methodName, List<Node> args) {
+        return new MethodCall(srcPosMock, null, methodName, args, null);
     }
 
     /** Call without args */

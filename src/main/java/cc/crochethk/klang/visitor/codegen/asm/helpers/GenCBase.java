@@ -11,6 +11,7 @@ import cc.crochethk.klang.ast.literal.*;
 import cc.crochethk.klang.visitor.SourceCodeBuilder;
 import cc.crochethk.klang.visitor.Type;
 import cc.crochethk.klang.visitor.codegen.CodeGenVisitor;
+import cc.crochethk.klang.visitor.codegen.GenAsm;
 
 public abstract class GenCBase extends CodeGenVisitor {
     private static final String INDENT_SEQ = "  ";
@@ -57,7 +58,7 @@ public abstract class GenCBase extends CodeGenVisitor {
     protected void writeConstructorSignature(SourceCodeBuilder scb, Type refType,
             List<Parameter> params) {
         scb.writeIndented(refType.cTypeName(), " ",
-                getConstructorFullName(refType), "(", formatParams(params), ")");
+                GenAsm.getConstructorFullName(refType), "(", formatParams(params), ")");
     }
     // ---
 
@@ -66,8 +67,8 @@ public abstract class GenCBase extends CodeGenVisitor {
     }
 
     protected void writeDestructorSignature(SourceCodeBuilder scb, Type refType) {
-        scb.writeIndented("void ",
-                getDestructorFullName(refType), "(", refType.cTypeName(), " this)");
+        scb.writeIndented("void ", GenAsm.getDestructorFullName(refType),
+                "(", refType.cTypeName(), " this)");
     }
     // ---
 
@@ -76,46 +77,29 @@ public abstract class GenCBase extends CodeGenVisitor {
     }
 
     protected void writeToStringSignature(SourceCodeBuilder scb, Type refType) {
-        scb.writeIndented("char* ",
-                getToStringFullName(refType), "(", refType.cTypeName(), " this)");
+        scb.writeIndented("char* ", GenAsm.getToStringFullName(refType),
+                "(", refType.cTypeName(), " this)");
     }
     // ---
 
     protected void writeGetterSignature(SourceCodeBuilder scb, StructDef st, Parameter field) {
         var refType = st.theType;
-        scb.writeIndented(field.type().theType.cTypeName(), " ",
-                getGetterFullName(refType, field.name()), "(", refType.cTypeName(), " this)");
+        scb.writeIndent();
+        field.type().accept(this);
+        scb.write(" ", GenAsm.getGetterFullName(refType, field.name()),
+                "(", refType.cTypeName(), " this)");
     }
 
     protected void writeSetterSignature(SourceCodeBuilder scb, StructDef st, Parameter field) {
         var refType = st.theType;
-        scb.writeIndented("void ", getSetterFullName(refType, field.name()),
+        scb.writeIndented("void ", GenAsm.getSetterFullName(refType, field.name()),
                 "(", refType.cTypeName(), " this, ", field.type().theType.cTypeName(), " value", ")");
     }
 
-    /** Full name of the {@code refType}'s constructor C function */
-    public static String getConstructorFullName(Type refType) {
-        return refType.klangName() + "$new$";
-    }
-
-    /** Full name of the {@code refType}'s destructor C function */
-    public static String getDestructorFullName(Type refType) {
-        return refType.klangName() + "$drop$";
-    }
-
-    /** Full name of the {@code refType}'s to_string C function */
-    public static String getToStringFullName(Type refType) {
-        return refType.klangName() + "$to_string";
-    }
-
-    /** Full name of the {@code refType} field's getter C function */
-    public static String getGetterFullName(Type refType, String fieldName) {
-        return refType.klangName() + "$get_" + fieldName + "$";
-    }
-
-    /** Full name of the {@code refType} field's setter C function */
-    public static String getSetterFullName(Type refType, String fieldName) {
-        return refType.klangName() + "$set_" + fieldName + "$";
+    protected void writeCFunSignature(TypeNode returnType, String funName, List<Parameter> params) {
+        codeBuilder.writeIndent();
+        returnType.accept(this);
+        codeBuilder.write(" ", funName, "(", formatParams(params), ");");
     }
 
     protected String formatParams(List<Parameter> params) {
@@ -248,6 +232,10 @@ public abstract class GenCBase extends CodeGenVisitor {
 
     @Override
     public void visit(StructDef structDef) {
+    }
+
+    @Override
+    public void visit(MethDef methDef) {
     }
 
     @Override

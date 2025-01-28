@@ -58,13 +58,33 @@ public class TypeCheckerTest extends NodeMocker {
     class MemberAccessChainTests {
         private StructDef simpleStruct;
         private StructDef structWithStructField;
+        private StructDef structWithMeths;
 
         @BeforeEach
         void setUp() {
             simpleStruct = structDef("SimpleStruct", List.of(
                     param("primField", I64_TN)));
+
             structWithStructField = structDef("StructWithStructField", List.of(
                     param("structField", typeNode(simpleStruct.name))));
+
+            var sswmName = "StructWithMethsAndFields";
+            var sswmType = Type.of(sswmName, "");
+            var meth_get42 = methDef(
+                    sswmType, "get42", List.of(), I64_TN,
+                    List.of(returnStat(i64Lit(42))));
+            var meth_addToField = methDef(sswmType, "addToField",
+                    List.of(param("num", I64_TN)),
+                    I64_TN,
+                    List.of(returnStat(binOpExpr(
+                            var("num"),
+                            BinaryOp.add,
+                            memberAccessChain(var("self"), fieldGet("primField")))) //
+                    ));
+            structWithMeths = structDef(sswmName,
+                    List.of(param("primField", I64_TN),
+                            param("structField", typeNode(simpleStruct.name))),
+                    List.of(meth_get42, meth_addToField));
         }
 
         @Test
@@ -106,6 +126,43 @@ public class TypeCheckerTest extends NodeMocker {
             assertEquals(Type.of(simpleStruct.name, ""), maChain.chain.theType);
             assertEquals(Type.LONG_T, maChain.chain.next.theType);
             assertNull(maChain.chain.next.next);
+        }
+
+        @Test
+        void chainOfOneMethodCall_noArgs() {
+            var customType = structWithMeths;
+            var maChain = memberAccessChain(var("p1"), methodCall("get42", List.of()));
+
+            var fun = funDef("fun",
+                    List.of(param("p1", customType.name)), I64_TN,
+                    List.of(returnStat(maChain)));
+
+            checkProgOf(List.of(fun), List.of(customType, simpleStruct));
+            assertReportedErrors(0);
+
+            assertEquals(Type.LONG_T, maChain.theType);
+            assertEquals(Type.of(customType.name, ""), maChain.owner.theType);
+            assertEquals(Type.LONG_T, maChain.chain.theType);
+            assertNull(maChain.chain.next);
+        }
+
+        @Test
+        void chainOfOneMethodCall_oneArg() {
+            var customType = structWithMeths;
+            var maChain = memberAccessChain(var("p1"),
+                    methodCall("addToField", List.of(i64Lit(7))));
+
+            var fun = funDef("fun",
+                    List.of(param("p1", customType.name)), I64_TN,
+                    List.of(returnStat(maChain)));
+
+            checkProgOf(List.of(fun), List.of(customType, simpleStruct));
+            assertReportedErrors(0);
+
+            assertEquals(Type.LONG_T, maChain.theType);
+            assertEquals(Type.of(customType.name, ""), maChain.owner.theType);
+            assertEquals(Type.LONG_T, maChain.chain.theType);
+            assertNull(maChain.chain.next);
         }
     }
 
@@ -621,6 +678,48 @@ public class TypeCheckerTest extends NodeMocker {
                     List.of(dropStat(varName)));
             checkProgOf(List.of(fun), List.of(struct));
             assertReportedErrors(0);
+        }
+    }
+
+    @Nested
+    class MethDefTests {
+        @Test
+        void noExplicitArgsMeth() {
+            var stName = "TheStruct";
+            var theMeth = methDef(
+                    Type.of(stName, ""), "noargsmeth", List.of(), I64_TN,
+                    List.of(returnStat(memberAccessChain(var("self"), fieldGet("field")))));
+            var theStruct = structDef(stName, List.of(param("field", I64_TN)), List.of(theMeth));
+            assertDoesNotThrow(() -> checkProgOf(List.of(), List.of(theStruct)));
+            assertReportedErrors(0);
+
+            var selfParam = theMeth.params().get(0);
+            assertEquals("self", selfParam.name());
+            assertEquals(Type.of(stName, ""), selfParam.type().theType);
+
+            assertEquals(Type.LONG_T, theMeth.def.theType);
+            assertEquals(Type.LONG_T, theMeth.theType);
+            assertEquals(Type.LONG_T, theMeth.returnType().theType);
+        }
+
+        @Test
+        void someExplicitArgsMeth() {
+            var stName = "TheStruct";
+            var theMeth = methDef(
+                    Type.of(stName, ""), "withSomeArgs",
+                    List.of(param("foo", I64_TN), param("bar", BOOL_TN)), VOID_TN,
+                    List.of(fieldAssignStat(var("self"), List.of(fieldSet("field")), var("foo"))));
+            var theStruct = structDef(stName, List.of(param("field", I64_TN)), List.of(theMeth));
+            assertDoesNotThrow(() -> checkProgOf(List.of(), List.of(theStruct)));
+            assertReportedErrors(0);
+
+            var selfParam = theMeth.params().get(0);
+            assertEquals("self", selfParam.name());
+            assertEquals(Type.of(stName, ""), selfParam.type().theType);
+
+            assertEquals(Type.VOID_T, theMeth.def.theType);
+            assertEquals(Type.VOID_T, theMeth.theType);
+            assertEquals(Type.VOID_T, theMeth.returnType().theType);
         }
     }
 

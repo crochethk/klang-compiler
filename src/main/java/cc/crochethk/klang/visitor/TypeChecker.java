@@ -2,6 +2,7 @@ package cc.crochethk.klang.visitor;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -68,27 +69,34 @@ public class TypeChecker implements Visitor {
         } else {
             //funDef found
             funCall.theType = funDef.returnType.theType;
+            checkArgsMatchParams(funCall, funCall.args, funDef.params);
+        }
+    }
 
-            var paramCount = funDef.params.size();
-            var argsCount = funCall.args.size();
-            if (paramCount != argsCount) {
-                reportError(funCall,
-                        "Wrong number of arguments: expected " + paramCount
-                                + " but " + argsCount + " provided");
+    /**
+     * Check whether provided list of arguments matches the provided list of
+     * parameter definitions.
+     * @param nodeCtx Node context in which this check is performed.
+     */
+    private void checkArgsMatchParams(Node nodeCtx, List<Node> args, List<Parameter> params) {
+        var paramCount = params.size();
+        var argsCount = args.size();
+        if (paramCount != argsCount) {
+            reportError(nodeCtx, "Wrong number of arguments: expected " + paramCount
+                    + " but " + argsCount + " provided");
+        }
+
+        var argsIter = args.iterator();
+        for (var p : params) {
+            if (!argsIter.hasNext()) {
+                break;
             }
+            var arg = argsIter.next();
 
-            var argsIter = funCall.args.iterator();
-            for (var p : funDef.params) {
-                if (!argsIter.hasNext()) {
-                    break;
-                }
-                var arg = argsIter.next();
-
-                if (!p.type().theType.isCompatible(arg.theType)) {
-                    reportError(funCall, "Invalid argument type for parameter '" + p.name()
-                            + "': expected '" + prettyTheTypeName(p.type()) + "' but found incompatible '"
-                            + prettyTheTypeName(arg) + "'");
-                }
+            if (!arg.theType.isCompatible(p.type().theType)) {
+                reportError(arg, "Invalid argument type for parameter '" + p.name()
+                        + "': expected '" + prettyTheTypeName(p.type()) + "' but found incompatible '"
+                        + prettyTheTypeName(arg) + "'");
             }
         }
     }
@@ -98,29 +106,42 @@ public class TypeChecker implements Visitor {
         maChain.owner.accept(this);
 
         final var chain = maChain.chain;
-        chain.theType = checkMemberAccessTargetType(maChain.owner, chain.targetName);
+        chain.theType = checkMemberAccessType(maChain.owner, chain);
         chain.accept(this);
         var finalMember = chain.getLast();
         Node finalMemberOwner = finalMember.owner != null ? finalMember.owner : maChain.owner;
 
         // Basically the field or method-return-type of the end member
-        var finalType = checkMemberAccessTargetType(finalMemberOwner, finalMember.targetName);
+        var finalType = checkMemberAccessType(finalMemberOwner, finalMember);
         finalMember.theType = finalType;
         maChain.theType = finalType;
     }
 
-    @Override
-    public void visit(MethodCall methodCall) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    private Type checkMemberAccessType(Node ownerExpr, MemberAccess ma) {
+        Type maTheType = switch (ma) {
+            case MemberAccess.FieldGet _ -> checkFieldGetOrSetTargetType(ownerExpr, ma.targetName);
+            case MemberAccess.FieldSet _ -> checkFieldGetOrSetTargetType(ownerExpr, ma.targetName);
+            case MemberAccess.MethodCall methCall -> {
+                methCall.args.forEach(arg -> arg.accept(this));
+                yield checkMethodCallTargetType(ownerExpr, methCall.targetName, methCall.args);
+            }
+            default -> {
+                throw new IllegalArgumentException("Unknown MemberAccess implementation '" +
+                        ma != null ? ma.getClass().getSimpleName() : ma + "'");
+            }
+        };
+        return maTheType;
     }
 
     /**
-     * @param structExpr Node whose type has a member name equal to 'targetName'.
-     * @param targetName
-     * @return The type of the target member or 'UNKNOWN_T' if type check error occurred.
+     * Common logic for type checking FieldSet and FieldGet MemberAccess nodes.
+     * @param structExpr _Already checked_ node of a struct type. Must not be null.
+     * @param fieldName Name of the field to check in context of the provided
+     *  owner struct instance.
+     * @return The type of the struct field referenced by "structExpr.fieldName"
+     *  or 'UNKNOWN_T' if a type check error occurred.
      */
-    private Type checkMemberAccessTargetType(Node structExpr, String targetName) {
+    private Type checkFieldGetOrSetTargetType(Node structExpr, String fieldName) {
         var stDef = structDefs.get(structExpr.theType.klangName());
         if (stDef == null) {
             reportError(structExpr, "Node evaluates to '" + prettyTheTypeName(structExpr)
@@ -128,17 +149,50 @@ public class TypeChecker implements Visitor {
             return Type.UNKNOWN_T;
         }
 
-        // Check whether the field does exist in stDef and get its theType
+        // Check whether the field does exist in stDef and get its 'theType'
         var fieldTheType = stDef.fields.stream()
-                .filter(f -> f.name().equals(targetName))
+                .filter(f -> f.name().equals(fieldName))
                 .map(f -> f.type().theType)
                 .findFirst();
 
         return fieldTheType.orElseGet(() -> {
-            reportError(structExpr, "Member '" + targetName + "' not defined for type '"
+            reportError(structExpr, "Field '" + fieldName + "' not defined for type '"
                     + prettyTheTypeName(structExpr) + "'");
             return Type.UNKNOWN_T;
         });
+    }
+
+    /**
+     * Check whether the type of {@code ownerExpr} has a method definition matching
+     * the method name and arguments.
+     * <ul>
+     *  <li>{@code ownerExpr} must not be null</li>
+     *  <li>{@code ownerExpr} must have already been type checked (i.e. {@code theType!=null})</li>
+     *  <li>all {@code args} must have already been checked ({@code arg.theType!=null})</li>
+     * </ul>
+     */
+    private Type checkMethodCallTargetType(Node ownerExpr, String methName, List<Node> args) {
+        // Get methods associated with ownerExpr's type
+        var ownersMethods = methDefs.get(ownerExpr.theType);
+
+        if (ownersMethods == null) {
+            reportError(ownerExpr, String.format(
+                    "Cannot call method '%s' on type '%s' which has no method definitions.",
+                    methName, prettyTheTypeName(ownerExpr)));
+            return Type.UNKNOWN_T;
+        }
+
+        var methDef = ownersMethods.get(methName);
+        if (methDef == null) {
+            reportError(ownerExpr, String.format("No '%s' method defined for type '%s'.",
+                    methName, prettyTheTypeName(ownerExpr)));
+            return Type.UNKNOWN_T;
+        }
+
+        // Check whether args match params of definition, skipping self-parameter
+        var params = methDef.def.params.stream().skip(1).toList();
+        checkArgsMatchParams(ownerExpr, args, params);
+        return methDef.def.returnType.theType;
     }
 
     @Override
@@ -148,11 +202,11 @@ public class TypeChecker implements Visitor {
          * - 'ma.theType' will be the one the member 'targetName' resolves to
          */
         if (ma.owner != null) {
-            ma.theType = checkMemberAccessTargetType(ma.owner, ma.targetName);
+            ma.theType = checkMemberAccessType(ma.owner, ma);
         } else if (ma.theType == null) {
-            throw new IllegalArgumentException("'MemberAccessor.owner' and 'MemberAccessor.theType' "
-                    + "must not be null simultaneously. Make sure if 'MemberAccessor.owner' is null, "
-                    + "MemberAccessor.theType has already been set externally!");
+            throw new IllegalArgumentException("'MemberAccess.owner' and 'MemberAccess.theType' "
+                    + "must not be null simultaneously. Make sure if 'MemberAccess.owner' is null, "
+                    + "MemberAccess.theType has already been set externally!");
         }
 
         // Advance to next accessor if there is any
@@ -169,6 +223,11 @@ public class TypeChecker implements Visitor {
     @Override
     public void visit(FieldSet fieldSet) {
         visit((MemberAccess) fieldSet);
+    }
+
+    @Override
+    public void visit(MethodCall methodCall) {
+       visit((MemberAccess) methodCall);
     }
 
     private String prettyTheTypeName(Node n) {
@@ -470,8 +529,7 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(StructDef structDef) {
-        //TODO handle custom package
-        structDef.theType = Type.of(structDef.name, "" /*default package */);
+        // structDef.theType is set already in 'visit(Prog)'
         Set<String> fnames = new HashSet<>();
         structDef.fields.forEach(f -> {
             if (!fnames.add(f.name())) {
@@ -479,10 +537,23 @@ public class TypeChecker implements Visitor {
             }
             f.type().accept(this);
         });
+        structDef.methods.forEach(meth -> meth.accept(this));
+    }
+
+    @Override
+    public void visit(MethDef methDef) {
+        methDef.def.accept(this);
+        methDef.theType = methDef.def.theType;
     }
 
     private Map<String, FunDef> funDefs = new HashMap<>();
     private Map<String, StructDef> structDefs = new HashMap<>();
+
+    /**
+     * Lookup for all methods definitions with following semantics:
+     * {@code theType -> (methName -> MethDef)}
+     */
+    private Map<Type, Map<String, MethDef>> methDefs = new HashMap<>();
 
     @Override
     public void visit(Prog prog) {
@@ -492,7 +563,6 @@ public class TypeChecker implements Visitor {
                 reportError(def, "Struct type '" + def.name + "' defined multiple times");
             }
         });
-        prog.structDefs.forEach(def -> def.accept(this));
 
         // Before traversiing the tree, we need to make funDefs available for other "visit"s
         prog.funDefs.forEach(funDef -> {
@@ -505,6 +575,35 @@ public class TypeChecker implements Visitor {
             funDef.params.forEach(p -> p.type().accept(this));
             funDef.returnType.accept(this);
         });
+
+        /**
+         * We need to also check all method definition signatures in advance,
+         * since if we were to step into each structDef and start to check its
+         * methods, it'd be possible to encounter method calls of other types
+         * whose definitions/methods were not checked yet, thus we could not be
+         * sure what the method call's type resolves to... at least not cleanly...
+         */
+        // Type check struct method signatures collecting them in lookup table 
+        prog.structDefs.forEach(stDef -> {
+            //TODO handle custom package
+            stDef.theType = Type.of(stDef.name, "" /*default package */);
+            var methMap = new HashMap<String, MethDef>();
+            methDefs.put(stDef.theType, methMap);
+
+            stDef.methods.forEach(meth -> {
+                var previous = methMap.put(meth.name(), meth);
+                if (previous != null) {
+                    reportError(meth, "Method '" + meth.name() + "' defined multiple times");
+                }
+
+                // Enables call to methods whose body was not checked yet
+                meth.params().forEach(p -> p.type().accept(this));
+                meth.returnType().accept(this);
+            });
+        });
+
+        // finally go and check the actual definitions
+        prog.structDefs.forEach(def -> def.accept(this));
         prog.funDefs.forEach(funDef -> funDef.accept(this));
 
         prog.theType = Type.VOID_T;

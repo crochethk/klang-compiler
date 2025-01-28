@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
+import java.util.stream.Stream;
 
 import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
@@ -89,9 +90,10 @@ public class PrettyPrinter implements Visitor {
 
     @Override
     public void visit(MethodCall methodCall) {
-        // TODO
-        // visit((MemberAccess) methodCall);
-        // + parentheses and args
+        visit((MemberAccess) methodCall);
+        scb.write("(");
+        writeArgsList(scb, methodCall.args);
+        scb.write(")");
     }
 
     @Override
@@ -253,12 +255,20 @@ public class PrettyPrinter implements Visitor {
 
     @Override
     public void visit(FunDef funDef) {
+        scb.write("fn ");
+        writeFunDefNoKeyword(funDef, funDef.params);
+    }
+
+    /** Writes funDef using the provided parameter list instead of the funDef's. */
+    private void writeFunDefNoKeyword(FunDef funDef, List<Parameter> params) {
         // Signature
-        scb.write("fn ", funDef.name, "(");
-        for (var p : funDef.params) {
+        scb.write(funDef.name, "(");
+        for (var paramsIter = params.iterator(); paramsIter.hasNext();) {
+            var p = paramsIter.next();
             scb.write(p.name(), ": ");
             p.type().accept(this);
-            scb.write(", ");
+            if (paramsIter.hasNext())
+                scb.write(", ");
         }
         scb.write(")");
         if (!funDef.returnType.typeToken.equals("void")) {
@@ -276,38 +286,53 @@ public class PrettyPrinter implements Visitor {
             scb.writeIndent();
         }
         scb.write("}");
-        scb.writeIndent();
     }
 
     @Override
     public void visit(StructDef structDef) {
         scb.write("struct ", structDef.name, " {");
-        if (!structDef.fields.isEmpty()) {
+        if (!structDef.isEmpty()) {
             scb.increaseIndent();
-            for (var p : structDef.fields) {
+            for (var f : structDef.fields) {
                 scb.writeIndent();
-                scb.write(p.name(), ": ");
-                p.type().accept(this);
+                scb.write(f.name(), ": ");
+                f.type().accept(this);
                 scb.write(",");
+            }
+
+            var methsIter = structDef.methods.iterator();
+            if (methsIter.hasNext())
+                scb.writeIndented("---");
+            for (; methsIter.hasNext();) {
+                scb.writeIndent();
+                methsIter.next().accept(this);
+                if (methsIter.hasNext())
+                    scb.writeIndent();
             }
             scb.decreaseIndent();
             scb.writeIndent();
         }
         scb.write("}");
-        scb.writeIndent();
+    }
+
+    @Override
+    public void visit(MethDef methDef) {
+        // Remove implicit 'self' parameter
+        var params = methDef.def.params.stream().skip(1).toList();
+        writeFunDefNoKeyword(methDef.def, params);
     }
 
     @Override
     public void visit(Prog prog) {
-        for (int i = 0; i < prog.structDefs.size(); i++) {
-            prog.structDefs.get(i).accept(this);
-            if (i < prog.structDefs.size() - 1)
-                scb.writeIndent();
-        }
+        var allDefs = Stream.concat(
+                prog.structDefs.stream().map(def -> (Node) def),
+                prog.funDefs.stream().map(def -> (Node) def) //
+        );
 
-        for (int i = 0; i < prog.funDefs.size(); i++) {
-            prog.funDefs.get(i).accept(this);
-            if (i < prog.funDefs.size() - 1)
+        for (var defsIter = allDefs.iterator(); defsIter.hasNext();) {
+            defsIter.next().accept(this);
+            scb.writeIndent();
+            if (defsIter.hasNext())
                 scb.writeIndent();
         }
 

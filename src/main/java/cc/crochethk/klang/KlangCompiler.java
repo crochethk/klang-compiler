@@ -59,7 +59,7 @@ public class KlangCompiler {
         // PrettyPrint
         if (cfg.prettyPrintAst()) {
             var pp = new PrettyPrinter();
-            ast.accept(new PrettyPrinter());
+            ast.accept(pp);
             System.out.println(pp.writer.toString());
         }
 

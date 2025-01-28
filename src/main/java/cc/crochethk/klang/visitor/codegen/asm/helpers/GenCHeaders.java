@@ -5,6 +5,7 @@ import java.util.List;
 import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.visitor.SourceCodeBuilder;
 import cc.crochethk.klang.visitor.Type;
+import cc.crochethk.klang.visitor.codegen.GenAsm;
 import utils.SourcePos;
 
 /** Generates a C-Header file based on the traversed AST. */
@@ -15,10 +16,7 @@ public class GenCHeaders extends GenCBase {
 
     @Override
     public void visit(FunDef funDef) {
-        codeBuilder.writeIndent();
-        // Write function signature
-        funDef.returnType.accept(this);
-        codeBuilder.write(" ", funDef.name, "(", formatParams(funDef.params), ");");
+        writeCFunSignature(funDef.returnType, funDef.name, funDef.params);
     }
 
     @Override
@@ -37,6 +35,16 @@ public class GenCHeaders extends GenCBase {
             codeBuilder.writeIndented("char _$dummy$_;");
         codeBuilder.decreaseIndent();
         codeBuilder.writeIndented("};\n");
+
+        // Declare struct methods
+        structDef.methods.forEach(meth -> meth.accept(this));
+    }
+
+    @Override
+    public void visit(MethDef methDef) {
+        var ownerType = methDef.owner().theType;
+        var methName = GenAsm.getAsmMethodName(ownerType, methDef.name());
+        writeCFunSignature(methDef.returnType(), methName, methDef.params());
     }
 
     @Override
@@ -64,7 +72,8 @@ public class GenCHeaders extends GenCBase {
         codeBuilder.write("\n");
 
         // Generate struct definitions
-        codeBuilder.writeIndented("// ----------[ Struct definitions ]----------\n");
+        codeBuilder.writeIndented(
+                "// ----------[ Struct definitions and Method declarations ]----------\n");
         prog.structDefs.forEach(st -> st.accept(this));
 
         // Declare struct auto-methods

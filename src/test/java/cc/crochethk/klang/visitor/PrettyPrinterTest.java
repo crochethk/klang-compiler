@@ -109,13 +109,13 @@ public class PrettyPrinterTest extends NodeMocker {
         @Test
         void emptyStruct() {
             pp.visit(structDef("FooBar", List.of()));
-            assertEquals("struct FooBar {}\n", pp.scb.toString());
+            assertEquals("struct FooBar {}", pp.scb.toString());
         }
 
         @Test
         void oneFieldStruct() {
             pp.visit(structDef("_Other", List.of(param("a_value", I64_TN))));
-            assertEquals("struct _Other {\n  a_value: i64,\n}\n", pp.scb.toString());
+            assertEquals("struct _Other {\n  a_value: i64,\n}", pp.scb.toString());
         }
 
         @Test
@@ -129,8 +129,7 @@ public class PrettyPrinterTest extends NodeMocker {
                       two: string,
                       thr33: i64,
                       four: OtherStruct,
-                    }
-                    """, pp.scb.toString());
+                    }""", pp.scb.toString());
         }
     }
 
@@ -139,14 +138,14 @@ public class PrettyPrinterTest extends NodeMocker {
         @Test
         void emptyParamsAndBody() {
             pp.visit(funDef("fun_1", List.of(), VOID_TN, List.of()));
-            assertEquals("fn fun_1() {}\n", pp.scb.toString());
+            assertEquals("fn fun_1() {}", pp.scb.toString());
         }
 
         @Test
         void oneParamWithReturn() {
             pp.visit(funDef("fun_2", List.of(param("p1", I64_TN)), I64_TN,
                     List.of(returnStat(i64Lit(42)))));
-            assertEquals("fn fun_2(p1: i64, ) -> i64 {\n  return 42;\n}\n", pp.scb.toString());
+            assertEquals("fn fun_2(p1: i64) -> i64 {\n  return 42;\n}", pp.scb.toString());
         }
 
         @Test
@@ -160,11 +159,10 @@ public class PrettyPrinterTest extends NodeMocker {
                             varAssignStat("p1", binOpExpr(var("p1"), BinaryOp.add, i64Lit(1))),
                             returnStat(emptyNode()))));
             assertEquals("""
-                    fn fun_3(p1: i64, p2: CustomType, p3: string, ) {
+                    fn fun_3(p1: i64, p2: CustomType, p3: string) {
                       p1 = (p1 + 1);
                       return;
-                    }
-                    """, pp.scb.toString());
+                    }""", pp.scb.toString());
         }
     }
 
