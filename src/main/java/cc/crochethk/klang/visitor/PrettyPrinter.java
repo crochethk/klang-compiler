@@ -157,8 +157,15 @@ public class PrettyPrinter implements Visitor {
 
     @Override
     public void visit(VarDeclareStat varDeclareStat) {
-        scb.write("let ", varDeclareStat.varName, ": ");
-        varDeclareStat.declaredType.accept(this);
+        scb.write("let ", varDeclareStat.varName());
+        varDeclareStat.declaredType.ifPresent(t -> {
+            scb.write(": ");
+            t.accept(this);
+        });
+        varDeclareStat.initializer.ifPresent(init -> {
+            scb.write(" = ");
+            init.expr.accept(this);
+        });
         scb.write(";");
     }
 

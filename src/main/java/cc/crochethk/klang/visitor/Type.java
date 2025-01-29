@@ -46,7 +46,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         return this.equals(LONG_T) || this.equals(DOUBLE_T);
     }
 
-    /** Tests whether this and other are compatible in regarding assignment. */
+    /** Tests whether this and other are compatible in an assignment context. */
     public default boolean isCompatible(Type other) {
         return this.isReference() && other == Type.NULL_T
                 || other.isReference() && this == Type.NULL_T

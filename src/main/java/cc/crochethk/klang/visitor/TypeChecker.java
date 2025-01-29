@@ -92,12 +92,7 @@ public class TypeChecker implements Visitor {
                 break;
             }
             var arg = argsIter.next();
-
-            if (!arg.theType.isCompatible(p.type().theType)) {
-                reportError(arg, "Invalid argument type for parameter '" + p.name()
-                        + "': expected '" + prettyTheTypeName(p.type()) + "' but found incompatible '"
-                        + prettyTheTypeName(arg) + "'");
-            }
+            checkAssignmentTypeCompatibility(arg, p.type().theType);
         }
     }
 
@@ -261,12 +256,7 @@ public class TypeChecker implements Visitor {
                     break;
                 }
                 var arg = argsIter.next();
-
-                if (!field.type().theType.isCompatible(arg.theType)) {
-                    reportError(constCall, "Invalid argument type for field '" + field.name()
-                            + "': Expected '" + prettyTheTypeName(field.type())
-                            + "' but found incompatible '" + prettyTheTypeName(arg) + "'");
-                }
+                checkAssignmentTypeCompatibility(arg, field.type().theType);
             }
         }
     }
@@ -359,16 +349,34 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(VarDeclareStat varDeclareStat) {
-        /*
-        TODO
-        - when declaration has optional initializer: check whether types are compatible
-        */
+        var declaredType = varDeclareStat.declaredType;
+        declaredType.ifPresent(typeNode -> typeNode.accept(this));
 
-        varDeclareStat.declaredType.accept(this);
-        varDeclareStat.theType = varDeclareStat.declaredType.theType;
-        var previous = funDefVarTypes.put(varDeclareStat.varName, varDeclareStat.theType);
+        var initializer = varDeclareStat.initializer;
+        initializer.ifPresent(init -> {
+            init.expr.accept(this);
+            init.theType = init.expr.theType;
+        });
+
+        if (declaredType.isPresent()) {
+            varDeclareStat.theType = declaredType.get().theType;
+            if (initializer.isPresent()) {
+                // check compatibility
+                checkAssignmentTypeCompatibility(initializer.get(), varDeclareStat.theType);
+            }
+        } else if (initializer.isPresent()) {
+            // only initializer -> infer the type
+            varDeclareStat.theType = initializer.get().theType;
+        } else {
+            varDeclareStat.theType = Type.UNKNOWN_T;
+            reportError(varDeclareStat, "Variable declaration must provide "
+                    + "an explicit type and/or an initializer.");
+        }
+
+        var previous = funDefVarTypes.put(varDeclareStat.varName(), varDeclareStat.theType);
         if (previous != null) {
-            reportError(varDeclareStat, "Attempt to redeclare variable '" + varDeclareStat.varName + "'");
+            reportError(varDeclareStat,
+                    "Attempt to redeclare variable '" + varDeclareStat.varName() + "'");
         }
     }
 
@@ -376,18 +384,27 @@ public class TypeChecker implements Visitor {
     public void visit(VarAssignStat varAssignStat) {
         var varType = funDefVarTypes.get(varAssignStat.targetVarName);
         varAssignStat.expr.accept(this);
-        var exprType = varAssignStat.expr.theType;
 
         if (varType == null) {
+            varType = Type.UNKNOWN_T;
             reportError(varAssignStat, "Assignment to undeclared variable '"
                     + varAssignStat.targetVarName + "'");
-        } else if (!(varType.isCompatible(exprType))) {
-            reportError(varAssignStat, "Attempt to assign expression of type '"
-                    + exprType.prettyTypeName() + "' to variable '" + varAssignStat.targetVarName
-                    + "' of incompatible type '" + varType.prettyTypeName() + "'");
+        } else {
+            checkAssignmentTypeCompatibility(varAssignStat.expr, varType);
         }
-
         varAssignStat.theType = varType;
+    }
+
+    /**
+     * Check whether the type of expression {@code exprNode} is assignable to a
+     * variable declared or inferred as type {@code varType}.
+     */
+    void checkAssignmentTypeCompatibility(Node exprNode, Type varType) {
+        if (!exprNode.theType.isCompatible(varType)) {
+            reportError(exprNode, String.format("Cannot assign expression "
+                    + "of type '%s' to variable with incompatible type '%s'.",
+                    prettyTheTypeName(exprNode), varType.prettyTypeName()));
+        }
     }
 
     @Override
@@ -397,7 +414,7 @@ public class TypeChecker implements Visitor {
         var fType = fieldAssStat.maChain.theType;
         var exprType = fieldAssStat.expr.theType;
         fieldAssStat.theType = fType;
-        if (!fType.isCompatible(exprType)) {
+        if (!exprType.isCompatible(fType)) {
             reportError(fieldAssStat, "Attempt to assign expression of type '"
                     + exprType.prettyTypeName() + "' to field '" + fieldAssStat.maChain.getLast().targetName
                     + "' of incompatible type '" + fType.prettyTypeName() + "'");
@@ -454,7 +471,7 @@ public class TypeChecker implements Visitor {
 
         returnStat.expr.accept(this);
         var exprType = returnStat.expr.theType;
-        if (!retType.isCompatible(exprType)) {
+        if (!exprType.isCompatible(retType)) {
             reportError(returnStat, "Expected return type '" + retType.prettyTypeName()
                     + "' but found incompatible '" + exprType.prettyTypeName() + "'");
         }
@@ -551,6 +568,7 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(MethDef methDef) {
+        // Hint: Signature nodes are already evaluated in Prog
         methDef.def.accept(this);
         methDef.theType = methDef.def.theType;
     }

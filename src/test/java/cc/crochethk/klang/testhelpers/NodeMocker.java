@@ -98,8 +98,19 @@ public class NodeMocker {
         return new BoolLit(srcPosMock, value);
     }
 
+    /** Var declaration w/o init. */
     public VarDeclareStat varDeclareStat(String varName, TypeNode declaredType) {
-        return new VarDeclareStat(srcPosMock, varName, declaredType);
+        return varDeclareStat(varName, declaredType, null);
+    }
+
+    /** Var declaration w/o type specifier. */
+    public VarDeclareStat varDeclareStatInferType(String varName, Node expr) {
+        return varDeclareStat(varName, null, expr);
+    }
+
+    /** Var declaration w/ init. */
+    public VarDeclareStat varDeclareStat(String varName, TypeNode declaredType, Node expr) {
+        return new VarDeclareStat(srcPosMock, varName, declaredType, expr);
     }
 
     public VarAssignStat varAssignStat(String targetVarName, Node expr) {

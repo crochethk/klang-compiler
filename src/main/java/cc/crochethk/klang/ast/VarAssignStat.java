@@ -6,8 +6,8 @@ import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
 public class VarAssignStat extends Node {
-    public String targetVarName;
-    public Node expr;
+    public final String targetVarName;
+    public final Node expr;
 
     public VarAssignStat(SourcePos srcPos, String targetVarName, Node expr) {
         super(srcPos);
