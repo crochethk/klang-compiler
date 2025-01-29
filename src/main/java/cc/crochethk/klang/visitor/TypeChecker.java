@@ -624,7 +624,8 @@ public class TypeChecker implements Visitor {
             var epDef = funDefs.get(epName);
 
             if (epDef.params.size() > 0) {
-                reportError(prog, "'" + epName + "' function must not have any parameters.");
+                reportError(prog, "Entry point function '" + epName
+                        + "' must not have any parameters.");
             }
             if (epDef.returnType.theType != Type.VOID_T) {
                 reportError(prog, "Main function must return '" + Type.VOID_T.prettyTypeName()

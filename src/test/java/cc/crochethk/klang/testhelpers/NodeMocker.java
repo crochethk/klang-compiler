@@ -30,6 +30,10 @@ public class NodeMocker {
         return new Parameter(paramName, tn);
     }
 
+    public Prog prog(List<FunDef> funDefs, List<StructDef> structDefs) {
+        return new Prog(srcPosMock, funDefs, null, structDefs);
+    }
+
     public FunDef funDef(String name, List<Parameter> params, TypeNode returnType, List<Node> statements) {
         return new FunDef(srcPosMock, name, params, returnType,
                 new StatementList(srcPosMock, statements));

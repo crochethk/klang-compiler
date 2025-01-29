@@ -586,8 +586,10 @@ public class TypeCheckerTest extends NodeMocker {
         @Test
         void maxIntUsingIfElse() {
             var fun = maxInt_IfElse_fd();
-            var useMaxInt = funCall("maxInt", List.of(i64Lit(-1), i64Lit(2)));
-            checkProgOf(List.of(fun), List.of(), useMaxInt);
+            checkProgOf(List.of(fun), List.of());
+            assertReportedErrors(0);
+            var callFun = funCall(fun.name, List.of(i64Lit(-1), i64Lit(2)));
+            tc.visit(callFun);
             assertReportedErrors(0);
         }
 
@@ -736,12 +738,7 @@ public class TypeCheckerTest extends NodeMocker {
 
     /** Run TypeChecker on new Program consiting of given definitions */
     private void checkProgOf(List<FunDef> funDefs, List<StructDef> structDefs) {
-        tc.visit(new Prog(new SourcePos(0, 0), funDefs, null, structDefs));
-    }
-
-    /** Run TypeChecker on new Program consiting of given definitions and the entry point call */
-    private void checkProgOf(List<FunDef> funDefs, List<StructDef> structDefs, FunCall entryPoint) {
-        tc.visit(new Prog(new SourcePos(0, 0), funDefs, entryPoint, structDefs));
+        tc.visit(prog(funDefs, structDefs));
     }
 
     private void assertReportedErrors(int expErrCount) {
