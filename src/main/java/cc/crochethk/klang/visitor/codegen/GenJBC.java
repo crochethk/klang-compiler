@@ -305,8 +305,7 @@ public class GenJBC extends CodeGenVisitor {
 
     @Override
     public void visit(VarDeclareStat varDeclareStat) {
-        // we are fine with redefintion
-        varsManager.reserveSlot(varDeclareStat.varName, varDeclareStat.declaredType.theType);
+        varsManager.reserveSlot(varDeclareStat.varName(), varDeclareStat.theType);
     }
 
     @Override

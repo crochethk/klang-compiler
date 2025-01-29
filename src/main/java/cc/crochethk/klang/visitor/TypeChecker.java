@@ -366,9 +366,9 @@ public class TypeChecker implements Visitor {
 
         varDeclareStat.declaredType.accept(this);
         varDeclareStat.theType = varDeclareStat.declaredType.theType;
-        var previous = funDefVarTypes.put(varDeclareStat.varName, varDeclareStat.theType);
+        var previous = funDefVarTypes.put(varDeclareStat.varName(), varDeclareStat.theType);
         if (previous != null) {
-            reportError(varDeclareStat, "Attempt to redeclare variable '" + varDeclareStat.varName + "'");
+            reportError(varDeclareStat, "Attempt to redeclare variable '" + varDeclareStat.varName() + "'");
         }
     }
 

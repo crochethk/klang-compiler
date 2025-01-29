@@ -71,9 +71,15 @@ loop
 
 varDeclarationOrAssignment
 	returns[Node result]:
-	KW_LET varName=IDENT COLON type EQ expr SEMI
-	// KW_LET varName=IDENT (COLON type)? SEMI  // optional type annotation
-	| KW_LET varName=IDENT COLON type SEMI
+	// Declaration schemes:
+	//      varName, type, expr
+	//      varName, type, ---
+	//      varName, ---, expr
+	KW_LET varName=IDENT (
+		(COLON type) (EQ expr)
+		| COLON type
+		| EQ expr
+	) SEMI
 	| varName=IDENT EQ expr SEMI
 	| structFieldAssignStat
 ;

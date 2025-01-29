@@ -278,13 +278,10 @@ public class TreeBuilder extends KlangBaseListener {
     @Override
     public void exitVarDeclarationOrAssignment(KlangParser.VarDeclarationOrAssignmentContext ctx) {
         var srcPos = getSourcePos(ctx);
-        if (ctx.KW_LET() != null && ctx.EQ() != null) {
-            ctx.result = new StatementList(srcPos, List.of(
-                    buildVarDeclareNode(srcPos, ctx), buildVarAssignNode(srcPos, ctx)));
-        } else if (ctx.KW_LET() != null) {
+        if (ctx.KW_LET() != null) {
             ctx.result = buildVarDeclareNode(srcPos, ctx);
         } else if (ctx.EQ() != null) {
-            ctx.result = buildVarAssignNode(srcPos, ctx);
+            ctx.result = new VarAssignStat(srcPos, ctx.varName.getText(), ctx.expr().result);
         } else if (ctx.structFieldAssignStat() != null) {
             ctx.result = ctx.structFieldAssignStat().result;
         } else {
@@ -294,11 +291,9 @@ public class TreeBuilder extends KlangBaseListener {
     }
 
     private Node buildVarDeclareNode(SourcePos srcPos, KlangParser.VarDeclarationOrAssignmentContext ctx) {
-        return new VarDeclareStat(srcPos, ctx.varName.getText(), ctx.type().result);
-    }
-
-    private Node buildVarAssignNode(SourcePos srcPos, KlangParser.VarDeclarationOrAssignmentContext ctx) {
-        return new VarAssignStat(srcPos, ctx.varName.getText(), ctx.expr().result);
+        var declaredType = ctx.type() != null ? ctx.type().result : null;
+        var initializer = ctx.expr() != null ? ctx.expr().result : null;
+        return new VarDeclareStat(srcPos, ctx.varName.getText(), declaredType, initializer);
     }
 
     @Override

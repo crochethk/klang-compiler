@@ -305,7 +305,7 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(VarDeclareStat varDeclareStat) {
-        stack.store(varDeclareStat.varName, varDeclareStat.theType.byteSize());
+        stack.store(varDeclareStat.varName(), varDeclareStat.theType.byteSize());
     }
 
     @Override
