@@ -306,6 +306,7 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(VarDeclareStat varDeclareStat) {
         stack.store(varDeclareStat.varName(), varDeclareStat.theType.byteSize());
+        varDeclareStat.initializer.ifPresent(init -> init.accept(this));
     }
 
     @Override
@@ -589,10 +590,10 @@ public class GenAsm extends CodeGenVisitor {
         }
 
         /**
-         * "Stores" an uninitialized element, i.e. this simply reserves a slot of 
-         * {@code size} bytes on the stack. An actual memory position specifier
-         * can be later be retrieved using {@link #get(String)} and the specified 
-         * {@code name}.
+         * "Stores" an uninitialized named element. This simply reserves a slot
+         * of {@code size} bytes on the stack, whose position can be retrieved
+         * as {@code OperandSpecifier} using {@link #get(String)} and the
+         * specified {@code name}.
          * @param name A Name for the stored element for later reference.
          * @param size How many bytes the element should occupy.
          * @see #store(String, int, OperandSpecifier)

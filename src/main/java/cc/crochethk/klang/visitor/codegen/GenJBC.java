@@ -306,6 +306,7 @@ public class GenJBC extends CodeGenVisitor {
     @Override
     public void visit(VarDeclareStat varDeclareStat) {
         varsManager.reserveSlot(varDeclareStat.varName(), varDeclareStat.theType);
+        varDeclareStat.initializer.ifPresent(init -> init.accept(this));
     }
 
     @Override
