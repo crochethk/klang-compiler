@@ -464,32 +464,15 @@ public class GenJBC extends CodeGenVisitor {
         cb.withMethod("main", methDescriptor, methFlags, mb -> {
             mb.withCode(cdb -> {
                 this.codeBuilder = cdb;
-
-                /** Generate code that:
-                 *  - calls the entryPoint function
-                 *  - passes the return value to "System.out.println" for outputs to stdout
-                 */
-                var CD_PrintStream = ClassDesc.of(java.io.PrintStream.class.getName());
-
-                // Push "System.out" reference onto operand stack
-                codeBuilder.getstatic(
-                        ClassDesc.of(java.lang.System.class.getName()), "out",
-                        CD_PrintStream);
-
-                // Execute entrypoint function
-                // Push the result onto operand stack
                 entryPointCall.accept(this);
-
-                // Only print if returntype is not void
-                if (!entryPointCall.theType.equals(Type.VOID_T)) {
-                    codeBuilder.invokevirtual(
-                            CD_PrintStream, "println",
-                            MethodTypeDesc.of(
-                                    // Return type of println
-                                    ConstantDescs.CD_void,
-                                    entryPointCall.theType.classDesc()));
+                switch (entryPointCall.theType.jvmSize()) {
+                    case 0 -> {
+                    }
+                    case 1 -> codeBuilder.pop();
+                    case 2 -> codeBuilder.pop2();
+                    default -> throw new UnsupportedOperationException(
+                            "Types occupying more than 2 slots are not supported.");
                 }
-
                 codeBuilder.return_();
             });
         });
@@ -556,5 +539,21 @@ public class GenJBC extends CodeGenVisitor {
     public void visit(FieldAssignStat fieldAssignStat) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
+    // TODO actually use this
+    @SuppressWarnings("unused")
+    private void genPrintFunCall(Node expr) {
+        var CD_PrintStream = ClassDesc.of(java.io.PrintStream.class.getName());
+        // Push "System.out" reference onto operand stack
+        codeBuilder.getstatic(
+                ClassDesc.of(java.lang.System.class.getName()), "out",
+                CD_PrintStream);
+
+        // Evaluate expression and push its result onto operand stack
+        expr.accept(this);
+        // Call java's print(...)
+        codeBuilder.invokevirtual(CD_PrintStream, "print", MethodTypeDesc.of(
+                ConstantDescs.CD_void, expr.theType.classDesc()));
     }
 }
