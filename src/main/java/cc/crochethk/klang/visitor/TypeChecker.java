@@ -54,6 +54,8 @@ public class TypeChecker implements Visitor {
         var varType = funDefVarTypes.get(var.name);
         if (varType == null) {
             reportError(var, "Use of undefined variable '" + var.name + "'");
+        } else if (!initializedFunDefVars.contains(var.name)) {
+            reportError(var, "Use of uninitialized variable '" + var.name + "'");
         }
         var.theType = varType;
     }
@@ -356,6 +358,8 @@ public class TypeChecker implements Visitor {
         initializer.ifPresent(init -> {
             init.expr.accept(this);
             init.theType = init.expr.theType;
+            // mark as initialized
+            initializedFunDefVars.add(varDeclareStat.varName());
         });
 
         if (declaredType.isPresent()) {
@@ -384,6 +388,8 @@ public class TypeChecker implements Visitor {
     public void visit(VarAssignStat varAssignStat) {
         var varType = funDefVarTypes.get(varAssignStat.targetVarName);
         varAssignStat.expr.accept(this);
+        // mark as initialized
+        initializedFunDefVars.add(varAssignStat.targetVarName);
 
         if (varType == null) {
             varType = Type.UNKNOWN_T;
@@ -517,6 +523,7 @@ public class TypeChecker implements Visitor {
      * Here only references to "Node.theType" are to be added.
      */
     private Map<String, Type> funDefVarTypes = new HashMap<>();
+    private Set<String> initializedFunDefVars = new HashSet<>();
 
     /** Reference to currently inspected function def */
     private FunDef currentFun = null;
@@ -529,8 +536,9 @@ public class TypeChecker implements Visitor {
         currentFun = funDef;
         currentFunReturnCount = 0;
 
-        // Make sure the local variables lookup table is empty before proceeding
+        // Make sure the local variables lookup tables are empty before proceeding
         funDefVarTypes.clear();
+        initializedFunDefVars.clear();
 
         funDef.params.forEach(p -> {
             var previous = funDefVarTypes.put(p.name(), p.type().theType);
@@ -538,6 +546,7 @@ public class TypeChecker implements Visitor {
                 reportError(funDef, "Duplicate parameter name '" + p.name()
                         + "' in function '" + funDef.name + "'");
             }
+            initializedFunDefVars.add(p.name());
         });
 
         // Check return type consistency in the according node(s)
