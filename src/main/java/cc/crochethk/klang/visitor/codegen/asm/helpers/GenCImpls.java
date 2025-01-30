@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import cc.crochethk.klang.ast.*;
+import cc.crochethk.klang.visitor.BuiltinDefinitions;
 import cc.crochethk.klang.visitor.Type;
+import cc.crochethk.klang.visitor.Type.*;
 import cc.crochethk.klang.visitor.codegen.GenAsm;
-import utils.SourcePos;
 
 /**
  * Generates a C-File containing helper implementations for some of the 
@@ -57,7 +58,7 @@ public class GenCImpls extends GenCBase {
     private void implConstructor(StructDef st) {
         var thisPtrT = st.theType.cTypeName();
         // constructor
-        writeConstructorSignature(st);
+        writeConstructorSignature(st.theType, Parameter.toChecked(st.fields));
         scb.write(" {");
         scb.increaseIndent();
         scb.writeIndented(thisPtrT, " this = (", thisPtrT, ")malloc(sizeof(*this));");
@@ -142,16 +143,6 @@ public class GenCImpls extends GenCBase {
         scb.writeIndented("}\n");
     }
 
-    private static final Map<Type, String> TYPE_FORMATS = Map.of(
-            Type.BOOL_T, "%d",
-            Type.DOUBLE_T, "%f",
-            Type.LONG_T, "%ld",
-            Type.STRING_T, "\\\"%s\\\"");
-
-    private String getTypeFormat(Type t) {
-        return TYPE_FORMATS.getOrDefault(t, "%p");
-    }
-
     private void implGetter(StructDef st, Parameter field) {
         writeGetterSignature(st, field);
         scb.write(" {");
@@ -170,13 +161,9 @@ public class GenCImpls extends GenCBase {
         scb.writeIndented("}\n");
     }
 
+    /** Write string helper function implementations */
     private void implStringHelpers() {
-        // Declare string helper functions
-        var strTypeNode = new TypeNode(new SourcePos(-1, -1), Type.STRING_T.klangName());
-        strTypeNode.theType = Type.STRING_T;
-
-        writeConstructorSignature(Type.STRING_T, List.of(
-                new Parameter("str", strTypeNode)));
+        writeConstructorSignature(Type.STRING_T, List.of(new CheckedParam("str", Type.STRING_T)));
         scb.write(" {");
         scb.increaseIndent();
         scb.writeIndented("return strdup(str);");

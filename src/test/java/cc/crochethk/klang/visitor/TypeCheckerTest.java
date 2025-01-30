@@ -12,7 +12,6 @@ import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.klang.visitor.TypeChecker.TypeCheckFailedException;
-import utils.SourcePos;
 import cc.crochethk.klang.testhelpers.NodeMocker;
 
 public class TypeCheckerTest extends NodeMocker {

@@ -2,6 +2,7 @@ package cc.crochethk.klang.visitor;
 
 import java.lang.classfile.TypeKind;
 import java.lang.constant.ClassDesc;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -75,6 +76,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         BooleanType(1, "bool"),
         DoubleType(8, "double"),
         VoidType(0, "void"),
+
         ;
 
         int byteSize;
@@ -183,6 +185,18 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         @Override
         public int byteSize() {
             return 8;
+        }
+    }
+
+    record CheckedParam(String name, Type type) {
+        public static List<Type> toTypes(List<CheckedParam> params) {
+            return params.stream().map(p -> p.type()).toList();
+        }
+    }
+
+    record Signature(String name, Type returnType, List<CheckedParam> params) {
+        public static Signature of(String name, Type returnType, CheckedParam... params) {
+            return new Signature(name, returnType, List.of(params));
         }
     }
 }

@@ -1,5 +1,6 @@
 package cc.crochethk.klang.visitor.codegen;
 
+import static cc.crochethk.klang.visitor.BuiltinDefinitions.*;
 import static cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Const.$;
 import static cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Register.*;
 import static cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegister.*;
@@ -16,10 +17,9 @@ import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.visitor.BuiltinDefinitions;
 import cc.crochethk.klang.visitor.Type;
 import cc.crochethk.klang.visitor.codegen.asm.*;
-import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.MemAddr;
-import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Register;
 import cc.crochethk.klang.visitor.codegen.asm.helpers.*;
 import utils.Utf8Helper;
 
@@ -93,14 +93,18 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(StringLit stringLit) {
-        var escapedStr = Utf8Helper.octalEscapeNonAscii(stringLit.value);
+        var label = createStringLC(stringLit.value);
+        // Calculate pointer to string literal at runtime
+        code.leaq(new MemAddr(label, rip), rax);
+    }
+
+    private String createStringLC(String str) {
+        var escapedStr = Utf8Helper.octalEscapeNonAscii(str);
 
         var label = nextLitConstantLabel();
         rodataSec.write("\n", label, ":");
         rodataSec.writeIndented(".string\t\"", escapedStr, "\"");
-
-        // Calculate pointer to string literal at runtime
-        code.leaq(new MemAddr(label, rip), rax);
+        return label;
     }
 
     @Override
@@ -128,7 +132,33 @@ public class GenAsm extends CodeGenVisitor {
             funCall.args.get(i).accept(this);
             code.movq(rax, regs[i]);
         }
-        code.call(funCall.name);
+
+        // Generate call to builtin function (if funCall is builtin)
+        var argTypes = funCall.args.stream().map(arg -> arg.theType).toList();
+        var autoFunSign = findBuiltinFun(funCall.name, argTypes);
+        autoFunSign.ifPresentOrElse(funSign -> {
+
+            // Handle "print" function overloads
+            if (funSign == BuiltinDefinitions.FN_PRINT_STR) {
+                // quick solution: assumes funcall had 1 arg whose pointer is now in rdi 
+                code.call("printf@PLT");
+            } else if (funSign == BuiltinDefinitions.FN_PRINT_I64) {
+                // Move first arg to second arg
+                code.movq(rdi, rsi);
+                // Create format str and use it as first arg
+                var cFormatStr = GenCBase.getTypeFormat(funCall.args.get(0).theType);
+                var label = createStringLC(cFormatStr);
+                code.leaq(new MemAddr(label, rip), rdi);
+                code.call("printf@PLT");
+            } else {
+                throw new UnsupportedOperationException(
+                        "Builtin function '" + funCall.name + "' is not implemented.");
+            }
+
+        }, () -> {
+            code.call(funCall.name);
+        });
+
         //release stack args if necessary
         if (stackArgsOffset > 0) {
             code.addq($(stackArgsOffset), rsp);

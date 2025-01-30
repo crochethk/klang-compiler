@@ -10,6 +10,9 @@ import java.util.Set;
 import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.visitor.Type.CheckedParam;
+
+import static cc.crochethk.klang.visitor.BuiltinDefinitions.*;
 
 /** TypeChecker Visitor
  * The main task of this Visitor is to semantically check typing of the visited AST.
@@ -66,12 +69,21 @@ public class TypeChecker implements Visitor {
 
         var funDef = funDefs.get(funCall.name);
         if (funDef == null) {
-            reportError(funCall, "Unknown function '" + funCall.name + "'");
-            funCall.theType = Type.UNKNOWN_T;
+            // no such userdefined function found
+            // -> check builtins
+            var argTypes = funCall.args.stream().map(arg -> arg.theType).toList();
+            var autoFunSign = findBuiltinFun(funCall.name, argTypes);
+            autoFunSign.ifPresentOrElse(funSign -> {
+                checkArgsMatchParams(funCall, funCall.args, funSign.params());
+                funCall.theType = funSign.returnType();
+            }, () -> {
+                reportError(funCall, "Unknown function '" + funCall.name + "'");
+                funCall.theType = Type.UNKNOWN_T;
+            });
         } else {
             //funDef found
             funCall.theType = funDef.returnType.theType;
-            checkArgsMatchParams(funCall, funCall.args, funDef.params);
+            checkArgsMatchParams(funCall, funCall.args, Parameter.toChecked(funDef.params));
         }
     }
 
@@ -80,7 +92,7 @@ public class TypeChecker implements Visitor {
      * parameter definitions.
      * @param nodeCtx Node context in which this check is performed.
      */
-    private void checkArgsMatchParams(Node nodeCtx, List<Node> args, List<Parameter> params) {
+    private void checkArgsMatchParams(Node nodeCtx, List<Node> args, List<CheckedParam> params) {
         var paramCount = params.size();
         var argsCount = args.size();
         if (paramCount != argsCount) {
@@ -94,7 +106,7 @@ public class TypeChecker implements Visitor {
                 break;
             }
             var arg = argsIter.next();
-            checkAssignmentTypeCompatibility(arg, p.type().theType);
+            checkAssignmentTypeCompatibility(arg, p.type());
         }
     }
 
@@ -173,6 +185,10 @@ public class TypeChecker implements Visitor {
         var ownersMethods = methDefs.get(ownerExpr.theType);
 
         if (ownersMethods == null) {
+
+            //TODO check whether ownerExpr.theType has auto-builtin implementation
+            //TODO      matching methName and argstypes (use CheckArgsMatchDefParams)
+
             reportError(ownerExpr, String.format(
                     "Cannot call method '%s' on type '%s' which has no method definitions.",
                     methName, prettyTheTypeName(ownerExpr)));
@@ -188,7 +204,7 @@ public class TypeChecker implements Visitor {
 
         // Check whether args match params of definition, skipping self-parameter
         var params = methDef.def.params.stream().skip(1).toList();
-        checkArgsMatchParams(ownerExpr, args, params);
+        checkArgsMatchParams(ownerExpr, args, Parameter.toChecked(params));
         return methDef.def.returnType.theType;
     }
 
@@ -593,6 +609,10 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Prog prog) {
+        // TODO
+        // TODO Check for collisions with builtin function and method names!
+        // TODO
+
         prog.structDefs.forEach(def -> {
             var previous = structDefs.put(def.name, def);
             if (previous != null) {

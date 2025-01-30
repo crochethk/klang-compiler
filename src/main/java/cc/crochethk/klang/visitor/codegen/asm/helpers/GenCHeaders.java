@@ -4,8 +4,9 @@ import java.util.List;
 
 import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.visitor.Type;
+import cc.crochethk.klang.visitor.Type.*;
+import cc.crochethk.klang.visitor.BuiltinDefinitions;
 import cc.crochethk.klang.visitor.codegen.GenAsm;
-import utils.SourcePos;
 
 /** Generates a C-Header file based on the traversed AST. */
 public class GenCHeaders extends GenCBase {
@@ -15,7 +16,8 @@ public class GenCHeaders extends GenCBase {
 
     @Override
     public void visit(FunDef funDef) {
-        writeCFunSignature(funDef.returnType, funDef.name, funDef.params);
+        writeCFunSignature(funDef.name, funDef.returnType, funDef.params);
+        scb.write(";");
     }
 
     @Override
@@ -26,8 +28,7 @@ public class GenCHeaders extends GenCBase {
         for (var f : structDef.fields) {
             scb.writeIndent();
             // Write field type and name
-            f.type().accept(this);
-            scb.write(" ", f.name(), ";");
+            scb.write(f.type().theType.cTypeName(), " ", f.name(), ";");
         }
         // add dummy field if empty
         if (structDef.fields.isEmpty())
@@ -43,7 +44,8 @@ public class GenCHeaders extends GenCBase {
     public void visit(MethDef methDef) {
         var ownerType = methDef.owner().theType;
         var methName = GenAsm.getAsmMethodName(ownerType, methDef.name());
-        writeCFunSignature(methDef.returnType(), methName, methDef.params());
+        writeCFunSignature(methName, methDef.returnType(), methDef.params());
+        scb.write(";");
     }
 
     @Override
@@ -81,7 +83,7 @@ public class GenCHeaders extends GenCBase {
         scb.writeIndented("// ----------[ Auto-Method Signatures ]----------\n");
         prog.structDefs.forEach(st -> {
             // constructor
-            writeConstructorSignature(st);
+            writeConstructorSignature(st.theType, Parameter.toChecked(st.fields));
             scb.write(";");
 
             // destructor
@@ -111,13 +113,10 @@ public class GenCHeaders extends GenCBase {
         writeCFile();
     }
 
+    /** Write string helper function declarations */
     private void writeStringHelpersSignatures() {
-        // Declare string helper functions
-        var strTypeNode = new TypeNode(new SourcePos(-1, -1), Type.STRING_T.klangName());
-        strTypeNode.theType = Type.STRING_T;
-
-        writeConstructorSignature(Type.STRING_T, List.of(
-                new Parameter("str", strTypeNode)));
+        writeConstructorSignature(
+                Type.STRING_T, List.of(new CheckedParam("str", Type.STRING_T)));
         scb.write(";");
 
         writeDestructorSignature(Type.STRING_T);
