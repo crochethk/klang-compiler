@@ -36,7 +36,7 @@ public class TypeCheckerTest extends NodeMocker {
             tc.visit(funCall);
             assertReportedErrors(1);
             assertEquals(Type.LONG_T, funCall.theType);
-            assertEquals(Type.NULL_T, funCall.args.get(0).theType);
+            assertEquals(Type.ANY_T, funCall.args.get(0).theType);
         }
 
         @Test
@@ -50,7 +50,7 @@ public class TypeCheckerTest extends NodeMocker {
             tc.visit(funCall);
             assertReportedErrors(0);
             assertEquals(Type.VOID_T, funCall.theType);
-            assertEquals(Type.NULL_T, funCall.args.get(0).theType);
+            assertEquals(Type.ANY_T, funCall.args.get(0).theType);
         }
     }
 
@@ -191,7 +191,7 @@ public class TypeCheckerTest extends NodeMocker {
             tc.visit(constCall);
             assertReportedErrors(1);
             assertEquals(Type.of(def.name, ""), constCall.theType);
-            assertEquals(Type.NULL_T, constCall.args.get(0).theType);
+            assertEquals(Type.ANY_T, constCall.args.get(0).theType);
         }
 
         @Test
@@ -205,7 +205,7 @@ public class TypeCheckerTest extends NodeMocker {
             tc.visit(constCall);
             assertReportedErrors(0);
             assertEquals(Type.of(def.name, ""), constCall.theType);
-            assertEquals(Type.NULL_T, constCall.args.get(0).theType);
+            assertEquals(Type.ANY_T, constCall.args.get(0).theType);
         }
         // ---------------------------------------------------------------------
     }

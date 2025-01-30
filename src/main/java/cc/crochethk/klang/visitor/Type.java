@@ -48,9 +48,9 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
 
     /** Tests whether this and other are compatible in an assignment context. */
     public default boolean isCompatible(Type other) {
-        return this.isReference() && other == Type.NULL_T
-                || other.isReference() && this == Type.NULL_T
-                || this.equals(other);
+        return other != null && (this.isReference() && other == Type.ANY_T
+                || other.isReference() && this == Type.ANY_T
+                || this.equals(other));
     }
 
     public default boolean isBuiltin() {
@@ -68,7 +68,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
      */
     final Type UNKNOWN_T = new RefType("UNKNOWN", "", "const void*");
     /** Placeholder type for "intentionally" unknown (e.g. null) reference types. */
-    final Type NULL_T = new RefType("Object", "java.lang", "void*");
+    final Type ANY_T = new RefType("Object", "java.lang", "void*");
 
     enum AsmTypeKind {
         LongType(8, "int64_t"),
@@ -91,7 +91,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
     final String BOOL_T_NAME = "bool";
     final String DOUBLE_T_NAME = "f64";
     final String VOID_T_NAME = "void";
-    final String NULL_T_NAME = "NULL";
+    final String ANY_T_NAME = "ANY";
 
     static final Map<Type, String> klangNameMap = Map.of(
             STRING_T, STRING_T_NAME,
@@ -99,7 +99,7 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
             BOOL_T, BOOL_T_NAME,
             DOUBLE_T, DOUBLE_T_NAME,
             VOID_T, VOID_T_NAME,
-            NULL_T, NULL_T_NAME);
+            ANY_T, ANY_T_NAME);
 
     default String klangName() {
         var name = klangNameMap.get(this);

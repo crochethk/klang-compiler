@@ -46,7 +46,7 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(NullLit nullLit) {
-        nullLit.theType = Type.NULL_T;
+        nullLit.theType = Type.ANY_T;
     }
 
     @Override
