@@ -115,7 +115,11 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(Var var) {
-        code.movq(stack.get(var.name), rax);
+        if (var.theType.equals(Type.DOUBLE_T)) {
+            code.movsd(stack.get(var.name), xmm0);
+        } else {
+            code.movq(stack.get(var.name), rax);
+        }
     }
 
     @Override
@@ -185,13 +189,11 @@ public class GenAsm extends CodeGenVisitor {
                     var xmm_i = xmmRegsIt.next();
                     // put arg result into next free xmm register
                     code.movsd(xmm0, xmm_i);
-                    // // System.out.println("movsd to " + xmm_i + ": " + arg);
                 } else {
                     // allocate 8 byte and pass arg on stack
                     code.subq($(8), rsp);
                     code.movsd(xmm0, new MemAddr(rsp));
                     stackArgsOffset += 8;
-                    // // System.out.println("stack: " + arg);
                 }
             } else { // use general purpose registers
                 if (preEvaledArg != null) {
@@ -203,11 +205,9 @@ public class GenAsm extends CodeGenVisitor {
                 if (regularRegsIt.hasNext()) {
                     var reg_i = regularRegsIt.next();
                     code.movq(rax, reg_i);
-                    // // System.out.println("movq to " + reg_i + ": " + arg);
                 } else {
                     code.pushq(rax);
                     stackArgsOffset += 8;
-                    // // System.out.println("stack: " + arg);
                 }
             }
         }
@@ -219,11 +219,10 @@ public class GenAsm extends CodeGenVisitor {
             } else {
                 theXmm0Arg.accept(this);
             }
-            // // System.out.println("movsd to " + xmm0 + ": " + theXmm0Arg);
         }
         code.call(funCall.name);
 
-        //release stack args if necessary
+        // Release stack args if necessary
         if (stackArgsOffset > 0) {
             code.addq($(stackArgsOffset), rsp);
         }
@@ -409,7 +408,11 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(VarAssignStat varAssignStat) {
         varAssignStat.expr.accept(this);
-        code.movq(rax, stack.get(varAssignStat.targetVarName));
+        if (varAssignStat.theType.equals(Type.DOUBLE_T)) {
+            code.movsd(xmm0, stack.get(varAssignStat.targetVarName));
+        } else {
+            code.movq(rax, stack.get(varAssignStat.targetVarName));
+        }
     }
 
     @Override
@@ -499,20 +502,8 @@ public class GenAsm extends CodeGenVisitor {
         code.pushq(rbp);
         code.movq(rsp, rbp);
 
-        // Adjust %rsp as necessary
-
-        // TODO this should not be necessary, stack manager does already take
-        // TODO     care of keeping track of the allocated stack memory, when
-        // TODO     calling "store" during backup of register args
-        // // - Calculate required stack size for args passed in registers
-        // final int floatArgsCount = (int) funDef.params.stream()
-        //         .filter(p -> p.type().theType.equals(Type.DOUBLE_T)).count();
-        // final int remainingArgsCount = funDef.params.size() - floatArgsCount;
-        // final int xmmArgs = Math.min(floatArgsCount, xmmRegs.length);
-        // final int gprArgsCount = Math.min(remainingArgsCount, regs.length);
-        // final int totalRegArgs = xmmArgs + gprArgsCount;
-        // // - Convention: 8 byte for all args
-        // stack.alloc(totalRegArgs * 8);
+        // Backup all register args to stack
+        // and add args passed on stack to the stack manager.
 
         /** Stack Layout Overview
          * 
@@ -535,8 +526,6 @@ public class GenAsm extends CodeGenVisitor {
          *  +--------------------+
          */
 
-        // Backup all register args to stack
-        // and add args passed on stack to the stack manager.
         var xmmRegsIt = Arrays.stream(xmmRegs).iterator();
         var regularRegsIt = Arrays.stream(regs).iterator();
 
