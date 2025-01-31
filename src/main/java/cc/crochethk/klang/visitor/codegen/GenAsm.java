@@ -8,16 +8,17 @@ import static cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegiste
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegister;
 import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.literal.*;
-import cc.crochethk.klang.visitor.BuiltinDefinitions;
 import cc.crochethk.klang.visitor.Type;
 import cc.crochethk.klang.visitor.codegen.asm.*;
 import cc.crochethk.klang.visitor.codegen.asm.helpers.*;
@@ -40,6 +41,7 @@ public class GenAsm extends CodeGenVisitor {
 
     /** Function argument registers */
     private final Register[] regs = { rdi, rsi, rdx, rcx, r8, r9 };
+    private final XmmRegister[] xmmRegs = { xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7 };
 
     public GenAsm(String outputDir, String packageName, String className) throws IOException {
         super(outputDir, packageName, className);
@@ -74,7 +76,6 @@ public class GenAsm extends CodeGenVisitor {
 
         // "movsd	.LC{n}(%rip), %xmm0"
         code.movsd(new MemAddr(label, rip), xmm0);
-        code.movq(xmm0, rax);
     }
 
     /** Counter variable for local variabke lables enumeration */
@@ -114,52 +115,114 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(Var var) {
-        code.movq(stack.get(var.name), rax);
+        if (var.theType.equals(Type.DOUBLE_T)) {
+            code.movsd(stack.get(var.name), xmm0);
+        } else {
+            code.movq(stack.get(var.name), rax);
+        }
     }
 
     @Override
     public void visit(FunCall funCall) {
-        stack.alignRspToStackSize();
-
-        var regArgsCount = Math.min(funCall.args.size(), regs.length);
-        var stackArgsOffset = Math.max(funCall.args.size() - regs.length, 0) * 8;
-        for (int i = regArgsCount; i < funCall.args.size(); i++) {
-            funCall.args.get(i).accept(this);
-            code.pushq(rax);
-        }
-
-        for (int i = 0; i < regArgsCount; i++) {
-            funCall.args.get(i).accept(this);
-            code.movq(rax, regs[i]);
-        }
-
         // Generate call to builtin function (if funCall is builtin)
         var argTypes = funCall.args.stream().map(arg -> arg.theType).toList();
         var autoFunSign = findBuiltinFun(funCall.name, argTypes);
-        autoFunSign.ifPresentOrElse(funSign -> {
+        if (autoFunSign.isPresent()) {
+            var autoFun = autoFunSign.get();
+            // Generate builtinFuncall and execute?
+            var srcPos = funCall.srcPos;
+            var arg0 = new StringLit(srcPos, GenCBase.getTypeFormat(argTypes.get(0)));
+            arg0.theType = Type.STRING_T;
+            var args = Stream.concat(Stream.of(arg0), funCall.args.stream()).toList();
+            var builtinFunCall = new FunCall(srcPos, /*autoFun.name()*/"printf@PLT", args);
+            builtinFunCall.theType = autoFun.returnType();
+            builtinFunCall.accept(this);
+            return;
+        }
 
-            // Handle "print" function overloads
-            if (funSign == BuiltinDefinitions.FN_PRINT_STR) {
-                // quick solution: assumes funcall had 1 arg whose pointer is now in rdi 
-                code.call("printf@PLT");
-            } else if (funSign == BuiltinDefinitions.FN_PRINT_I64) {
-                // Move first arg to second arg
-                code.movq(rdi, rsi);
-                // Create format str and use it as first arg
-                var cFormatStr = GenCBase.getTypeFormat(funCall.args.get(0).theType);
-                var label = createStringLC(cFormatStr);
-                code.leaq(new MemAddr(label, rip), rdi);
-                code.call("printf@PLT");
+        // Memory positions of argument results from FunCall args
+        var preEvaluatedArgsIt = funCall.args.stream().map(arg -> {
+            if (arg instanceof FunCall) {
+                arg.accept(this);
+                var resultAddr = stack.reserveSlot(arg.theType);
+                if (arg.theType.equals(Type.DOUBLE_T))
+                    code.movsd(xmm0, resultAddr);
+                else
+                    code.movq(rax, resultAddr);
+                return resultAddr;
             } else {
-                throw new UnsupportedOperationException(
-                        "Builtin function '" + funCall.name + "' is not implemented.");
+                return null;
             }
+        }).toList().iterator();
 
-        }, () -> {
-            code.call(funCall.name);
-        });
+        var xmmRegsIt = Arrays.stream(xmmRegs).iterator();
+        var regularRegsIt = Arrays.stream(regs).iterator();
 
-        //release stack args if necessary
+        Node theXmm0Arg = null;
+        OperandSpecifier theXmm0SrcOpSpec = null;
+
+        stack.alignRspToStackSize();
+        var stackArgsOffset = 0;
+        for (var argIter = funCall.args.iterator(); argIter.hasNext();) {
+            var arg = argIter.next();
+            var preEvaledArg = preEvaluatedArgsIt.next();
+
+            if (arg.theType.equals(Type.DOUBLE_T)) {
+                if (theXmm0Arg == null) {
+                    // - remember arg that should go into xmm0 for later
+                    //  (since we might need xmm0 in the meantime)
+                    // - also advance xmm reg iterator 
+                    theXmm0Arg = arg;
+                    theXmm0SrcOpSpec = preEvaledArg;
+                    var _ = xmmRegsIt.next();
+                    continue;
+                }
+
+                if (preEvaledArg != null) {
+                    code.movsd(preEvaledArg, xmm0);
+                } else {
+                    arg.accept(this);
+                }
+                // result in xmm0
+
+                if (xmmRegsIt.hasNext()) {
+                    var xmm_i = xmmRegsIt.next();
+                    // put arg result into next free xmm register
+                    code.movsd(xmm0, xmm_i);
+                } else {
+                    // allocate 8 byte and pass arg on stack
+                    code.subq($(8), rsp);
+                    code.movsd(xmm0, new MemAddr(rsp));
+                    stackArgsOffset += 8;
+                }
+            } else { // use general purpose registers
+                if (preEvaledArg != null) {
+                    code.movq(preEvaledArg, rax);
+                } else {
+                    arg.accept(this);
+                }
+
+                if (regularRegsIt.hasNext()) {
+                    var reg_i = regularRegsIt.next();
+                    code.movq(rax, reg_i);
+                } else {
+                    code.pushq(rax);
+                    stackArgsOffset += 8;
+                }
+            }
+        }
+
+        // Finally eval first float arg (if exists)
+        if (theXmm0Arg != null) {
+            if (theXmm0SrcOpSpec != null) {
+                code.movsd(theXmm0SrcOpSpec, xmm0);
+            } else {
+                theXmm0Arg.accept(this);
+            }
+        }
+        code.call(funCall.name);
+
+        // Release stack args if necessary
         if (stackArgsOffset > 0) {
             code.addq($(stackArgsOffset), rsp);
         }
@@ -199,6 +262,7 @@ public class GenAsm extends CodeGenVisitor {
         // Passing EmptyNode as arg, makes FunCall load the mentioned pointer from rax.
         var thisArg = new EmptyNode(fieldGet.srcPos);
         var funCall = new FunCall(fieldGet.srcPos, getterFunName, List.of(thisArg));
+        funCall.theType = fieldGet.theType;
         funCall.accept(this);
         if (fieldGet.next != null) {
             fieldGet.next.accept(this);
@@ -215,6 +279,7 @@ public class GenAsm extends CodeGenVisitor {
         var thisArg = new EmptyNode(methodCall.srcPos);
         var allArgs = Stream.concat(Stream.of(thisArg), methodCall.args.stream()).toList();
         var funCall = new FunCall(methodCall.srcPos, asmMethName, allArgs);
+        funCall.theType = methodCall.theType;
         funCall.accept(this);
         if (methodCall.next != null) {
             methodCall.next.accept(this);
@@ -233,6 +298,7 @@ public class GenAsm extends CodeGenVisitor {
     public void visit(ConstructorCall constructorCall) {
         var fullConstName = getConstructorFullName(constructorCall.theType);
         var funCall = new FunCall(constructorCall.srcPos, fullConstName, constructorCall.args);
+        funCall.theType = constructorCall.theType;
         funCall.accept(this);
     }
 
@@ -241,7 +307,7 @@ public class GenAsm extends CodeGenVisitor {
         binOpExpr.rhs.accept(this);
         var lhsNotComplex = binOpExpr.lhs instanceof LiteralExpr || binOpExpr.lhs instanceof Var;
         // Put rdx on stack, if rdx might be overwritten when evaluating lhs
-        OperandSpecifier rhsResLoc = lhsNotComplex ? rdx : stack.reserveSlot(8);
+        OperandSpecifier rhsResLoc = lhsNotComplex ? rdx : stack.reserveSlot(binOpExpr.rhs.theType);
         code.movq(rax, rhsResLoc);
 
         binOpExpr.lhs.accept(this);
@@ -335,14 +401,18 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(VarDeclareStat varDeclareStat) {
-        stack.store(varDeclareStat.varName(), varDeclareStat.theType.byteSize());
+        stack.reserveSlot(varDeclareStat.varName(), varDeclareStat.theType);
         varDeclareStat.initializer.ifPresent(init -> init.accept(this));
     }
 
     @Override
     public void visit(VarAssignStat varAssignStat) {
         varAssignStat.expr.accept(this);
-        code.movq(rax, stack.get(varAssignStat.targetVarName));
+        if (varAssignStat.theType.equals(Type.DOUBLE_T)) {
+            code.movsd(xmm0, stack.get(varAssignStat.targetVarName));
+        } else {
+            code.movq(rax, stack.get(varAssignStat.targetVarName));
+        }
     }
 
     @Override
@@ -357,6 +427,7 @@ public class GenAsm extends CodeGenVisitor {
         var setterFunName = getSetterFullName(fieldOwnerType, field.targetName);
         var thisArg = new EmptyNode(faStat.srcPos);
         var funCall = new FunCall(faStat.srcPos, setterFunName, List.of(thisArg, faStat.expr));
+        funCall.theType = faStat.theType;
         funCall.accept(this);
     }
 
@@ -399,6 +470,7 @@ public class GenAsm extends CodeGenVisitor {
         var thisArg = dropStat.refTypeVar;
         var funName = getDestructorFullName(thisArg.theType);
         var destructor = new FunCall(dropStat.srcPos, funName, List.of(thisArg));
+        destructor.theType = dropStat.theType;
         destructor.accept(this);
     }
 
@@ -430,29 +502,73 @@ public class GenAsm extends CodeGenVisitor {
         code.pushq(rbp);
         code.movq(rsp, rbp);
 
-        // Adjust %rsp as necessary
-        var regArgsCount = Math.min(funDef.params.size(), regs.length);
-        stack.alloc(regArgsCount * 8); // Convention: 8 byte per fun arg
+        // Backup all register args to stack
+        // and add args passed on stack to the stack manager.
 
+        /** Stack Layout Overview
+         * 
+         *  +--------------------+
+         *  | ...                |
+         *  +--------------------+
+         *  | first stack arg    | <- [16(%rbp)]
+         *  +--------------------+   
+         *  | second stack arg   | <- [24(%rbp)]
+         *  +--------------------+
+         *  | first stack arg    | <- [16(%rbp)]
+         *  +--------------------+
+         *  | saved frame pointer| <- [8(%rbp)]
+         *  +--------------------+
+         *  | __return address__ | <- [0(%rbp)]
+         *  +--------------------+
+         *  | %rdi / %xmm0 arg   | <- [-8(%rbp)]
+         *  +--------------------+
+         *  | ...                |
+         *  +--------------------+
+         */
+
+        var xmmRegsIt = Arrays.stream(xmmRegs).iterator();
+        var regularRegsIt = Arrays.stream(regs).iterator();
+
+        var stackArgOffset = 16; //skip rbp backup and return addr
+        for (var paramIt = funDef.params.iterator(); paramIt.hasNext();) {
+            var p = paramIt.next();
+            var ptype = p.type().theType;
+
+            if (ptype.equals(Type.DOUBLE_T) && xmmRegsIt.hasNext()) {
+                var src = xmmRegsIt.next();
+                stack.storeXmmSd(p.name(), src);
+            } else if (regularRegsIt.hasNext()) {
+                var src = regularRegsIt.next();
+                stack.store(p.name(), ptype, src);
+            } else {
+                // Caller saved stack arg
+                // - add its offset to manager, assuming 8 Bytes per arg
+                stack.associate(p.name(), stackArgOffset);
+                stackArgOffset += 8;
+            }
+
+        }
+
+        // Reserve stack for local variables
         for (var stat : funDef.body.statements) {
             if (stat instanceof VarDeclareStat decl) {
                 stack.alloc(decl.theType.byteSize());
             }
         }
 
-        // Store register args on stack
-        for (int i = 0; i < regArgsCount; i++) {
-            var arg = funDef.params.get(i);
-            // Convention: 8 byte per fun arg
-            stack.store(arg.name(), 8, regs[i]);
-        }
+        // // // Store register args on stack
+        // // for (int i = 0; i < regArgsCount; i++) {
+        // //     var arg = funDef.params.get(i);
+        // //     // Convention: 8 byte per fun arg
+        // //     stack.store(arg.name(), Type.ANY_T, regs[i]);
+        // // }
 
-        // Get offsets for caller-saved args (when >6 params)
-        var baseOffset = 16; //skip rbp backup and return addr
-        for (int i = regArgsCount; i < funDef.params.size(); i++) {
-            stack.put(funDef.params.get(i).name(), baseOffset);
-            baseOffset += 8;
-        }
+        // // // Get offsets for caller-saved args (when >6 params)
+        // // var baseOffset = 16; //skip rbp backup and return addr
+        // // for (int i = regArgsCount; i < funDef.params.size(); i++) {
+        // //     stack.associate(funDef.params.get(i).name(), baseOffset);
+        // //     baseOffset += 8;
+        // // }
 
         /* Actual work */
         // Generate body instructions
@@ -547,6 +663,17 @@ public class GenAsm extends CodeGenVisitor {
         return refType.klangName() + "$set_" + fieldName + "$";
     }
 
+    /**
+     * Class responsible for writing variables to stack while keeping track 
+     * of their locations.
+     * 
+     * @implNote Currently all variables will effectively use 8 Bytes since
+     * only 64 Bit / 8 Byte variants of instructions are used even if the given
+     * type would be shorter.
+     * This is reasonable at this point, since
+     * - only 64 Bit general purpose registers are implemented
+     * - xmm related instructions also only use single scalar values up to 64 Bit.
+     */
     class StackManager {
         private CodeSection code;
 
@@ -578,8 +705,8 @@ public class GenAsm extends CodeGenVisitor {
          * Increases current frame's stacksize by decrementing %rsp by the
          * 16-byte-aligned {@link #pendingAllocSize}.
          * 
-         * Call this method before "call" instructions to make sure %rsp is aligned
-         * as required by the Linux System V ABI.
+         * Call this method before "call" instructions to make sure %rsp is 
+         * aligned as required by the Linux System V ABI.
          */
         public void alignRspToStackSize() {
             var size = getAlignedSize();
@@ -598,48 +725,73 @@ public class GenAsm extends CodeGenVisitor {
         /**
          * Increases the number of bytes the manager will use to determine the 
          * %rsp address for the current stack frame.
-         * This operation does not actually allocate resources. Rather its purpose
-         * is to help computing the required stack size in the prologue of the current
-         * function (i.e. before actually changing %rsp or storing elements on stack).
-         * %rsp must be aligned before any "call" instructions using {@link #alignRspToStackSize()}.
+         * This operation does not actually allocate resources. Rather it's
+         * useful for computing the required stack size in the prologue of a
+         * function definition (i.e. before actually changing %rsp or storing
+         * elements on stack).
+         * %rsp must be aligned using {@link #alignRspToStackSize()} before any 
+         * "call" instructions.
          */
         public void alloc(int bytes) {
             pendingAllocSize += bytes;
         }
 
         /**
-         * Writes the value of given size from source to stack and stores it using
-         * varName for later lookup.
+         * Writes the value of given {@code type} from {@code source} to stack
+         * and stores it using {@code name} for later lookup.
          * @param name The value's name for later referencing.
-         * @param size How many bytes the value should occupy.
-         * @param source The value's source location (register, memoryaddress, constant)
+         * @param type The Type of the value to be stored.
+         * @param source The value's source (register, memoryaddress, constant).
+         * In case of {@link OperandSpecifier.MemoryOperandSpecifier} this will require
+         * an intermediate instruction loading the value to %rax.
+         * 
+         * @apiNote For operations on floats using xmm registers you should
+         * rather use {@link #storeXmmSd(String, XmmRegister)}.
          */
-        public void store(String name, int size, OperandSpecifier source) {
-            ctx.put(name, nextOffset(size));
-            code.movq(source, this.get(name));
+        public void store(String name, Type type, OperandSpecifier source) {
+            ctx.put(name, nextOffset(type.byteSize()));
+            if (source instanceof MemoryOperandSpecifier) {
+                code.movq(source, rax);
+                code.movq(rax, this.get(name));
+            } else {
+                code.movq(source, this.get(name));
+            }
         }
 
         /**
-         * "Stores" an uninitialized named element. This simply reserves a slot
-         * of {@code size} bytes on the stack, whose position can be retrieved
-         * as {@code OperandSpecifier} using {@link #get(String)} and the
-         * specified {@code name}.
+         * Write a single scalar double precision float (8 byte) from the given xmm
+         * register to stack, associating its address with the given {@code name}.
+         * @param name The value's name for later referencing.
+         * @param source The value's source xmm register.
+         * @see #store(String, Type, OperandSpecifier)
+         */
+        public void storeXmmSd(String name, XmmRegister source) {
+            ctx.put(name, nextOffset(8)); //movsd always writes 8 bytes
+            code.movsd(source, this.get(name));
+        }
+
+        /**
+         * Reserves memory on stack suitable to store an element of given
+         * {@code type}. This only changes the StackManagers internal state
+         * and does not write any actual instructions.
+         * The reserved memory location can be retrieved 
+         * using {@link #get(String)} and the specified {@code name}.
+         * 
          * @param name A Name for the stored element for later reference.
-         * @param size How many bytes the element should occupy.
-         * @see #store(String, int, OperandSpecifier)
+         * @param type The Type of the element to be stored.
          */
-        public void store(String name, int size) {
-            ctx.put(name, nextOffset(size));
+        public void reserveSlot(String name, Type type) {
+            ctx.put(name, nextOffset(type.byteSize()));
         }
 
         /**
-         * Reserves stack slot of given size for an unnamed element and returns
-         * the corresponding memory address.
-         * @param size
-         * @return MemAddr referencing the reserved stack slot.
+         * Reserves stack slot for an unnamed element of given {@code type} and
+         * returns the corresponding memory address.
+         * @param type
+         * @return MemAddr The %rbp based address referencing the reserved slot.
          */
-        public MemAddr reserveSlot(int size) {
-            return new MemAddr(nextOffset(size), rbp);
+        public MemAddr reserveSlot(Type type) {
+            return new MemAddr(nextOffset(type.byteSize()), rbp);
         }
 
         /**
@@ -649,7 +801,7 @@ public class GenAsm extends CodeGenVisitor {
          * @param baseOffset The offset relative to &rbp.
          * @see #get(String)
         */
-        public void put(String name, int baseOffset) {
+        public void associate(String name, int baseOffset) {
             ctx.put(name, baseOffset);
         }
 

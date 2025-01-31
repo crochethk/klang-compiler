@@ -72,7 +72,10 @@ public interface OperandSpecifier {
         }
     }
 
-    public record RawMemAddr(int address) implements OperandSpecifier {
+    sealed interface MemoryOperandSpecifier extends OperandSpecifier permits RawMemAddr, MemAddr {
+    }
+
+    public record RawMemAddr(int address) implements MemoryOperandSpecifier {
         @Override
         public String operandSpec() {
             return address() + "";
@@ -80,10 +83,15 @@ public interface OperandSpecifier {
     }
 
     /** Memory Address using the "<offset>(<base>, <index>, <scale>)" operand syntax */
-    public class MemAddr implements OperandSpecifier {
+    public final class MemAddr implements MemoryOperandSpecifier {
         private String offset;
         private Register base, index;
         private Scale s;
+
+        /** Use the address inside the specified register */
+        public MemAddr(Register base) {
+            this("", base);
+        }
 
         public MemAddr(int offset, Register base) {
             this(offset + "", base);

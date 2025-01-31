@@ -103,7 +103,7 @@ public class GenCImpls extends GenCBase {
                 scb.writeIndented("char* ", tmpVarName, " = ",
                         GenAsm.getToStringFullName(fType), "(this->", field.name(), ");");
 
-                fmt.append("%s");
+                fmt.append(getTypeFormat(Type.STRING_T));
                 fmtArgs.append(tmpVarName);
             } else {
                 // field type has a matching C format specifier

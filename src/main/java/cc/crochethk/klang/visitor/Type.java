@@ -4,6 +4,7 @@ import java.lang.classfile.TypeKind;
 import java.lang.constant.ClassDesc;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Basically a wrapper of TypeKind with some additional convenience
@@ -49,13 +50,13 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
 
     /** Tests whether this and other are compatible in an assignment context. */
     public default boolean isCompatible(Type other) {
-        return other != null && (this.isReference() && other == Type.ANY_T
-                || other.isReference() && this == Type.ANY_T
-                || this.equals(other));
+        return other != null && (this.isReference() && Objects.equals(other, Type.ANY_T)
+                || other.isReference() && Objects.equals(this, Type.ANY_T)
+                || Objects.equals(this, other));
     }
 
     public default boolean isBuiltin() {
-        return isPrimitive() || this == STRING_T;
+        return isPrimitive() || Objects.equals(this, STRING_T);
     }
 
     final Type STRING_T = new RefType("String", "java.lang", "char*");
@@ -68,7 +69,10 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
      * couldn't be determined during type check.
      */
     final Type UNKNOWN_T = new RefType("UNKNOWN", "", "const void*");
-    /** Placeholder type for "intentionally" unknown (e.g. null) reference types. */
+    /**
+     * Placeholder type for "intentionally" unknown (e.g. null) reference types.
+     * It effectively represents the most generic reference type.
+     */
     final Type ANY_T = new RefType("Object", "java.lang", "void*");
 
     enum AsmTypeKind {
