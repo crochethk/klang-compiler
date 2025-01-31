@@ -500,28 +500,86 @@ public class GenAsm extends CodeGenVisitor {
         code.movq(rsp, rbp);
 
         // Adjust %rsp as necessary
-        var regArgsCount = Math.min(funDef.params.size(), regs.length);
-        stack.alloc(regArgsCount * 8); // Convention: 8 byte for all args
 
+        // TODO this should not be necessary, stack manager does already take
+        // TODO     care of keeping track of the allocated stack memory, when
+        // TODO     calling "store" during backup of register args
+        // // - Calculate required stack size for args passed in registers
+        // final int floatArgsCount = (int) funDef.params.stream()
+        //         .filter(p -> p.type().theType.equals(Type.DOUBLE_T)).count();
+        // final int remainingArgsCount = funDef.params.size() - floatArgsCount;
+        // final int xmmArgs = Math.min(floatArgsCount, xmmRegs.length);
+        // final int gprArgsCount = Math.min(remainingArgsCount, regs.length);
+        // final int totalRegArgs = xmmArgs + gprArgsCount;
+        // // - Convention: 8 byte for all args
+        // stack.alloc(totalRegArgs * 8);
+
+        /** Stack Layout Overview
+         * 
+         *  +--------------------+
+         *  | ...                |
+         *  +--------------------+
+         *  | first stack arg    | <- [16(%rbp)]
+         *  +--------------------+   
+         *  | second stack arg   | <- [24(%rbp)]
+         *  +--------------------+
+         *  | first stack arg    | <- [16(%rbp)]
+         *  +--------------------+
+         *  | saved frame pointer| <- [8(%rbp)]
+         *  +--------------------+
+         *  | __return address__ | <- [0(%rbp)]
+         *  +--------------------+
+         *  | %rdi / %xmm0 arg   | <- [-8(%rbp)]
+         *  +--------------------+
+         *  | ...                |
+         *  +--------------------+
+         */
+
+        // Backup all register args to stack
+        // and add args passed on stack to the stack manager.
+        var xmmRegsIt = Arrays.stream(xmmRegs).iterator();
+        var regularRegsIt = Arrays.stream(regs).iterator();
+
+        var stackArgOffset = 16; //skip rbp backup and return addr
+        for (var paramIt = funDef.params.iterator(); paramIt.hasNext();) {
+            var p = paramIt.next();
+            var ptype = p.type().theType;
+
+            if (ptype.equals(Type.DOUBLE_T) && xmmRegsIt.hasNext()) {
+                var src = xmmRegsIt.next();
+                stack.storeXmmSd(p.name(), src);
+            } else if (regularRegsIt.hasNext()) {
+                var src = regularRegsIt.next();
+                stack.store(p.name(), ptype, src);
+            } else {
+                // Caller saved stack arg
+                // - add its offset to manager, assuming 8 Bytes per arg
+                stack.associate(p.name(), stackArgOffset);
+                stackArgOffset += 8;
+            }
+
+        }
+
+        // Reserve stack for local variables
         for (var stat : funDef.body.statements) {
             if (stat instanceof VarDeclareStat decl) {
                 stack.alloc(decl.theType.byteSize());
             }
         }
 
-        // Store register args on stack
-        for (int i = 0; i < regArgsCount; i++) {
-            var arg = funDef.params.get(i);
-            // Convention: 8 byte per fun arg
-            stack.store(arg.name(), Type.ANY_T, regs[i]);
-        }
+        // // // Store register args on stack
+        // // for (int i = 0; i < regArgsCount; i++) {
+        // //     var arg = funDef.params.get(i);
+        // //     // Convention: 8 byte per fun arg
+        // //     stack.store(arg.name(), Type.ANY_T, regs[i]);
+        // // }
 
-        // Get offsets for caller-saved args (when >6 params)
-        var baseOffset = 16; //skip rbp backup and return addr
-        for (int i = regArgsCount; i < funDef.params.size(); i++) {
-            stack.put(funDef.params.get(i).name(), baseOffset);
-            baseOffset += 8;
-        }
+        // // // Get offsets for caller-saved args (when >6 params)
+        // // var baseOffset = 16; //skip rbp backup and return addr
+        // // for (int i = regArgsCount; i < funDef.params.size(); i++) {
+        // //     stack.associate(funDef.params.get(i).name(), baseOffset);
+        // //     baseOffset += 8;
+        // // }
 
         /* Actual work */
         // Generate body instructions
@@ -747,7 +805,6 @@ public class GenAsm extends CodeGenVisitor {
             return new MemAddr(nextOffset(type.byteSize()), rbp);
         }
 
-
         /**
          * Adds stack element reference to this manager. The element's location
          * can later be retrieved using the "get" method.
@@ -755,7 +812,7 @@ public class GenAsm extends CodeGenVisitor {
          * @param baseOffset The offset relative to &rbp.
          * @see #get(String)
         */
-        public void put(String name, int baseOffset) {
+        public void associate(String name, int baseOffset) {
             ctx.put(name, baseOffset);
         }
 
