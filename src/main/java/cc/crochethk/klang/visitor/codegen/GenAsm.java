@@ -22,7 +22,6 @@ import cc.crochethk.klang.ast.literal.*;
 import cc.crochethk.klang.visitor.Type;
 import cc.crochethk.klang.visitor.codegen.asm.*;
 import cc.crochethk.klang.visitor.codegen.asm.helpers.*;
-import utils.Utf8Helper;
 
 public class GenAsm extends CodeGenVisitor {
     private static final String FILE_EXT = ".s";
@@ -64,27 +63,9 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(F64Lit f64Lit) {
-        // Create constant definition
-        long allBits = Double.doubleToRawLongBits(f64Lit.value);
-        int lowBits = (int) allBits;
-        int highBits = (int) (allBits >> 32);
-
-        var label = nextLitConstantLabel();
-        rodataSec.write("\n", label, ":");
-        rodataSec.writeIndented(".long\t" + lowBits);
-        rodataSec.writeIndented(".long\t" + highBits);
-
+        var label = rodataSec.createLiteral(f64Lit.value);
         // "movsd	.LC{n}(%rip), %xmm0"
         code.movsd(new MemAddr(label, rip), xmm0);
-    }
-
-    /** Counter variable for local variabke lables enumeration */
-    private int _literalConstantCounter = 0;
-
-    private String nextLitConstantLabel() {
-        var label = ".LC" + _literalConstantCounter;
-        _literalConstantCounter += 1;
-        return label;
     }
 
     @Override
@@ -94,18 +75,9 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(StringLit stringLit) {
-        var label = createStringLC(stringLit.value);
+        var label = rodataSec.createLiteral(stringLit.value);
         // Calculate pointer to string literal at runtime
         code.leaq(new MemAddr(label, rip), rax);
-    }
-
-    private String createStringLC(String str) {
-        var escapedStr = Utf8Helper.octalEscapeNonAscii(str);
-
-        var label = nextLitConstantLabel();
-        rodataSec.write("\n", label, ":");
-        rodataSec.writeIndented(".string\t\"", escapedStr, "\"");
-        return label;
     }
 
     @Override
