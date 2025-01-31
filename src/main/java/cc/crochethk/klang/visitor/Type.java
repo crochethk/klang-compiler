@@ -69,7 +69,10 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
      * couldn't be determined during type check.
      */
     final Type UNKNOWN_T = new RefType("UNKNOWN", "", "const void*");
-    /** Placeholder type for "intentionally" unknown (e.g. null) reference types. */
+    /**
+     * Placeholder type for "intentionally" unknown (e.g. null) reference types.
+     * It effectively represents the most generic reference type.
+     */
     final Type ANY_T = new RefType("Object", "java.lang", "void*");
 
     enum AsmTypeKind {
