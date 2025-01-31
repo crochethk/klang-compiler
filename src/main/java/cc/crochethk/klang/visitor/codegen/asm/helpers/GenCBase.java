@@ -126,7 +126,7 @@ public abstract class GenCBase extends CodeGenVisitor {
             Type.BOOL_T, "%d",
             Type.DOUBLE_T, "%f",
             Type.LONG_T, "%ld",
-            Type.STRING_T, "\\\"%s\\\"");
+            Type.STRING_T, "%s");
 
     public static String getTypeFormat(Type t) {
         return TYPE_FORMATS.getOrDefault(t, "%p");

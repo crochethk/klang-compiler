@@ -8,6 +8,7 @@ import static cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegiste
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class GenAsm extends CodeGenVisitor {
 
     /** Function argument registers */
     private final Register[] regs = { rdi, rsi, rdx, rcx, r8, r9 };
+    private final XmmRegister[] xmmRegs = { xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7 };
 
     public GenAsm(String outputDir, String packageName, String className) throws IOException {
         super(outputDir, packageName, className);
@@ -74,7 +76,6 @@ public class GenAsm extends CodeGenVisitor {
 
         // "movsd	.LC{n}(%rip), %xmm0"
         code.movsd(new MemAddr(label, rip), xmm0);
-        code.movq(xmm0, rax);
     }
 
     /** Counter variable for local variabke lables enumeration */
@@ -119,45 +120,109 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(FunCall funCall) {
-        stack.alignRspToStackSize();
-
-        var regArgsCount = Math.min(funCall.args.size(), regs.length);
-        var stackArgsOffset = Math.max(funCall.args.size() - regs.length, 0) * 8;
-        for (int i = regArgsCount; i < funCall.args.size(); i++) {
-            funCall.args.get(i).accept(this);
-            code.pushq(rax);
-        }
-
-        for (int i = 0; i < regArgsCount; i++) {
-            funCall.args.get(i).accept(this);
-            code.movq(rax, regs[i]);
-        }
-
         // Generate call to builtin function (if funCall is builtin)
         var argTypes = funCall.args.stream().map(arg -> arg.theType).toList();
         var autoFunSign = findBuiltinFun(funCall.name, argTypes);
-        autoFunSign.ifPresentOrElse(funSign -> {
+        if (autoFunSign.isPresent()) {
+            var autoFun = autoFunSign.get();
+            // Generate builtinFuncall and execute?
+            var srcPos = funCall.srcPos;
+            var arg0 = new StringLit(srcPos, GenCBase.getTypeFormat(argTypes.get(0)));
+            arg0.theType = Type.STRING_T;
+            var args = Stream.concat(Stream.of(arg0), funCall.args.stream()).toList();
+            var builtinFunCall = new FunCall(srcPos, /*autoFun.name()*/"printf@PLT", args);
+            builtinFunCall.theType = autoFun.returnType();
+            builtinFunCall.accept(this);
+            return;
+        }
 
-            // Handle "print" function overloads
-            if (funSign == BuiltinDefinitions.FN_PRINT_STR) {
-                // quick solution: assumes funcall had 1 arg whose pointer is now in rdi 
-                code.call("printf@PLT");
-            } else if (funSign == BuiltinDefinitions.FN_PRINT_I64) {
-                // Move first arg to second arg
-                code.movq(rdi, rsi);
-                // Create format str and use it as first arg
-                var cFormatStr = GenCBase.getTypeFormat(funCall.args.get(0).theType);
-                var label = createStringLC(cFormatStr);
-                code.leaq(new MemAddr(label, rip), rdi);
-                code.call("printf@PLT");
+        // Memory positions of argument results from FunCall args
+        var preEvaluatedArgsIt = funCall.args.stream().map(arg -> {
+            if (arg instanceof FunCall) {
+                arg.accept(this);
+                var resultAddr = stack.reserveSlot(arg.theType.byteSize());
+                if (arg.theType.equals(Type.DOUBLE_T))
+                    code.movsd(xmm0, resultAddr);
+                else
+                    code.movq(rax, resultAddr);
+                return resultAddr;
             } else {
-                throw new UnsupportedOperationException(
-                        "Builtin function '" + funCall.name + "' is not implemented.");
+                return null;
             }
+        }).toList().iterator();
 
-        }, () -> {
-            code.call(funCall.name);
-        });
+        var xmmRegsIt = Arrays.stream(xmmRegs).iterator();
+        var regularRegsIt = Arrays.stream(regs).iterator();
+
+        Node theXmm0Arg = null;
+        OperandSpecifier theXmm0SrcOpSpec = null;
+
+        stack.alignRspToStackSize();
+        var stackArgsOffset = 0;
+        for (var argIter = funCall.args.iterator(); argIter.hasNext();) {
+            var arg = argIter.next();
+            var preEvaledArg = preEvaluatedArgsIt.next();
+
+            if (arg.theType.equals(Type.DOUBLE_T)) {
+                if (theXmm0Arg == null) {
+                    // - remember arg that should go into xmm0 for later
+                    //  (since we might need xmm0 in the meantime)
+                    // - also advance xmm reg iterator 
+                    theXmm0Arg = arg;
+                    theXmm0SrcOpSpec = preEvaledArg;
+                    var _ = xmmRegsIt.next();
+                    continue;
+                }
+
+                if (preEvaledArg != null) {
+                    code.movsd(preEvaledArg, xmm0);
+                } else {
+                    arg.accept(this);
+                }
+                // result in xmm0
+
+                if (xmmRegsIt.hasNext()) {
+                    var xmm_i = xmmRegsIt.next();
+                    // put arg result into next free xmm register
+                    code.movsd(xmm0, xmm_i);
+                    // // System.out.println("movsd to " + xmm_i + ": " + arg);
+                } else {
+                    // allocate 8 byte and pass arg on stack
+                    code.subq($(8), rsp);
+                    code.movsd(xmm0, new MemAddr(rsp));
+                    stackArgsOffset += 8;
+                    // // System.out.println("stack: " + arg);
+                }
+            } else { // use general purpose registers
+                if (preEvaledArg != null) {
+                    code.movq(preEvaledArg, rax);
+                } else {
+                    arg.accept(this);
+                }
+
+                if (regularRegsIt.hasNext()) {
+                    var reg_i = regularRegsIt.next();
+                    code.movq(rax, reg_i);
+                    // // System.out.println("movq to " + reg_i + ": " + arg);
+                } else {
+                    code.pushq(rax);
+                    stackArgsOffset += 8;
+                    // // System.out.println("stack: " + arg);
+                }
+            }
+        }
+
+        // Finally eval first float arg (if exists)
+        if (theXmm0Arg != null) {
+            if (theXmm0SrcOpSpec != null) {
+                code.movsd(theXmm0SrcOpSpec, xmm0);
+            } else {
+                theXmm0Arg.accept(this);
+            }
+            // // System.out.println("movsd to " + xmm0 + ": " + theXmm0Arg);
+        }
+
+        code.call(funCall.name);
 
         //release stack args if necessary
         if (stackArgsOffset > 0) {
@@ -199,6 +264,7 @@ public class GenAsm extends CodeGenVisitor {
         // Passing EmptyNode as arg, makes FunCall load the mentioned pointer from rax.
         var thisArg = new EmptyNode(fieldGet.srcPos);
         var funCall = new FunCall(fieldGet.srcPos, getterFunName, List.of(thisArg));
+        funCall.theType = fieldGet.theType;
         funCall.accept(this);
         if (fieldGet.next != null) {
             fieldGet.next.accept(this);
@@ -215,6 +281,7 @@ public class GenAsm extends CodeGenVisitor {
         var thisArg = new EmptyNode(methodCall.srcPos);
         var allArgs = Stream.concat(Stream.of(thisArg), methodCall.args.stream()).toList();
         var funCall = new FunCall(methodCall.srcPos, asmMethName, allArgs);
+        funCall.theType = methodCall.theType;
         funCall.accept(this);
         if (methodCall.next != null) {
             methodCall.next.accept(this);
@@ -233,6 +300,7 @@ public class GenAsm extends CodeGenVisitor {
     public void visit(ConstructorCall constructorCall) {
         var fullConstName = getConstructorFullName(constructorCall.theType);
         var funCall = new FunCall(constructorCall.srcPos, fullConstName, constructorCall.args);
+        funCall.theType = constructorCall.theType;
         funCall.accept(this);
     }
 
@@ -357,6 +425,7 @@ public class GenAsm extends CodeGenVisitor {
         var setterFunName = getSetterFullName(fieldOwnerType, field.targetName);
         var thisArg = new EmptyNode(faStat.srcPos);
         var funCall = new FunCall(faStat.srcPos, setterFunName, List.of(thisArg, faStat.expr));
+        funCall.theType = faStat.theType;
         funCall.accept(this);
     }
 
@@ -399,6 +468,7 @@ public class GenAsm extends CodeGenVisitor {
         var thisArg = dropStat.refTypeVar;
         var funName = getDestructorFullName(thisArg.theType);
         var destructor = new FunCall(dropStat.srcPos, funName, List.of(thisArg));
+        destructor.theType = dropStat.theType;
         destructor.accept(this);
     }
 

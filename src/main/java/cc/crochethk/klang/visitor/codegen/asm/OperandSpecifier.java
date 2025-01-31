@@ -85,6 +85,11 @@ public interface OperandSpecifier {
         private Register base, index;
         private Scale s;
 
+        /** Use the address inside the specified register */
+        public MemAddr(Register base) {
+            this("", base);
+        }
+
         public MemAddr(int offset, Register base) {
             this(offset + "", base);
         }
