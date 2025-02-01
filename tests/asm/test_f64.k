@@ -21,6 +21,10 @@ fn _add4_2(a: f64, b:f64, c:f64, d:f64) -> f64 {
 }
 
 
+fn _div4_1(a: f64, b:f64, c:f64, d:f64) -> f64 {
+    return a / b / c / d;
+}
+
 fn ___main___() {
     print("Expect: 4.000000\n");
     print("Actual: "); print(_add2(1.0,3.0)); print("\n\n");
@@ -36,5 +40,8 @@ fn ___main___() {
 
     print("Expect: 7.000000\n");
     print("Actual: "); print(_add4_2(1.0,-3.0,4.0,5.0)); print("\n\n");
+
+    print("Expect: -0.208333\n");
+    print("Actual: "); print(_div4_1(5.0,-4.0,3.0,2.0)); print("\n\n");
 }
 

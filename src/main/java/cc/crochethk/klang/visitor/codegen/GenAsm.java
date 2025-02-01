@@ -320,41 +320,44 @@ public class GenAsm extends CodeGenVisitor {
                 } else if (operandType == Type.DOUBLE_T) {
                     code.addsd(src, dst);
                 } else {
-                    // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
                 }
             }
             case sub -> {
                 if (operandType == Type.LONG_T) {
                     code.subq(src, dst);
+                } else if (operandType == Type.DOUBLE_T) {
+                    code.subsd(src, dst);
                 } else {
-                    // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
                 }
             }
             case mult -> {
                 if (operandType == Type.LONG_T) {
                     code.imulq(src, dst);
+                } else if (operandType == Type.DOUBLE_T) {
+                    code.mulsd(src, dst);
                 } else {
-                    // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
                 }
             }
-            // TODO
-            // case div -> {
-            //     if (operandType == Type.LONG_T) {
-            //         // TODO
-            //     } else {
-            //         // TODO implement case "operandType == Type.DOUBLE_T"
-            //         error = true;
-            //     }
-            // }
+            case div -> {
+                if (operandType == Type.LONG_T) {
+                    // TODO
+                } else if (operandType == Type.DOUBLE_T) {
+                    code.divsd(src, dst);
+                } else {
+                    error = true;
+                }
+            }
             // case mod -> {}
             // case pow -> {}
 
             // Comparison
             case eq, neq, gt, gteq, lt, lteq -> {
                 if (operandType == Type.LONG_T) {
+                    // TODO
+                } else if (operandType == Type.DOUBLE_T) {
                     // TODO
                 } else {
                     // TODO implement case "operandType == Type.DOUBLE_T"
