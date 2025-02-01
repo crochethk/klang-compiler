@@ -317,6 +317,8 @@ public class GenAsm extends CodeGenVisitor {
             case add -> {
                 if (operandType == Type.LONG_T) {
                     code.addq(src, dst);
+                } else if (operandType == Type.DOUBLE_T) {
+                    code.addsd(src, dst);
                 } else {
                     // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
