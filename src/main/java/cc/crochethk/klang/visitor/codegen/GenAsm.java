@@ -277,20 +277,34 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(BinOpExpr binOpExpr) {
         binOpExpr.rhs.accept(this);
+
         var lhsNotComplex = binOpExpr.lhs instanceof LiteralExpr || binOpExpr.lhs instanceof Var;
-        // Put rdx on stack, if rdx might be overwritten when evaluating lhs
-        OperandSpecifier rhsResLoc = lhsNotComplex ? rdx : stack.reserveSlot(binOpExpr.rhs.theType);
-        code.movq(rax, rhsResLoc);
+
+        OperandSpecifier rhsResLoc = null;
+        OperandSpecifier dstOpSpec = null;
+
+        // Put rhs result on stack, if the register might be overwritten when evaluating lhs
+        if (binOpExpr.theType.isFloatType()) {
+            dstOpSpec = xmm0;
+            rhsResLoc = lhsNotComplex ? xmm1 : stack.reserveSlot(binOpExpr.rhs.theType);
+            code.movsd(dstOpSpec, rhsResLoc);
+        } else {
+            dstOpSpec = rax;
+            rhsResLoc = lhsNotComplex ? rdx : stack.reserveSlot(binOpExpr.rhs.theType);
+            code.movq(dstOpSpec, rhsResLoc);
+        }
 
         binOpExpr.lhs.accept(this);
         // now operands in %rax (lhs), "rhsResLoc" (rhs)
+        // or with floats:  %xmm0 (lhs), "rhsResLoc" (rhs)
 
-        genOpInstruction(code, binOpExpr.lhs.theType, binOpExpr.op, rhsResLoc, rax);
+        genOpInstruction(code, binOpExpr.lhs.theType, binOpExpr.op, rhsResLoc, dstOpSpec);
     }
 
     /**
      * Generates instruction(s) for the given operand type, operator and
      * source/destination operand specifiers.
+     * The operation can be described as: {@code dst:= dst op src}
      *
      * @param src The source. It's the operation's RHS.
      * @param dst The destination. It's the operation's LHS.
