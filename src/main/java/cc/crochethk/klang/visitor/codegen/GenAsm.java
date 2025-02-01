@@ -87,7 +87,7 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(Var var) {
-        if (var.theType.equals(Type.DOUBLE_T)) {
+        if (var.theType.isFloatType()) {
             code.movsd(stack.get(var.name), xmm0);
         } else {
             code.movq(stack.get(var.name), rax);
@@ -117,7 +117,7 @@ public class GenAsm extends CodeGenVisitor {
             if (arg instanceof FunCall) {
                 arg.accept(this);
                 var resultAddr = stack.reserveSlot(arg.theType);
-                if (arg.theType.equals(Type.DOUBLE_T))
+                if (arg.theType.isFloatType())
                     code.movsd(xmm0, resultAddr);
                 else
                     code.movq(rax, resultAddr);
@@ -139,7 +139,7 @@ public class GenAsm extends CodeGenVisitor {
             var arg = argIter.next();
             var preEvaledArg = preEvaluatedArgsIt.next();
 
-            if (arg.theType.equals(Type.DOUBLE_T)) {
+            if (arg.theType.isFloatType()) {
                 if (theXmm0Arg == null) {
                     // - remember arg that should go into xmm0 for later
                     //  (since we might need xmm0 in the meantime)
@@ -380,7 +380,7 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(VarAssignStat varAssignStat) {
         varAssignStat.expr.accept(this);
-        if (varAssignStat.theType.equals(Type.DOUBLE_T)) {
+        if (varAssignStat.theType.isFloatType()) {
             code.movsd(xmm0, stack.get(varAssignStat.targetVarName));
         } else {
             code.movq(rax, stack.get(varAssignStat.targetVarName));
@@ -506,7 +506,7 @@ public class GenAsm extends CodeGenVisitor {
             var p = paramIt.next();
             var ptype = p.type().theType;
 
-            if (ptype.equals(Type.DOUBLE_T) && xmmRegsIt.hasNext()) {
+            if (ptype.isFloatType() && xmmRegsIt.hasNext()) {
                 var src = xmmRegsIt.next();
                 stack.storeXmmSd(p.name(), src);
             } else if (regularRegsIt.hasNext()) {
