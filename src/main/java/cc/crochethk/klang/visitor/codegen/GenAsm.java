@@ -233,6 +233,7 @@ public class GenAsm extends CodeGenVisitor {
         // Assumption: "owner" reference already in rax (from previous MemberAccess nodes)
         // Passing EmptyNode as arg, makes FunCall load the mentioned pointer from rax.
         var thisArg = new EmptyNode(fieldGet.srcPos);
+        thisArg.theType = ownerType;
         var funCall = new FunCall(fieldGet.srcPos, getterFunName, List.of(thisArg));
         funCall.theType = fieldGet.theType;
         funCall.accept(this);
@@ -249,6 +250,7 @@ public class GenAsm extends CodeGenVisitor {
         // Assumption: "owner" reference already in rax (from previous MemberAccess nodes)
         // Passing EmptyNode as first arg, makes FunCall load the mentioned pointer from rax.
         var thisArg = new EmptyNode(methodCall.srcPos);
+        thisArg.theType = ownerType;
         var allArgs = Stream.concat(Stream.of(thisArg), methodCall.args.stream()).toList();
         var funCall = new FunCall(methodCall.srcPos, asmMethName, allArgs);
         funCall.theType = methodCall.theType;
@@ -438,6 +440,7 @@ public class GenAsm extends CodeGenVisitor {
                 : faStat.maChain.owner.theType;
         var setterFunName = getSetterFullName(fieldOwnerType, field.targetName);
         var thisArg = new EmptyNode(faStat.srcPos);
+        thisArg.theType = fieldOwnerType;
         var funCall = new FunCall(faStat.srcPos, setterFunName, List.of(thisArg, faStat.expr));
         funCall.theType = faStat.theType;
         funCall.accept(this);
