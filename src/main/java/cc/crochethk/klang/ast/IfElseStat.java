@@ -23,7 +23,7 @@ public class IfElseStat extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(condition=" + condition
+        return super.toString() + "(condition=" + condition
                 + ", then=" + then + ", otherwise=" + otherwise + ")";
     }
 

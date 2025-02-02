@@ -29,8 +29,7 @@ public class ConstructorCall extends Expr {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(structName=" + structName + ", args=" + args + ")";
+        return super.toString()+ "(structName=" + structName + ", args=" + args + ")";
     }
 
     @Override

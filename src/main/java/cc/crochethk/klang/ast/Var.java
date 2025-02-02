@@ -45,6 +45,6 @@ public class Var extends Expr {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(name=" + name + ")";
+        return super.toString() + "(name=" + name + ")";
     }
 }

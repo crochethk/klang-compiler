@@ -32,8 +32,8 @@ public class StructDef extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(name=" + name + ", fields=" + fields + ", methods=" + methods + ")";
+        return super.toString() + "(name=" + name + ", fields=" + fields
+                + ", methods=" + methods + ")";
     }
 
     @Override

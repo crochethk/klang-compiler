@@ -46,8 +46,7 @@ public class MemberAccessChain extends Expr {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(owner=" + owner + ", chain=" + chain + ")";
+        return super.toString() + "(owner=" + owner + ", chain=" + chain + ")";
     }
 
     @Override

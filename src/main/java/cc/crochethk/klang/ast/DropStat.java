@@ -36,6 +36,6 @@ public class DropStat extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(refTypeVar=" + refTypeVar + ")";
+        return super.toString() + "(refTypeVar=" + refTypeVar + ")";
     }
 }

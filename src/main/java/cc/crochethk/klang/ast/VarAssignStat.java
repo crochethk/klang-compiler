@@ -22,8 +22,7 @@ public class VarAssignStat extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(targetVarName=" + targetVarName + ", expr=" + expr + ")";
+        return super.toString() + "(targetVarName=" + targetVarName + ", expr=" + expr + ")";
     }
 
     @Override

@@ -21,8 +21,7 @@ public class TypeNode extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(typeToken=" + typeToken + ")";
+        return super.toString() + "(typeToken=" + typeToken + ")";
     }
 
     @Override

@@ -55,7 +55,7 @@ public sealed abstract class MemberAccess extends Expr
 
         @Override
         public String toString() {
-            return this.getClass().getSimpleName() + "(" + super.toString() + ")";
+            return super.toString() + "(" + super.toString() + ")";
         }
     }
 
@@ -74,7 +74,7 @@ public sealed abstract class MemberAccess extends Expr
 
         @Override
         public String toString() {
-            return this.getClass().getSimpleName() + "(" + super.toString() + ")";
+            return super.toString() + "(" + super.toString() + ")";
         }
     }
 
@@ -107,7 +107,7 @@ public sealed abstract class MemberAccess extends Expr
 
         @Override
         public String toString() {
-            return this.getClass().getSimpleName()
+            return super.toString()
                     + "(args=" + args.toString() + ", " + super.toString() + ")";
         }
     }

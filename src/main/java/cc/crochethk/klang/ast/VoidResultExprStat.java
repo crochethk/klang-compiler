@@ -28,7 +28,7 @@ public class VoidResultExprStat extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(expr=" + expr + ")";
+        return super.toString() + "(expr=" + expr + ")";
     }
 
     @Override

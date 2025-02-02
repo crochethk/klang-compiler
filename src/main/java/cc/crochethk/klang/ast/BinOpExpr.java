@@ -80,8 +80,7 @@ public class BinOpExpr extends Expr {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(lhs=" + lhs + ", op=" + op + ", rhs=" + rhs + ")";
+        return super.toString() + "(lhs=" + lhs + ", op=" + op + ", rhs=" + rhs + ")";
     }
 
     @Override

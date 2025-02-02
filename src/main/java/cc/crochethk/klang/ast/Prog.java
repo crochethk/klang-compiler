@@ -26,7 +26,7 @@ public class Prog extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(funDefs=" + funDefs
+        return super.toString() + "(funDefs=" + funDefs
                 + ", structDefs=" + structDefs + ", entryPoint=" + entryPoint + ")";
     }
 

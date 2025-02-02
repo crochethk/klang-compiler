@@ -26,7 +26,7 @@ public class StatementList extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(statements=" + statements + ")";
+        return super.toString() + "(statements=" + statements + ")";
     }
 
     @Override

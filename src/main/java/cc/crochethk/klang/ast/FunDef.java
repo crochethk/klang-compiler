@@ -29,8 +29,8 @@ public class FunDef extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(name=" + name + ", returnType="
-                + returnType + ", params=" + params + ", body=" + body + ")";
+        return super.toString() + "(name=" + name + ", returnType=" + returnType
+                + ", params=" + params + ", body=" + body + ")";
     }
 
     @Override

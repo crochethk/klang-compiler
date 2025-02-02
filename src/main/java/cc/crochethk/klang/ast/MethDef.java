@@ -50,7 +50,7 @@ public class MethDef extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(def=" + def + ")";
+        return super.toString() + "(def=" + def + ")";
     }
 
     @Override

@@ -22,8 +22,7 @@ public class FieldAssignStat extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(maChain=" + maChain + ", expr=" + expr + ")";
+        return super.toString() + "(maChain=" + maChain + ", expr=" + expr + ")";
     }
 
     @Override

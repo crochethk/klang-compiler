@@ -62,8 +62,7 @@ public class UnaryOpExpr extends Expr {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(op=" + op + ", operand=" + operand + ")";
+        return super.toString() + "(op=" + op + ", operand=" + operand + ")";
     }
 
     @Override

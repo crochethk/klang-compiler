@@ -47,7 +47,6 @@ public class FunCall extends Expr {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(name=" + name + ", args=" + args + ")";
+        return super.toString() + "(name=" + name + ", args=" + args + ")";
     }
 }

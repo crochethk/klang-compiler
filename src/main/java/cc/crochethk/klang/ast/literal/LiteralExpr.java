@@ -38,6 +38,6 @@ public abstract class LiteralExpr<T> extends Expr {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "(" + value + ")";
+        return super.toString() + "(" + value + ")";
     }
 }

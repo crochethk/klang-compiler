@@ -36,7 +36,7 @@ public class VarDeclareStat extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + String.format(
+        return super.toString() + String.format(
                 "%s(varName=%s, declaredType=%s, init=%s)",
                 varName(), declaredType, initializer.map(init -> init.expr));
     }

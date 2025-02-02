@@ -20,8 +20,7 @@ public class LoopStat extends Node {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName()
-                + "(body=" + body + ")";
+        return super.toString() + "(body=" + body + ")";
     }
 
     @Override
