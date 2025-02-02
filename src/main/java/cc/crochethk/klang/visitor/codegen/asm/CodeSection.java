@@ -55,6 +55,16 @@ public class CodeSection extends SectionBuilder {
         writeSrcDstInstruction("imulq", src, dst);
     }
 
+    /** Divide {@code rax:rdx} by {@code src} */
+    public void idivq(OperandSpecifier src) {
+        writeIndented("idivq", "\t", src.operandSpec());
+    }
+
+    /** Sign-extend {@code rax} into {@code rdx} */
+    public void cqto() {
+        writeIndented("cqto");
+    }
+
     /**
      * Move scalar double-precision floating-point value from soruce to destination.
      * @param source

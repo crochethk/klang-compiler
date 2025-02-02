@@ -290,7 +290,11 @@ public class GenAsm extends CodeGenVisitor {
             code.movsd(dstOpSpec, rhsResLoc);
         } else {
             dstOpSpec = rax;
-            rhsResLoc = lhsNotComplex ? rdx : stack.reserveSlot(binOpExpr.rhs.theType);
+            rhsResLoc = (lhsNotComplex
+                    && binOpExpr.op != BinaryOp.div
+                    && binOpExpr.op != BinaryOp.mod) // integer div uses rdx for remainder
+                            ? rdx
+                            : stack.reserveSlot(binOpExpr.rhs.theType);
             code.movq(dstOpSpec, rhsResLoc);
         }
 
@@ -308,6 +312,15 @@ public class GenAsm extends CodeGenVisitor {
      *
      * @param src The source. It's the operation's RHS.
      * @param dst The destination. It's the operation's LHS.
+     * <p> For integer division and modulo, if {@code dst} is not {@code rax} it
+     * is loaded there first, since the assembly instruction implicitly requires 
+     * {@code rax} and {@code rdx} registers (computation and results). This
+     * also implies that {@code src} must be neither {@code rax} nor {@code rdx}
+     * in these cases.</p>
+     * <p>The result will be placed in the provided {@code dst} nevertheless.</p>
+     * 
+     * @apiNote Integer division and modulo operations always overwrite 
+     * {@code rax} and {@code rdx}.
      */
     private void genOpInstruction(CodeSection code, Type operandType,
             BinaryOp op, OperandSpecifier src, OperandSpecifier dst) {
@@ -343,7 +356,15 @@ public class GenAsm extends CodeGenVisitor {
             }
             case div -> {
                 if (operandType == Type.LONG_T) {
-                    // TODO
+                    if (dst != rax) {
+                        code.movq(dst, rax);
+                    }
+                    // sign-extends rax into rdx
+                    code.cqto();
+                    code.idivq(src); // rax:rdx = quotient:remainder
+                    if (dst != rax) {
+                        code.movq(rax, dst);
+                    }
                 } else if (operandType == Type.DOUBLE_T) {
                     code.divsd(src, dst);
                 } else {
