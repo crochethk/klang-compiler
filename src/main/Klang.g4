@@ -168,8 +168,8 @@ nullLit
 	returns[Node result]: KW_NULL;
 
 // Lexer rules
-LIT_INTEGER: DIGIT+;
-LIT_FLOAT: DIGIT+ '.' DIGIT+;
+LIT_INTEGER: SUB? DIGIT+;
+LIT_FLOAT: SUB? DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
 
 /**

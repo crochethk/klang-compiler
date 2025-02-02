@@ -87,7 +87,7 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(Var var) {
-        if (var.theType.equals(Type.DOUBLE_T)) {
+        if (var.theType.isFloatType()) {
             code.movsd(stack.get(var.name), xmm0);
         } else {
             code.movq(stack.get(var.name), rax);
@@ -117,7 +117,7 @@ public class GenAsm extends CodeGenVisitor {
             if (arg instanceof FunCall) {
                 arg.accept(this);
                 var resultAddr = stack.reserveSlot(arg.theType);
-                if (arg.theType.equals(Type.DOUBLE_T))
+                if (arg.theType.isFloatType())
                     code.movsd(xmm0, resultAddr);
                 else
                     code.movq(rax, resultAddr);
@@ -139,7 +139,7 @@ public class GenAsm extends CodeGenVisitor {
             var arg = argIter.next();
             var preEvaledArg = preEvaluatedArgsIt.next();
 
-            if (arg.theType.equals(Type.DOUBLE_T)) {
+            if (arg.theType.isFloatType()) {
                 if (theXmm0Arg == null) {
                     // - remember arg that should go into xmm0 for later
                     //  (since we might need xmm0 in the meantime)
@@ -277,23 +277,50 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(BinOpExpr binOpExpr) {
         binOpExpr.rhs.accept(this);
+
         var lhsNotComplex = binOpExpr.lhs instanceof LiteralExpr || binOpExpr.lhs instanceof Var;
-        // Put rdx on stack, if rdx might be overwritten when evaluating lhs
-        OperandSpecifier rhsResLoc = lhsNotComplex ? rdx : stack.reserveSlot(binOpExpr.rhs.theType);
-        code.movq(rax, rhsResLoc);
+
+        OperandSpecifier rhsResLoc = null;
+        OperandSpecifier dstOpSpec = null;
+
+        // Put rhs result on stack, if the register might be overwritten when evaluating lhs
+        if (binOpExpr.theType.isFloatType()) {
+            dstOpSpec = xmm0;
+            rhsResLoc = lhsNotComplex ? xmm1 : stack.reserveSlot(binOpExpr.rhs.theType);
+            code.movsd(dstOpSpec, rhsResLoc);
+        } else {
+            dstOpSpec = rax;
+            rhsResLoc = (lhsNotComplex
+                    && binOpExpr.op != BinaryOp.div
+                    && binOpExpr.op != BinaryOp.mod) // integer div uses rdx for remainder
+                            ? rdx
+                            : stack.reserveSlot(binOpExpr.rhs.theType);
+            code.movq(dstOpSpec, rhsResLoc);
+        }
 
         binOpExpr.lhs.accept(this);
         // now operands in %rax (lhs), "rhsResLoc" (rhs)
+        // or with floats:  %xmm0 (lhs), "rhsResLoc" (rhs)
 
-        genOpInstruction(code, binOpExpr.lhs.theType, binOpExpr.op, rhsResLoc, rax);
+        genOpInstruction(code, binOpExpr.lhs.theType, binOpExpr.op, rhsResLoc, dstOpSpec);
     }
 
     /**
      * Generates instruction(s) for the given operand type, operator and
      * source/destination operand specifiers.
+     * The operation can be described as: {@code dst:= dst op src}
      *
      * @param src The source. It's the operation's RHS.
      * @param dst The destination. It's the operation's LHS.
+     * <p> For integer division and modulo, if {@code dst} is not {@code rax} it
+     * is loaded there first, since the assembly instruction implicitly requires 
+     * {@code rax} and {@code rdx} registers (computation and results). This
+     * also implies that {@code src} must be neither {@code rax} nor {@code rdx}
+     * in these cases.</p>
+     * <p>The result will be placed in the provided {@code dst} nevertheless.</p>
+     * 
+     * @apiNote Integer division and modulo operations always overwrite 
+     * {@code rax} and {@code rdx}.
      */
     private void genOpInstruction(CodeSection code, Type operandType,
             BinaryOp op, OperandSpecifier src, OperandSpecifier dst) {
@@ -303,42 +330,55 @@ public class GenAsm extends CodeGenVisitor {
             case add -> {
                 if (operandType == Type.LONG_T) {
                     code.addq(src, dst);
+                } else if (operandType == Type.DOUBLE_T) {
+                    code.addsd(src, dst);
                 } else {
-                    // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
                 }
             }
             case sub -> {
                 if (operandType == Type.LONG_T) {
                     code.subq(src, dst);
+                } else if (operandType == Type.DOUBLE_T) {
+                    code.subsd(src, dst);
                 } else {
-                    // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
                 }
             }
             case mult -> {
                 if (operandType == Type.LONG_T) {
                     code.imulq(src, dst);
+                } else if (operandType == Type.DOUBLE_T) {
+                    code.mulsd(src, dst);
                 } else {
-                    // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
                 }
             }
-            // TODO
-            // case div -> {
-            //     if (operandType == Type.LONG_T) {
-            //         // TODO
-            //     } else {
-            //         // TODO implement case "operandType == Type.DOUBLE_T"
-            //         error = true;
-            //     }
-            // }
+            case div -> {
+                if (operandType == Type.LONG_T) {
+                    if (dst != rax) {
+                        code.movq(dst, rax);
+                    }
+                    // sign-extends rax into rdx
+                    code.cqto();
+                    code.idivq(src); // rax:rdx = quotient:remainder
+                    if (dst != rax) {
+                        code.movq(rax, dst);
+                    }
+                } else if (operandType == Type.DOUBLE_T) {
+                    code.divsd(src, dst);
+                } else {
+                    error = true;
+                }
+            }
             // case mod -> {}
             // case pow -> {}
 
             // Comparison
             case eq, neq, gt, gteq, lt, lteq -> {
                 if (operandType == Type.LONG_T) {
+                    // TODO
+                } else if (operandType == Type.DOUBLE_T) {
                     // TODO
                 } else {
                     // TODO implement case "operandType == Type.DOUBLE_T"
@@ -380,7 +420,7 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(VarAssignStat varAssignStat) {
         varAssignStat.expr.accept(this);
-        if (varAssignStat.theType.equals(Type.DOUBLE_T)) {
+        if (varAssignStat.theType.isFloatType()) {
             code.movsd(xmm0, stack.get(varAssignStat.targetVarName));
         } else {
             code.movq(rax, stack.get(varAssignStat.targetVarName));
@@ -506,7 +546,7 @@ public class GenAsm extends CodeGenVisitor {
             var p = paramIt.next();
             var ptype = p.type().theType;
 
-            if (ptype.equals(Type.DOUBLE_T) && xmmRegsIt.hasNext()) {
+            if (ptype.isFloatType() && xmmRegsIt.hasNext()) {
                 var src = xmmRegsIt.next();
                 stack.storeXmmSd(p.name(), src);
             } else if (regularRegsIt.hasNext()) {

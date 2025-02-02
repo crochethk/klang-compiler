@@ -28,8 +28,18 @@ public class KlangLexerTest {
         }
 
         @Test
+        public void testLIT_INTEGER_neg() {
+            assertEquals(List.of(KlangLexer.LIT_INTEGER, KlangLexer.EOF), getTokenTypesFromText("-123"));
+        }
+
+        @Test
         public void testLIT_FLOAT() {
             assertEquals(List.of(KlangLexer.LIT_FLOAT, KlangLexer.EOF), getTokenTypesFromText("123.456"));
+        }
+
+        @Test
+        public void testLIT_FLOAT_neg() {
+            assertEquals(List.of(KlangLexer.LIT_FLOAT, KlangLexer.EOF), getTokenTypesFromText("-123.456"));
         }
 
         @Test
@@ -401,6 +411,13 @@ public class KlangLexerTest {
                     getTokenTypesFromText("fn i64()foo{string:f64}"));
 
         }
+
+        @Test
+        void testMinusNegativeInt() {
+            assertEquals(List.of(KlangLexer.SUB, KlangLexer.LIT_INTEGER, KlangLexer.EOF),
+                    getTokenTypesFromText("--42"));
+
+        }
     }
 
     @Nested
@@ -482,7 +499,7 @@ public class KlangLexerTest {
 
     @Test
     void testBooleanExpr() {
-        var tokens = getTokenTypesFromText("/*modulo*/!(number-(number/2)*2==0)");
+        var tokens = getTokenTypesFromText("/*modulo*/!(number-(number/2)*-2==0)");
         List<Integer> expTokens = List.of(
                 KlangLexer.NOT, KlangLexer.LPAR, KlangLexer.IDENT, KlangLexer.SUB,
                 KlangLexer.LPAR, KlangLexer.IDENT, KlangLexer.DIV, KlangLexer.LIT_INTEGER,

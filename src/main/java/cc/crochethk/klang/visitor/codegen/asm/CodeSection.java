@@ -23,15 +23,6 @@ public class CodeSection extends SectionBuilder {
         writeIndented("pushq", "\t", source.operandSpec());
     }
 
-    /**
-     * Move scalar double-precision floating-point value from soruce to destination.
-     * @param source
-     * @param destination The destination XmmRegister or MemAddress
-     */
-    public void movsd(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("movsd", src, dst);
-    }
-
     public void call(String name) {
         writeIndented("call", "\t", name);
     }
@@ -44,24 +35,63 @@ public class CodeSection extends SectionBuilder {
         writeIndented("ret");
     }
 
-    /** Add source to destination */
+    /** Calculate an effective address and put it into {@code dst} register */
+    public void leaq(MemAddr src, Register dst) {
+        writeSrcDstInstruction("leaq", src, dst);
+    }
+
+    /** Add {@code src} to {@code dst} */
     public void addq(OperandSpecifier src, OperandSpecifier dst) {
         writeSrcDstInstruction("addq", src, dst);
     }
 
-    /** Subtract source from destination */
+    /** Subtract {@code src} from {@code dst} */
     public void subq(OperandSpecifier src, OperandSpecifier dst) {
         writeSrcDstInstruction("subq", src, dst);
     }
 
-    /** Multiply destination by source */
+    /** Multiply {@code dst} by {@code src} */
     public void imulq(OperandSpecifier src, OperandSpecifier dst) {
         writeSrcDstInstruction("imulq", src, dst);
     }
 
-    /** Calculate an effective address and put it into {@code dst} register */
-    public void leaq(MemAddr src, Register dst) {
-        writeSrcDstInstruction("leaq", src, dst);
+    /** Divide {@code rax:rdx} by {@code src} */
+    public void idivq(OperandSpecifier src) {
+        writeIndented("idivq", "\t", src.operandSpec());
+    }
+
+    /** Sign-extend {@code rax} into {@code rdx} */
+    public void cqto() {
+        writeIndented("cqto");
+    }
+
+    /**
+     * Move scalar double-precision floating-point value from soruce to destination.
+     * @param source
+     * @param destination The destination XmmRegister or MemAddress
+     */
+    public void movsd(OperandSpecifier src, OperandSpecifier dst) {
+        writeSrcDstInstruction("movsd", src, dst);
+    }
+
+    /** Add {@code src} to {@code dst} */
+    public void addsd(OperandSpecifier src, OperandSpecifier dst) {
+        writeSrcDstInstruction("addsd", src, dst);
+    }
+
+    /** Subtract {@code src} from {@code dst} */
+    public void subsd(OperandSpecifier src, OperandSpecifier dst) {
+        writeSrcDstInstruction("subsd", src, dst);
+    }
+
+    /** Multiply {@code dst} by {@code src} */
+    public void mulsd(OperandSpecifier src, OperandSpecifier dst) {
+        writeSrcDstInstruction("mulsd", src, dst);
+    }
+
+    /** Divide {@code dst} by {@code src} */
+    public void divsd(OperandSpecifier src, OperandSpecifier dst) {
+        writeSrcDstInstruction("divsd", src, dst);
     }
 
     private void writeSrcDstInstruction(String instr, OperandSpecifier src, OperandSpecifier dst) {

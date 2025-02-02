@@ -48,6 +48,10 @@ public sealed interface Type permits Type.PrimType, Type.RefType {
         return this.equals(LONG_T) || this.equals(DOUBLE_T);
     }
 
+    default boolean isFloatType() {
+        return this.equals(DOUBLE_T);
+    }
+
     /** Tests whether this and other are compatible in an assignment context. */
     public default boolean isCompatible(Type other) {
         return other != null && (this.isReference() && Objects.equals(other, Type.ANY_T)
