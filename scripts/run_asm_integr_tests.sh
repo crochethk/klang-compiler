@@ -83,8 +83,10 @@ for test_file in ${file_list}; do
     # Execute the compiled test binary
     echo "Run test: ${c_bin_dir}/${test_file_name_no_ext}"
     "${c_bin_dir}/${test_file_name_no_ext}"
+    if [ $? -eq 0 ]; then
+        ok_test_files+=1
+    fi
     echo ""
-    ok_test_files+=1
 done
 # Workaround (pt2/2)
 IFS="$old_IFS"
