@@ -292,12 +292,12 @@ public class TypeChecker implements Visitor {
         if (op.isBoolean()) {
             exprType = Type.BOOL_T;
             if (!lhsType.equals(exprType) || !rhsType.equals(exprType)) {
-                reportBinOpExprErrorMsg(binOpExpr);
+                reportBinOpExprErrorMsg(binOpExpr, "Operands must be boolean.");
             }
         } else if (op.isArithmetic()) {
             exprType = lhsType;
             if (!lhsType.isNumeric() || !rhsType.isNumeric() || !rhsType.equals(exprType)) {
-                reportBinOpExprErrorMsg(binOpExpr);
+                reportBinOpExprErrorMsg(binOpExpr, "Operand types must be numeric and equal");
             }
         } else if (op.isEqualityComparison()) {
             exprType = Type.BOOL_T;
@@ -318,10 +318,6 @@ public class TypeChecker implements Visitor {
         }
 
         binOpExpr.theType = Objects.requireNonNull(exprType, "Expected valid Type object but was null");
-    }
-
-    private void reportBinOpExprErrorMsg(BinOpExpr expr) {
-        reportBinOpExprErrorMsg(expr, null);
     }
 
     private void reportBinOpExprErrorMsg(BinOpExpr expr, String hint) {
