@@ -17,6 +17,14 @@ char* test_longMul() { mu_asserteq(42, longMul(3,14)); return 0;}
 char* test_longMulAndAdd_1() { mu_asserteq(42, longMulAndAdd_1(-3,14)); return 0;}
 char* test_longMulAndAdd_2() { mu_asserteq(42, longMulAndAdd_2(-3,14)); return 0;}
 
+char* test_longMod_1() { mu_asserteq(3, longMod(15,4)); return 0;}
+char* test_longMod_2() { mu_asserteq(4, longMod(4,17)); return 0;}
+char* test_longMod_3() { mu_asserteq(-1, longMod(-1,2)); return 0;}
+char* test_longMod_4() { mu_asserteq(1, longMod(1,-2)); return 0;}
+char* test_longMod_5() { mu_asserteq(-1, longMod(-1,-2)); return 0;}
+char* test_longModAndAdd_1() { mu_asserteq(42, longMod(-42,43)); return 0;}
+char* test_longModAndAdd_2() { mu_asserteq(126, longMod(42,43)); return 0;}
+
 int tests_run = 0;
 int main() {
     f1();
@@ -33,7 +41,12 @@ int main() {
         test_longSubWithFunCall_2,
         test_longMul,
         test_longMulAndAdd_1,
-        test_longMulAndAdd_2
+        test_longMulAndAdd_2,
+        test_longMod_1,
+        test_longMod_2,
+        test_longMod_3,
+        test_longMod_4,
+        test_longMod_5
     };
     return RUN_TESTS(tests);
 }

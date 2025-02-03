@@ -358,12 +358,7 @@ public class GenAsm extends CodeGenVisitor {
             }
             case div -> {
                 if (operandType == Type.LONG_T) {
-                    if (dst != rax) {
-                        code.movq(dst, rax);
-                    }
-                    // sign-extends rax into rdx
-                    code.cqto();
-                    code.idivq(src); // rax:rdx = quotient:remainder
+                    genSignedIntegerDivision(code, src, dst);
                     if (dst != rax) {
                         code.movq(rax, dst);
                     }
@@ -373,7 +368,14 @@ public class GenAsm extends CodeGenVisitor {
                     error = true;
                 }
             }
-            // case mod -> {}
+            case mod -> {
+                if (operandType == Type.LONG_T) {
+                    genSignedIntegerDivision(code, src, dst);
+                    code.movq(rdx, rax);
+                } else {
+                    error = true;
+                }
+            }
             // case pow -> {}
 
             // Comparison
@@ -399,6 +401,21 @@ public class GenAsm extends CodeGenVisitor {
             throw new UnsupportedOperationException("Operation '" + op
                     + "' not supported for '" + operandType + ", " + operandType + "'");
         }
+    }
+
+    /**
+     * Generates instructions for integer division. Result will be in
+     * {@code rax:rdx} as {@code quotient:remainder}.
+     * Restrictions are similar to 
+     * {@link #genOpInstruction(CodeSection, Type, BinaryOp, OperandSpecifier, OperandSpecifier)}.
+     */
+    private void genSignedIntegerDivision(CodeSection code, OperandSpecifier src, OperandSpecifier dst) {
+        if (dst != rax) {
+            code.movq(dst, rax);
+        }
+        // sign-extend rax into rdx
+        code.cqto();
+        code.idivq(src);
     }
 
     @Override

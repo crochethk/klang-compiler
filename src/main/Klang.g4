@@ -92,7 +92,7 @@ expr
 	// arithmetic expr
 	negationOp=SUB expr // negation
 	| lhs=expr POW rhs=expr
-	| lhs=expr (MULT | DIV) rhs=expr // hier + MOD
+	| lhs=expr (MULT | DIV | MOD) rhs=expr
 	| lhs=expr (ADD | SUB) rhs=expr
 	// comparison expr
 	| lhs=expr (LT | LTEQ | GT | GTEQ) rhs=expr
@@ -191,6 +191,7 @@ SUB: '-';
 POW: '**';
 MULT: '*';
 DIV: '/';
+MOD: '%';
 
 AND: '&&';
 OR: '||';

@@ -100,6 +100,11 @@ public class KlangLexerTest {
         }
 
         @Test
+        public void testMOD() {
+            assertEquals(List.of(KlangLexer.MOD, KlangLexer.EOF), getTokenTypesFromText("%"));
+        }
+
+        @Test
         public void testAND() {
             assertEquals(List.of(KlangLexer.AND, KlangLexer.EOF), getTokenTypesFromText("&&"));
         }

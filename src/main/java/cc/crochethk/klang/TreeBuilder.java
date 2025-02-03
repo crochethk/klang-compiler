@@ -201,6 +201,8 @@ public class TreeBuilder extends KlangBaseListener {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.mult);
         } else if (ctx.DIV() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.div);
+        } else if (ctx.MOD() != null) {
+            ctx.result = parseBinOpExpr(ctx, BinaryOp.mod);
         } else if (ctx.ADD() != null) {
             ctx.result = parseBinOpExpr(ctx, BinaryOp.add);
         } else if (ctx.negationOp != null) { // must come before subtract

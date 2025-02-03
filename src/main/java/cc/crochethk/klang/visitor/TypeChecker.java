@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import cc.crochethk.klang.ast.*;
+import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.literal.*;
 import cc.crochethk.klang.visitor.Type.CheckedParam;
@@ -298,6 +299,10 @@ public class TypeChecker implements Visitor {
             exprType = lhsType;
             if (!lhsType.isNumeric() || !rhsType.isNumeric() || !rhsType.equals(exprType)) {
                 reportBinOpExprErrorMsg(binOpExpr, "Operand types must be numeric and equal");
+            } else if (op == BinaryOp.mod) {
+                if (!lhsType.equals(Type.LONG_T) || !rhsType.equals(Type.LONG_T)) {
+                    reportError(binOpExpr, "Modulo only supports integral type operands.");
+                }
             }
         } else if (op.isEqualityComparison()) {
             exprType = Type.BOOL_T;

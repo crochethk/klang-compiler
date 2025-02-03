@@ -376,9 +376,10 @@ public class TypeCheckerTest extends NodeMocker {
             }
 
             @Test
-            void modTwoF64IsOk() {
-                testBinaryOpAssertF64Result(f64Lit(1.23d), BinaryOp.mod, f64Lit(4.56d));
-                assertReportedErrors(0);
+            void shouldReportErrWhenModWithF64Operands() {
+                assertThrows(TypeCheckFailedException.class,
+                        () -> testBinaryOpAssertF64Result(f64Lit(1.23d), BinaryOp.mod, f64Lit(4.56d)));
+                assertReportedErrors(1);
             }
             //----------- with errors
             /*

@@ -62,7 +62,31 @@ fn longMulAndAdd_1(lhs:i64, rhs: i64) -> i64 {
     return lhs*rhs+84;
 }
 
-/* Mul, Add */
+/* Add, Mul */
 fn longMulAndAdd_2(lhs:i64, rhs: i64) -> i64 {
     return 84+lhs*rhs;
 }
+
+// -----
+// TODO add variants for Div
+
+/* Mod */
+fn longMod(lhs:i64, rhs: i64) -> i64 {
+    return lhs%rhs;
+}
+
+/* Mod, Add
+- should first calculate modulo, then add 84
+*/
+fn longModAndAdd_1(lhs:i64, rhs: i64) -> i64 {
+    return lhs%rhs+84;
+}
+
+/* Add, Mod
+- should first calculate modulo, then add 84
+*/
+fn longModAndAdd_2(lhs:i64, rhs: i64) -> i64 {
+    return 84+lhs%rhs;
+}
+
+
