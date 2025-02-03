@@ -112,7 +112,7 @@ public class GenAsm extends CodeGenVisitor {
             return;
         }
 
-        // Memory positions of argument results from FunCall args
+        // Memory locations of args that needed to be evaluated before prologue
         var preEvaluatedArgsIt = funCall.args.stream().map(arg -> {
             if (arg.isOrHasFunCall()) {
                 arg.accept(this);
@@ -127,13 +127,15 @@ public class GenAsm extends CodeGenVisitor {
             }
         }).toList().iterator();
 
+        stack.alignRspToStackSize();
+
+        // Prepare function arguments
         var xmmRegsIt = Arrays.stream(xmmRegs).iterator();
         var regularRegsIt = Arrays.stream(regs).iterator();
 
         Expr theXmm0Arg = null;
         OperandSpecifier theXmm0SrcOpSpec = null;
 
-        stack.alignRspToStackSize();
         var stackArgsOffset = 0;
         for (var argIter = funCall.args.iterator(); argIter.hasNext();) {
             var arg = argIter.next();
@@ -699,12 +701,12 @@ public class GenAsm extends CodeGenVisitor {
      * Class responsible for writing variables to stack while keeping track 
      * of their locations.
      * 
-     * @implNote Currently all variables will effectively use 8 Bytes since
-     * only 64 Bit / 8 Byte variants of instructions are used even if the given
+     * @implNote Currently all variables will effectively use 8 bytes since
+     * only 64-bit / 8-byte variants of instructions are used even if the given
      * type would be shorter.
      * This is reasonable at this point, since
-     * - only 64 Bit general purpose registers are implemented
-     * - xmm related instructions also only use single scalar values up to 64 Bit.
+     * - only 64-bit general purpose registers are implemented
+     * - xmm related instructions also only use single scalar values up to 64 Bits.
      */
     class StackManager {
         private CodeSection code;
@@ -755,6 +757,11 @@ public class GenAsm extends CodeGenVisitor {
         }
 
         /**
+         * <h1>IMPORTANT:</h1>
+         * <p>Since we only handle 64bit registers for now, this is <b><i> HARDCODED
+         * to always use the bytesize of {@code ANY_T} (8 bytes)</i></b></p>
+         * <hr>
+         * 
          * Increases the number of bytes the manager will use to determine the 
          * %rsp address for the current stack frame.
          * This operation does not actually allocate resources. Rather it's
@@ -765,6 +772,9 @@ public class GenAsm extends CodeGenVisitor {
          * "call" instructions.
          */
         public void alloc(int bytes) {
+            // ---- HARDCODED FOR NOW ----
+            bytes = Type.ANY_T.byteSize();
+
             pendingAllocSize += bytes;
         }
 
@@ -791,7 +801,7 @@ public class GenAsm extends CodeGenVisitor {
         }
 
         /**
-         * Write a single scalar double precision float (8 byte) from the given xmm
+         * Write a single scalar double precision float (8 bytes) from the given xmm
          * register to stack, associating its address with the given {@code name}.
          * @param name The value's name for later referencing.
          * @param source The value's source xmm register.
@@ -817,8 +827,8 @@ public class GenAsm extends CodeGenVisitor {
         }
 
         /**
-         * Reserves stack slot for an unnamed element of given {@code type} and
-         * returns the corresponding memory address.
+         * Reserves stack slot for an unnamed element suitable for the given
+         * {@code type} and returns the corresponding memory address.
          * @param type
          * @return MemAddr The %rbp based address referencing the reserved slot.
          */
@@ -845,7 +855,16 @@ public class GenAsm extends CodeGenVisitor {
             return new MemAddr(ctx.get(varName), rbp);
         }
 
+        /**
+         * <h1>IMPORTANT:</h1>
+         * <p>Since we only handle 64bit registers for now, this is <b><i> HARDCODED
+         * to always use the bytesize of {@code ANY_T} (8 bytes)</i></b></p>
+         * <hr>
+         */
         private int nextOffset(int size) {
+            // ---- HARDCODED FOR NOW ----
+            size = Type.ANY_T.byteSize();
+
             writeOffset -= size;
             // allocated if necessary
             if (Math.abs(writeOffset) > unalignedStackSize()) {
