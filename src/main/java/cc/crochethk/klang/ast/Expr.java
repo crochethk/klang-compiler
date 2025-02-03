@@ -7,4 +7,6 @@ public abstract class Expr extends Node {
     public Expr(SourcePos srcPos) {
         super(srcPos);
     }
+
+    abstract public boolean isOrHasFunCall();
 }

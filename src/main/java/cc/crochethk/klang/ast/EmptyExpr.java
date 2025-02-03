@@ -14,6 +14,11 @@ public class EmptyExpr extends Expr {
     }
 
     @Override
+    public boolean isOrHasFunCall() {
+        return false;
+    }
+
+    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

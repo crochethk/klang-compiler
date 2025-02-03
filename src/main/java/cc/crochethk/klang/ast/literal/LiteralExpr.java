@@ -16,6 +16,11 @@ public abstract class LiteralExpr<T> extends Expr {
     }
 
     @Override
+    public boolean isOrHasFunCall() {
+        return false;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), value);
     }

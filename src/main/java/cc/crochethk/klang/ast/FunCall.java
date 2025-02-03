@@ -18,6 +18,11 @@ public class FunCall extends Expr {
     }
 
     @Override
+    public boolean isOrHasFunCall() {
+        return true;
+    }
+
+    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

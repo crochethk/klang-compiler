@@ -17,6 +17,13 @@ public class TernaryConditionalExpr extends Expr {
     }
 
     @Override
+    public boolean isOrHasFunCall() {
+        return condition.isOrHasFunCall()
+                || then.isOrHasFunCall()
+                || otherwise.isOrHasFunCall();
+    }
+
+    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

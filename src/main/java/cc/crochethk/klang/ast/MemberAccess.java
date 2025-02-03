@@ -91,6 +91,11 @@ public sealed abstract class MemberAccess extends Expr
         }
 
         @Override
+        public boolean isOrHasFunCall() {
+            return true;
+        }
+
+        @Override
         public void accept(Visitor visitor) {
             visitor.visit(this);
         }
@@ -105,6 +110,12 @@ public sealed abstract class MemberAccess extends Expr
             return this.getClass().getSimpleName()
                     + "(args=" + args.toString() + ", " + super.toString() + ")";
         }
+    }
+
+    @Override
+    public boolean isOrHasFunCall() {
+        // generally false, but overriden in relevant subclasses
+        return false;
     }
 
     @Override

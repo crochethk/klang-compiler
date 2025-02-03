@@ -10,6 +10,11 @@ public class BinOpExpr extends Expr {
     public Expr lhs;
     public Expr rhs;
 
+    @Override
+    public boolean isOrHasFunCall() {
+        return lhs.isOrHasFunCall() || rhs.isOrHasFunCall();
+    }
+
     public enum BinaryOp {
         // Arithmetic
         add("+"), sub("-"), mult("*"), div("/"), mod("%"), pow("**"),

@@ -28,6 +28,18 @@ public class MemberAccessChain extends Expr {
     }
 
     @Override
+    public boolean isOrHasFunCall() {
+        // Condition: At least one of the chained accessors must return true for 'isOrHasFunCall()'
+        var isOrHas = false;
+        var next = chain;
+        while (!isOrHas && next != null) {
+            isOrHas = next.isOrHasFunCall();
+            next = next.next;
+        }
+        return isOrHas;
+    }
+
+    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

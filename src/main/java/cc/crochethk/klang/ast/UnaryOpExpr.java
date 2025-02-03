@@ -51,6 +51,11 @@ public class UnaryOpExpr extends Expr {
     }
 
     @Override
+    public boolean isOrHasFunCall() {
+        return operand.isOrHasFunCall();
+    }
+
+    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }

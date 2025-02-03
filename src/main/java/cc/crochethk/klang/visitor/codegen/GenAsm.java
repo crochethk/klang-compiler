@@ -114,7 +114,7 @@ public class GenAsm extends CodeGenVisitor {
 
         // Memory positions of argument results from FunCall args
         var preEvaluatedArgsIt = funCall.args.stream().map(arg -> {
-            if (arg instanceof FunCall) {
+            if (arg.isOrHasFunCall()) {
                 arg.accept(this);
                 var resultAddr = stack.reserveSlot(arg.theType);
                 if (arg.theType.isFloatType())
