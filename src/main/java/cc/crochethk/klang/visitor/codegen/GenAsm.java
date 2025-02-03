@@ -21,6 +21,7 @@ import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.literal.*;
 import cc.crochethk.klang.visitor.Type;
 import cc.crochethk.klang.visitor.codegen.asm.*;
+import cc.crochethk.klang.visitor.codegen.asm.DataSection.ReadOnlyData;
 import cc.crochethk.klang.visitor.codegen.asm.helpers.*;
 
 public class GenAsm extends CodeGenVisitor {
@@ -30,7 +31,7 @@ public class GenAsm extends CodeGenVisitor {
     private GenCImpls cImplsGen;
 
     /** Readonly data section (".rodata") */
-    DataSection rodataSec = new DataSection.ReadOnlyData();
+    ReadOnlyData rodataSec = new DataSection.ReadOnlyData();
     /** Mutable data section (".data") */
     DataSection dataSec = new DataSection.WritableData();
     /** Programm code section (".text") */
