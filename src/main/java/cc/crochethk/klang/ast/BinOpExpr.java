@@ -5,10 +5,10 @@ import java.util.Objects;
 import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
-public class BinOpExpr extends Node {
+public class BinOpExpr extends Expr {
     public BinaryOp op;
-    public Node lhs;
-    public Node rhs;
+    public Expr lhs;
+    public Expr rhs;
 
     public enum BinaryOp {
         // Arithmetic
@@ -61,7 +61,7 @@ public class BinOpExpr extends Node {
         }
     }
 
-    public BinOpExpr(SourcePos srcPos, Node lhs, BinaryOp op, Node rhs) {
+    public BinOpExpr(SourcePos srcPos, Expr lhs, BinaryOp op, Expr rhs) {
         super(srcPos);
         this.lhs = lhs;
         this.op = op;

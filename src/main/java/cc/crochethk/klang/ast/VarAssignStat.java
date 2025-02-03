@@ -7,9 +7,9 @@ import utils.SourcePos;
 
 public class VarAssignStat extends Node {
     public final String targetVarName;
-    public final Node expr;
+    public final Expr expr;
 
-    public VarAssignStat(SourcePos srcPos, String targetVarName, Node expr) {
+    public VarAssignStat(SourcePos srcPos, String targetVarName, Expr expr) {
         super(srcPos);
         this.targetVarName = targetVarName;
         this.expr = expr;

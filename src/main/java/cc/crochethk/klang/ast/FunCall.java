@@ -7,11 +7,11 @@ import java.util.Objects;
 import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
-public class FunCall extends Node {
+public class FunCall extends Expr {
     public String name;
-    public List<Node> args;
+    public List<Expr> args;
 
-    public FunCall(SourcePos srcPos, String name, List<Node> args) {
+    public FunCall(SourcePos srcPos, String name, List<Expr> args) {
         super(srcPos);
         this.name = name;
         this.args = args != null ? args : Collections.emptyList();

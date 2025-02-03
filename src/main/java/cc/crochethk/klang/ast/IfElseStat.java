@@ -6,10 +6,10 @@ import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
 public class IfElseStat extends Node {
-    public Node condition;
+    public Expr condition;
     public StatementList then, otherwise;
 
-    public IfElseStat(SourcePos srcPos, Node condition, StatementList then, StatementList otherwise) {
+    public IfElseStat(SourcePos srcPos, Expr condition, StatementList then, StatementList otherwise) {
         super(srcPos);
         this.condition = condition;
         this.then = then;

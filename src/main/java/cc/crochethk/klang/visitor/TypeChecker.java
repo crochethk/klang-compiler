@@ -92,7 +92,7 @@ public class TypeChecker implements Visitor {
      * parameter definitions.
      * @param nodeCtx Node context in which this check is performed.
      */
-    private void checkArgsMatchParams(Node nodeCtx, List<Node> args, List<CheckedParam> params) {
+    private void checkArgsMatchParams(Node nodeCtx, List<Expr> args, List<CheckedParam> params) {
         var paramCount = params.size();
         var argsCount = args.size();
         if (paramCount != argsCount) {
@@ -118,7 +118,7 @@ public class TypeChecker implements Visitor {
         chain.theType = checkMemberAccessType(maChain.owner, chain);
         chain.accept(this);
         var finalMember = chain.getLast();
-        Node finalMemberOwner = finalMember.owner != null ? finalMember.owner : maChain.owner;
+        Expr finalMemberOwner = finalMember.owner != null ? finalMember.owner : maChain.owner;
 
         // Basically the field or method-return-type of the end member
         var finalType = checkMemberAccessType(finalMemberOwner, finalMember);
@@ -126,7 +126,7 @@ public class TypeChecker implements Visitor {
         maChain.theType = finalType;
     }
 
-    private Type checkMemberAccessType(Node ownerExpr, MemberAccess ma) {
+    private Type checkMemberAccessType(Expr ownerExpr, MemberAccess ma) {
         Type maTheType = switch (ma) {
             case MemberAccess.FieldGet _ -> checkFieldGetOrSetTargetType(ownerExpr, ma.targetName);
             case MemberAccess.FieldSet _ -> checkFieldGetOrSetTargetType(ownerExpr, ma.targetName);
@@ -180,7 +180,7 @@ public class TypeChecker implements Visitor {
      *  <li>all {@code args} must have already been checked ({@code arg.theType!=null})</li>
      * </ul>
      */
-    private Type checkMethodCallTargetType(Node ownerExpr, String methName, List<Node> args) {
+    private Type checkMethodCallTargetType(Expr ownerExpr, String methName, List<Expr> args) {
         // Get methods associated with ownerExpr's type
         var ownersMethods = methDefs.get(ownerExpr.theType);
 
@@ -382,7 +382,7 @@ public class TypeChecker implements Visitor {
             varDeclareStat.theType = declaredType.get().theType;
             if (initializer.isPresent()) {
                 // check compatibility
-                checkAssignmentTypeCompatibility(initializer.get(), varDeclareStat.theType);
+                checkAssignmentTypeCompatibility(initializer.get().expr, varDeclareStat.theType);
             }
         } else if (initializer.isPresent()) {
             // only initializer -> infer the type
@@ -421,7 +421,7 @@ public class TypeChecker implements Visitor {
      * Check whether the type of expression {@code exprNode} is assignable to a
      * variable declared or inferred as type {@code varType}.
      */
-    void checkAssignmentTypeCompatibility(Node exprNode, Type varType) {
+    void checkAssignmentTypeCompatibility(Expr exprNode, Type varType) {
         if (!exprNode.theType.isCompatible(varType)) {
             reportError(exprNode, String.format("Cannot assign expression "
                     + "of type '%s' to variable with incompatible type '%s'.",
@@ -688,8 +688,8 @@ public class TypeChecker implements Visitor {
     }
 
     @Override
-    public void visit(EmptyNode emptyNode) {
-        emptyNode.theType = Type.VOID_T;
+    public void visit(EmptyExpr emptyExpr) {
+        emptyExpr.theType = Type.VOID_T;
     }
 
     public class TypeCheckFailedException extends RuntimeException {

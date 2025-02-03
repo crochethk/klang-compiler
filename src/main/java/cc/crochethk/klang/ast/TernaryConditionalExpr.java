@@ -5,11 +5,11 @@ import java.util.Objects;
 import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
-public class TernaryConditionalExpr extends Node {
-    public Node condition;
-    public Node then, otherwise;
+public class TernaryConditionalExpr extends Expr {
+    public Expr condition;
+    public Expr then, otherwise;
 
-    public TernaryConditionalExpr(SourcePos srcPos, Node condition, Node then, Node otherwise) {
+    public TernaryConditionalExpr(SourcePos srcPos, Expr condition, Expr then, Expr otherwise) {
         super(srcPos);
         this.condition = condition;
         this.then = then;

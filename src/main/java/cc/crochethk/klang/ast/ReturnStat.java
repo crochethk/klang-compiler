@@ -6,9 +6,9 @@ import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
 public class ReturnStat extends Node {
-    public Node expr;
+    public Expr expr;
 
-    public ReturnStat(SourcePos srcPos, Node expr) {
+    public ReturnStat(SourcePos srcPos, Expr expr) {
         super(srcPos);
         this.expr = expr;
     }

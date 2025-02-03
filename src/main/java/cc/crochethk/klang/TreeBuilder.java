@@ -69,10 +69,10 @@ public class TreeBuilder extends KlangBaseListener {
         i64, f64
     }
 
-    Node buildNumberLiteral(KlangParser.NumberContext ctx, NumberLiteralType targetType) {
+    Expr buildNumberLiteral(KlangParser.NumberContext ctx, NumberLiteralType targetType) {
         var srcPos = getSourcePos(ctx);
         boolean hasTypeAnnot = ctx.typeAnnot != null;
-        Node node = switch (targetType) {
+        Expr node = switch (targetType) {
             case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.num.getText()), hasTypeAnnot);
             case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.num.getText()), hasTypeAnnot);
         };
@@ -266,7 +266,7 @@ public class TreeBuilder extends KlangBaseListener {
         }
     }
 
-    private Node buildTernaryConditionalNode(ParserRuleContext ctx, List<KlangParser.ExprContext> ifThenExprs,
+    private Expr buildTernaryConditionalNode(ParserRuleContext ctx, List<KlangParser.ExprContext> ifThenExprs,
             KlangParser.TernaryElseBranchContext ternaryElseBranch) {
         var srcPos = getSourcePos(ctx);
         var condition = ifThenExprs.get(0).result;
@@ -363,7 +363,7 @@ public class TreeBuilder extends KlangBaseListener {
         } else if (ctx.KW_RETURN() != null) {
             var expr = ctx.expr() != null
                     ? ctx.expr().result
-                    : new EmptyNode(srcPos);
+                    : new EmptyExpr(srcPos);
             ctx.result = new ReturnStat(srcPos, expr);
         } else if (ctx.KW_BREAK() != null) {
             ctx.result = new BreakStat(srcPos);
@@ -460,12 +460,12 @@ public class TreeBuilder extends KlangBaseListener {
                 ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
     }
 
-    private Node parseBinOpExpr(KlangParser.ExprContext ctx, BinaryOp op) {
+    private Expr parseBinOpExpr(KlangParser.ExprContext ctx, BinaryOp op) {
         var srcPos = getSourcePos(ctx);
         return new BinOpExpr(srcPos, ctx.lhs.result, op, ctx.rhs.result);
     }
 
-    private Node parseUnaryOpExpr(KlangParser.ExprContext ctx, UnaryOp op) {
+    private Expr parseUnaryOpExpr(KlangParser.ExprContext ctx, UnaryOp op) {
         var srcPos = getSourcePos(ctx);
         var operand = ctx.expr(0).result;
         return new UnaryOpExpr(srcPos, operand, op);

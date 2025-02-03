@@ -76,5 +76,5 @@ public interface Visitor {
 
     void visit(Prog prog);
 
-    void visit(EmptyNode emptyNode);
+    void visit(EmptyExpr emptyExpr);
 }

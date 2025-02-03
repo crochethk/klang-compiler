@@ -66,7 +66,7 @@ public class PrettyPrinter implements Visitor {
         scb.write(")");
     }
 
-    private void writeArgsList(SourceCodeBuilder scb, List<Node> args) {
+    private void writeArgsList(SourceCodeBuilder scb, List<Expr> args) {
         for (int i = 0; i < args.size(); i++) {
             args.get(i).accept(this);
             if (i < args.size() - 1)
@@ -357,7 +357,7 @@ public class PrettyPrinter implements Visitor {
     }
 
     @Override
-    public void visit(EmptyNode emptyNode) {
+    public void visit(EmptyExpr emptyExpr) {
         return;
     }
 }

@@ -9,9 +9,9 @@ import utils.SourcePos;
  * Statement that wraps an expression which does not return a value.
  */
 public class VoidResultExprStat extends Node {
-    public Node expr;
+    public Expr expr;
 
-    public VoidResultExprStat(SourcePos srcPos, Node voidExpr) {
+    public VoidResultExprStat(SourcePos srcPos, Expr voidExpr) {
         super(srcPos);
         this.expr = voidExpr;
     }
@@ -41,7 +41,7 @@ public class VoidResultExprStat extends Node {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof ReturnStat other) {
+        if (obj instanceof VoidResultExprStat other) {
             return Objects.equals(expr, other.expr) && super.equals(other);
         }
         return false;

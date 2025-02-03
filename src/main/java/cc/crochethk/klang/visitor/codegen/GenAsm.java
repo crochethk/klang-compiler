@@ -130,7 +130,7 @@ public class GenAsm extends CodeGenVisitor {
         var xmmRegsIt = Arrays.stream(xmmRegs).iterator();
         var regularRegsIt = Arrays.stream(regs).iterator();
 
-        Node theXmm0Arg = null;
+        Expr theXmm0Arg = null;
         OperandSpecifier theXmm0SrcOpSpec = null;
 
         stack.alignRspToStackSize();
@@ -232,7 +232,7 @@ public class GenAsm extends CodeGenVisitor {
 
         // Assumption: "owner" reference already in rax (from previous MemberAccess nodes)
         // Passing EmptyNode as arg, makes FunCall load the mentioned pointer from rax.
-        var thisArg = new EmptyNode(fieldGet.srcPos);
+        var thisArg = new EmptyExpr(fieldGet.srcPos);
         thisArg.theType = ownerType;
         var funCall = new FunCall(fieldGet.srcPos, getterFunName, List.of(thisArg));
         funCall.theType = fieldGet.theType;
@@ -249,7 +249,7 @@ public class GenAsm extends CodeGenVisitor {
 
         // Assumption: "owner" reference already in rax (from previous MemberAccess nodes)
         // Passing EmptyNode as first arg, makes FunCall load the mentioned pointer from rax.
-        var thisArg = new EmptyNode(methodCall.srcPos);
+        var thisArg = new EmptyExpr(methodCall.srcPos);
         thisArg.theType = ownerType;
         var allArgs = Stream.concat(Stream.of(thisArg), methodCall.args.stream()).toList();
         var funCall = new FunCall(methodCall.srcPos, asmMethName, allArgs);
@@ -439,7 +439,7 @@ public class GenAsm extends CodeGenVisitor {
                 ? field.owner.theType
                 : faStat.maChain.owner.theType;
         var setterFunName = getSetterFullName(fieldOwnerType, field.targetName);
-        var thisArg = new EmptyNode(faStat.srcPos);
+        var thisArg = new EmptyExpr(faStat.srcPos);
         thisArg.theType = fieldOwnerType;
         var funCall = new FunCall(faStat.srcPos, setterFunName, List.of(thisArg, faStat.expr));
         funCall.theType = faStat.theType;
@@ -644,7 +644,7 @@ public class GenAsm extends CodeGenVisitor {
     }
 
     @Override
-    public void visit(EmptyNode emptyNode) {
+    public void visit(EmptyExpr emptyExpr) {
         // nop
     }
 

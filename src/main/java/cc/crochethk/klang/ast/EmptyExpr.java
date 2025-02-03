@@ -3,8 +3,8 @@ package cc.crochethk.klang.ast;
 import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
-public class EmptyNode extends Node {
-    public EmptyNode(SourcePos srcPos) {
+public class EmptyExpr extends Expr {
+    public EmptyExpr(SourcePos srcPos) {
         super(srcPos);
     }
 
@@ -28,7 +28,7 @@ public class EmptyNode extends Node {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof EmptyNode other) {
+        if (obj instanceof EmptyExpr other) {
             return super.equals(other);
         }
         return false;

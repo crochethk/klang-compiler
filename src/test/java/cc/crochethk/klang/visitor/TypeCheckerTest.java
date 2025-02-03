@@ -484,19 +484,19 @@ public class TypeCheckerTest extends NodeMocker {
             }
         }
 
-        private void testBinaryOpAssertI64Result(Node lhs, BinaryOp op, Node rhs) {
+        private void testBinaryOpAssertI64Result(Expr lhs, BinaryOp op, Expr rhs) {
             assertEquals(Type.LONG_T, _testBinaryOpWith(lhs, op, rhs, I64_TN).theType);
         }
 
-        private void testBinaryOpAssertF64Result(Node lhs, BinaryOp op, Node rhs) {
+        private void testBinaryOpAssertF64Result(Expr lhs, BinaryOp op, Expr rhs) {
             assertEquals(Type.DOUBLE_T, _testBinaryOpWith(lhs, op, rhs, F64_TN).theType);
         }
 
-        private void testBinaryOpAssertBoolResult(Node lhs, BinaryOp op, Node rhs) {
+        private void testBinaryOpAssertBoolResult(Expr lhs, BinaryOp op, Expr rhs) {
             assertEquals(Type.BOOL_T, _testBinaryOpWith(lhs, op, rhs, BOOL_TN).theType);
         }
 
-        private BinOpExpr _testBinaryOpWith(Node lhs, BinaryOp op, Node rhs, TypeNode expResultType) {
+        private BinOpExpr _testBinaryOpWith(Expr lhs, BinaryOp op, Expr rhs, TypeNode expResultType) {
             var expr = binOpExpr(lhs, op, rhs);
             var fun = funDef("fun", List.of(), List.of(varDeclareStat("var", expResultType),
                     varAssignStat("var", expr)));

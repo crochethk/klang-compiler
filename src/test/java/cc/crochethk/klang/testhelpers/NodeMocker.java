@@ -66,7 +66,7 @@ public class NodeMocker {
         return new TypeNode(srcPosMock, typeName);
     }
 
-    public ReturnStat returnStat(Node expr) {
+    public ReturnStat returnStat(Expr expr) {
         return new ReturnStat(srcPosMock, expr);
     }
 
@@ -104,24 +104,24 @@ public class NodeMocker {
     }
 
     /** Var declaration w/o type specifier. */
-    public VarDeclareStat varDeclareStatInferType(String varName, Node expr) {
+    public VarDeclareStat varDeclareStatInferType(String varName, Expr expr) {
         return varDeclareStat(varName, null, expr);
     }
 
     /** Var declaration w/ init. */
-    public VarDeclareStat varDeclareStat(String varName, TypeNode declaredType, Node expr) {
+    public VarDeclareStat varDeclareStat(String varName, TypeNode declaredType, Expr expr) {
         return new VarDeclareStat(srcPosMock, varName, declaredType, expr);
     }
 
-    public VarAssignStat varAssignStat(String targetVarName, Node expr) {
+    public VarAssignStat varAssignStat(String targetVarName, Expr expr) {
         return new VarAssignStat(srcPosMock, targetVarName, expr);
     }
 
-    public BinOpExpr binOpExpr(Node lhs, BinaryOp op, Node rhs) {
+    public BinOpExpr binOpExpr(Expr lhs, BinaryOp op, Expr rhs) {
         return new BinOpExpr(srcPosMock, lhs, op, rhs);
     }
 
-    public UnaryOpExpr unaryOpExpr(Node operand, UnaryOp op) {
+    public UnaryOpExpr unaryOpExpr(Expr operand, UnaryOp op) {
         return new UnaryOpExpr(srcPosMock, operand, op);
     }
 
@@ -129,15 +129,15 @@ public class NodeMocker {
         return new Var(srcPosMock, name);
     }
 
-    public FunCall funCall(String name, List<Node> args) {
+    public FunCall funCall(String name, List<Expr> args) {
         return new FunCall(srcPosMock, name, args);
     }
 
-    public MemberAccessChain memberAccessChain(Node owner, List<MemberAccess> detachedMembers) {
+    public MemberAccessChain memberAccessChain(Expr owner, List<MemberAccess> detachedMembers) {
         return new MemberAccessChain(srcPosMock, owner, MemberAccess.chain(detachedMembers));
     }
 
-    public MemberAccessChain memberAccessChain(Node owner, MemberAccess... detachedMembers) {
+    public MemberAccessChain memberAccessChain(Expr owner, MemberAccess... detachedMembers) {
         var dms = List.of(detachedMembers);
         return memberAccessChain(owner, dms);
     }
@@ -157,7 +157,7 @@ public class NodeMocker {
     }
 
     /** Shortcut for creating a detached FieldGet accessor */
-    public MethodCall methodCall(String methodName, List<Node> args) {
+    public MethodCall methodCall(String methodName, List<Expr> args) {
         return new MethodCall(srcPosMock, null, methodName, args, null);
     }
 
@@ -166,7 +166,7 @@ public class NodeMocker {
         return funCall(name, List.of());
     }
 
-    public ConstructorCall constructorCall(String structName, List<Node> args) {
+    public ConstructorCall constructorCall(String structName, List<Expr> args) {
         return new ConstructorCall(srcPosMock, structName, args);
     }
 
@@ -175,7 +175,7 @@ public class NodeMocker {
         return constructorCall(structName, List.of());
     }
 
-    public TernaryConditionalExpr ternaryConditionalExpr(Node condition, Node then, Node otherwise) {
+    public TernaryConditionalExpr ternaryConditionalExpr(Expr condition, Expr then, Expr otherwise) {
         return new TernaryConditionalExpr(srcPosMock, condition, then, otherwise);
     }
 
@@ -183,16 +183,16 @@ public class NodeMocker {
         return new StatementList(srcPosMock, List.of(nodes));
     }
 
-    public IfElseStat ifElseStat(Node condition, StatementList then, StatementList otherwise) {
+    public IfElseStat ifElseStat(Expr condition, StatementList then, StatementList otherwise) {
         return new IfElseStat(srcPosMock, condition, then, otherwise);
     }
 
-    public FieldAssignStat fieldAssignStat(Node owner, List<MemberAccess> accessors, Node expr) {
+    public FieldAssignStat fieldAssignStat(Expr owner, List<MemberAccess> accessors, Expr expr) {
         return new FieldAssignStat(srcPosMock, memberAccessChain(owner, accessors), expr);
     }
 
-    public EmptyNode emptyNode() {
-        return new EmptyNode(srcPosMock);
+    public EmptyExpr emptyNode() {
+        return new EmptyExpr(srcPosMock);
     }
 
     public LoopStat loopStat(StatementList statementList) {

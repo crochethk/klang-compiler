@@ -7,11 +7,11 @@ import java.util.Objects;
 import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
-public class ConstructorCall extends Node {
+public class ConstructorCall extends Expr {
     public String structName;
-    public List<Node> args;
+    public List<Expr> args;
 
-    public ConstructorCall(SourcePos srcPos, String structName, List<Node> args) {
+    public ConstructorCall(SourcePos srcPos, String structName, List<Expr> args) {
         super(srcPos);
         this.structName = structName;
         this.args = args != null ? args : Collections.emptyList();

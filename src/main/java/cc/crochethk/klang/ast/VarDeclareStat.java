@@ -17,7 +17,7 @@ public class VarDeclareStat extends Node {
      * @param initExpr A semi-optional expression to initialize the declared
      *  variable with. May be {@code null}, if {@declaredType} is provided.
      */
-    public VarDeclareStat(SourcePos srcPos, String varName, TypeNode declaredType, Node initExpr) {
+    public VarDeclareStat(SourcePos srcPos, String varName, TypeNode declaredType, Expr initExpr) {
         super(srcPos);
         this.varName = varName;
         this.declaredType = Optional.ofNullable(declaredType);

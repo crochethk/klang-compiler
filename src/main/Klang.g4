@@ -88,7 +88,7 @@ structFieldAssignStat
 	returns[FieldAssignStat result]: memberAccessor EQ expr SEMI;
 
 expr
-	returns[Node result]:
+	returns[Expr result]:
 	// arithmetic expr
 	negationOp=SUB expr // negation
 	| lhs=expr POW rhs=expr
@@ -124,27 +124,27 @@ fieldOrMethCall
 ;
 
 constructorCall
-	returns[Node result]:
+	returns[Expr result]:
 	structName=IDENT LBRACE (
 		args+=expr (COMMA args+=expr)* COMMA?
 	)? RBRACE
 ;
 
 ternaryElseBranch
-	returns[Node result]:
+	returns[Expr result]:
 	expr
 	| expr QM expr COLON ternaryElseBranch
 ;
 
 varOrFunCall
-	returns[Node result]:
+	returns[Expr result]:
 	funCall
 	// variable reference
 	| varName=IDENT
 ;
 
 funCall
-	returns[Node result]:
+	returns[Expr result]:
 	// function call with one or more args
 	name=IDENT LPAR args+=expr (COMMA args+=expr)* RPAR
 	// function call without args
@@ -153,19 +153,19 @@ funCall
 
 /* Number literals */
 number
-	returns[Node result]:
+	returns[Expr result]:
 	num=(LIT_FLOAT | LIT_INTEGER) (KW_AS typeAnnot=numericType)?
 ;
 numericType: T_I64 | T_F64;
 
 bool
-	returns[Node result]: TRUE | FALSE;
+	returns[Expr result]: TRUE | FALSE;
 
 string
-	returns[Node result]: LIT_STRING;
+	returns[Expr result]: LIT_STRING;
 
 nullLit
-	returns[Node result]: KW_NULL;
+	returns[Expr result]: KW_NULL;
 
 // Lexer rules
 LIT_INTEGER: SUB? DIGIT+;

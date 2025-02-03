@@ -7,9 +7,9 @@ import utils.SourcePos;
 
 public class FieldAssignStat extends Node {
     public MemberAccessChain maChain;
-    public Node expr;
+    public Expr expr;
 
-    public FieldAssignStat(SourcePos srcPos, MemberAccessChain memberAccessChain, Node expr) {
+    public FieldAssignStat(SourcePos srcPos, MemberAccessChain memberAccessChain, Expr expr) {
         super(srcPos);
         this.maChain = memberAccessChain;
         this.expr = expr;

@@ -2,11 +2,11 @@ package cc.crochethk.klang.ast.literal;
 
 import java.util.Objects;
 
-import cc.crochethk.klang.ast.Node;
+import cc.crochethk.klang.ast.Expr;
 import utils.SourcePos;
 
 /** The base class of all the literals */
-public abstract class LiteralExpr<T> extends Node {
+public abstract class LiteralExpr<T> extends Expr {
     /** The value of the literal */
     public T value;
 

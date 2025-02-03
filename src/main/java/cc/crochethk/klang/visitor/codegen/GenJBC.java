@@ -479,7 +479,7 @@ public class GenJBC extends CodeGenVisitor {
     }
 
     @Override
-    public void visit(EmptyNode emptyNode) {
+    public void visit(EmptyExpr emptyExpr) {
         // -> skip
         return;
     }

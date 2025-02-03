@@ -6,9 +6,9 @@ import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
 /** Simple wrapper Node for chained {@code MemberAccessor}s. */
-public class MemberAccessChain extends Node {
+public class MemberAccessChain extends Expr {
     /** Initiator of the member access. Must not be {@code null}. */
-    public final Node owner;
+    public final Expr owner;
     /**
      * Accessor chain leading to the actual member to be accessed. There must be
      * at least one element in the chain, i.e. this field should never be 
@@ -16,7 +16,7 @@ public class MemberAccessChain extends Node {
      */
     public final MemberAccess chain;
 
-    public MemberAccessChain(SourcePos srcPos, Node owner, MemberAccess chain) {
+    public MemberAccessChain(SourcePos srcPos, Expr owner, MemberAccess chain) {
         super(srcPos);
         this.owner = owner;
         this.chain = chain;

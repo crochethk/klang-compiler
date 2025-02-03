@@ -5,9 +5,9 @@ import java.util.Objects;
 import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
-public class UnaryOpExpr extends Node {
+public class UnaryOpExpr extends Expr {
     public UnaryOp op;
-    public Node operand;
+    public Expr operand;
 
     public enum UnaryOp {
         // Arithmetic
@@ -44,7 +44,7 @@ public class UnaryOpExpr extends Node {
         }
     }
 
-    public UnaryOpExpr(SourcePos srcPos, Node operand, UnaryOp op) {
+    public UnaryOpExpr(SourcePos srcPos, Expr operand, UnaryOp op) {
         super(srcPos);
         this.operand = operand;
         this.op = op;

@@ -6,7 +6,7 @@ import java.util.Objects;
 import cc.crochethk.klang.visitor.Visitor;
 import utils.SourcePos;
 
-public sealed abstract class MemberAccess extends Node
+public sealed abstract class MemberAccess extends Expr
         permits MemberAccess.FieldGet, MemberAccess.MethodCall, MemberAccess.FieldSet {
     /** Is null if {@code this} is the first element in a chain of accessors. */
     public MemberAccess owner;
@@ -42,7 +42,7 @@ public sealed abstract class MemberAccess extends Node
          * @param owner An expression that evaluates to a struct instance with a 
          *          field named "fieldName".
          * @param fieldName The name of the field beeing accessed.
-         * @see MemberAccess#MemberAccess(SourcePos, Node, String)
+         * @see MemberAccess#MemberAccess(SourcePos, MemberAccess, String, MemberAccess)
          */
         public FieldGet(SourcePos srcPos, MemberAccess owner, String fieldName, MemberAccess next) {
             super(srcPos, owner, fieldName, next);
@@ -82,10 +82,10 @@ public sealed abstract class MemberAccess extends Node
      *  Node type representing the method call of a RefType instance.
      */
     public static final class MethodCall extends MemberAccess {
-        public List<Node> args;
+        public List<Expr> args;
 
-        /** @see MemberAccess#MemberAccess(SourcePos, Node, String) */
-        public MethodCall(SourcePos srcPos, MemberAccess owner, String methodName, List<Node> args, MemberAccess next) {
+        /** @see MemberAccess#MemberAccess(SourcePos, MemberAccess, String, MemberAccess) */
+        public MethodCall(SourcePos srcPos, MemberAccess owner, String methodName, List<Expr> args, MemberAccess next) {
             super(srcPos, owner, methodName, next);
             this.args = args;
         }
