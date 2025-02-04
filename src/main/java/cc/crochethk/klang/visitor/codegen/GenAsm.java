@@ -474,7 +474,7 @@ public class GenAsm extends CodeGenVisitor {
             // Boolean
             // - Type check is expected to ensure only bool operands are present
             case not -> {
-                //TODO
+                code.xorq($(1), rax);
             }
             default -> throw new UnsupportedOperationException("Operation '" + op
                     + "' not yet implemented for '" + operandType + "'");

@@ -84,6 +84,11 @@ public class CodeSection extends SectionBuilder {
         writeInstruction("orq", src, dst);
     }
 
+    /** Bitwise XOR similar to {@code dst = dst ^ src} */
+    public void xorq(OperandSpecifier src, OperandSpecifier dst) {
+        writeInstruction("xorq", src, dst);
+    }
+
     // --------------------[ XMM based instructions ]---------------------------
     /**
      * Move scalar double-precision floating-point value from soruce to destination.
