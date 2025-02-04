@@ -16,15 +16,15 @@ public class CodeSection extends SectionBuilder {
     }
 
     public void movq(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("movq", src, dst);
+        writeInstruction("movq", src, dst);
     }
 
     public void pushq(OperandSpecifier source) {
-        writeIndented("pushq", "\t", source.operandSpec());
+        writeInstruction("pushq", source);
     }
 
     public void call(String name) {
-        writeIndented("call", "\t", name);
+        writeInstruction("call", name);
     }
 
     public void leave() {
@@ -37,27 +37,27 @@ public class CodeSection extends SectionBuilder {
 
     /** Calculate an effective address and put it into {@code dst} register */
     public void leaq(MemAddr src, Register dst) {
-        writeSrcDstInstruction("leaq", src, dst);
+        writeInstruction("leaq", src, dst);
     }
 
     /** Add {@code src} to {@code dst} */
     public void addq(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("addq", src, dst);
+        writeInstruction("addq", src, dst);
     }
 
     /** Subtract {@code src} from {@code dst} */
     public void subq(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("subq", src, dst);
+        writeInstruction("subq", src, dst);
     }
 
     /** Multiply {@code dst} by {@code src} */
     public void imulq(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("imulq", src, dst);
+        writeInstruction("imulq", src, dst);
     }
 
     /** Divide {@code rax:rdx} by {@code src} */
     public void idivq(OperandSpecifier src) {
-        writeIndented("idivq", "\t", src.operandSpec());
+        writeInstruction("idivq", src);
     }
 
     /** Sign-extend {@code rax} into {@code rdx} */
@@ -71,30 +71,40 @@ public class CodeSection extends SectionBuilder {
      * @param destination The destination XmmRegister or MemAddress
      */
     public void movsd(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("movsd", src, dst);
+        writeInstruction("movsd", src, dst);
     }
 
     /** Add {@code src} to {@code dst} */
     public void addsd(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("addsd", src, dst);
+        writeInstruction("addsd", src, dst);
     }
 
     /** Subtract {@code src} from {@code dst} */
     public void subsd(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("subsd", src, dst);
+        writeInstruction("subsd", src, dst);
     }
 
     /** Multiply {@code dst} by {@code src} */
     public void mulsd(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("mulsd", src, dst);
+        writeInstruction("mulsd", src, dst);
     }
 
     /** Divide {@code dst} by {@code src} */
     public void divsd(OperandSpecifier src, OperandSpecifier dst) {
-        writeSrcDstInstruction("divsd", src, dst);
+        writeInstruction("divsd", src, dst);
     }
 
-    private void writeSrcDstInstruction(String instr, OperandSpecifier src, OperandSpecifier dst) {
+    // -------------------------------------------------------------------------
+
+    private void writeInstruction(String instr, OperandSpecifier src, OperandSpecifier dst) {
         writeIndented(instr, "\t", src.operandSpec(), ", ", dst.operandSpec());
+    }
+
+    private void writeInstruction(String instr, OperandSpecifier singleOperand) {
+        writeIndented(instr, "\t", singleOperand.operandSpec());
+    }
+
+    private void writeInstruction(String instr, String label) {
+        writeIndented(instr, "\t", label);
     }
 }
