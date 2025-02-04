@@ -95,6 +95,14 @@ public class CodeSection extends SectionBuilder {
         writeInstruction("cmpq", src2, src1);
     }
 
+    /**
+     * Move {@code src} to {@code dst} if CCs indicate 'not equal'/'nonzero'.
+     * Operands must have the same bit width. 8-bit is not supported.
+     */
+    public void cmovne(Register src, Register dst) {
+        writeInstruction("cmovne", src, dst);
+    }
+
     public void jmp(String label) {
         writeInstruction("jmp", label);
     }
@@ -152,6 +160,55 @@ public class CodeSection extends SectionBuilder {
         writeInstruction("setle", byteReg);
     }
 
+    /**
+     * Set 1 if CCs indicate 'above' (unsigned).
+     * Use e.g. {@code comisd} to set CCc accordingly beforhand.
+     */
+    public void seta(ByteRegister byteReg) {
+        writeInstruction("seta", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'above or equal' aka. 'not below' (unsigned).
+     * Use e.g. {@code comisd} to set CCc accordingly beforhand.
+     */
+    public void setnb(ByteRegister byteReg) {
+        writeInstruction("setnb", byteReg);
+
+    }
+
+    /**
+     * Set 1 if CCs indicate 'below' (unsigned).
+     * Use e.g. {@code comisd} to set CCc accordingly beforhand.
+     */
+    public void setb(ByteRegister byteReg) {
+        writeInstruction("setb", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'below or equal' (unsigned).
+     * Use e.g. {@code comisd} to set CCc accordingly beforhand.
+     */
+    public void setbe(ByteRegister byteReg) {
+        writeInstruction("setbe", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'parity'.
+     * Use e.g. {@code ucomisd} to set CCc accordingly beforhand.
+     */
+    public void setp(ByteRegister byteReg) {
+        writeInstruction("setp", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'not parity'.
+     * Use e.g. {@code ucomisd} to set CCc accordingly beforhand.
+     */
+    public void setnp(ByteRegister byteReg) {
+        writeInstruction("setnp", byteReg);
+    }
+
     // --------------------[ XMM based instructions ]---------------------------
     /**
      * Move scalar double-precision floating-point value from soruce to destination.
@@ -188,6 +245,22 @@ public class CodeSection extends SectionBuilder {
      */
     public void xorpd(OperandSpecifier src, XmmRegister dst) {
         writeInstruction("xorpd", src, dst);
+    }
+
+    /**
+     * Compares double precision floating-point value of {@code dst} with
+     * {@code src}, setting conditional codes accordingly.
+     */
+    public void comisd(OperandSpecifier src, XmmRegister dst) {
+        writeInstruction("comisd", src, dst);
+    }
+
+    /**
+     * Compares unordered the double precision floating-point value of 
+     * {@code dst} with {@code src}, setting conditional codes accordingly.
+     */
+    public void ucomisd(OperandSpecifier src, XmmRegister dst) {
+        writeInstruction("ucomisd", src, dst);
     }
 
     // -------------------------------------------------------------------------
