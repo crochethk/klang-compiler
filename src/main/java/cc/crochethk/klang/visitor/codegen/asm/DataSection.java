@@ -34,6 +34,16 @@ public abstract class DataSection extends SectionBuilder {
             labelMgr = new LocalLabelManager(".LC");
         }
 
+        public enum Align {
+            None(-1), _4(4), _8(8), _16(16);
+
+            int bytes;
+
+            Align(int bytes) {
+                this.bytes = bytes;
+            }
+        }
+
         /**
         * Returns the label. If the value is already defined, writing it is 
         * skipped and the existing label is returned.
@@ -48,16 +58,44 @@ public abstract class DataSection extends SectionBuilder {
             final long allBits = Double.doubleToRawLongBits(value);
             final int lowBits = (int) allBits;
             final int highBits = (int) (allBits >> 32);
-            final var litDefinition = String.format(
-                    "\n\t.long\t%d".repeat(2), lowBits, highBits);
-            return getOrCreateLabel(litDefinition);
+            return createLiteralData32(new int[] { lowBits, highBits }, Align._8);
+        }
+
+        /**
+         * Create literal constant of arbitrary data represented by the 
+         * provided 32-bit signed integer array and align it to
+         * {@code alignment} bytes.
+         * @return The label pointing to the beginning of the data.
+         */
+        public String createLiteralData32(int[] data, Align alignment) {
+            var sb = new StringBuilder();
+            for (int d : data) {
+                sb.append("\n\t.long\t");
+                sb.append(d);
+            }
+            var litDef = sb.toString();
+            return getOrCreateLabel(litDef, alignment);
         }
 
         private String getOrCreateLabel(final String litDefinition) {
-            var label = literalsMap.get(litDefinition);
+            return getOrCreateLabel(litDefinition, Align.None);
+        }
+
+        /**
+         * @param litDefinition The literal data definition.
+         * @param alignment An optional byte alignment value (e.g. 8 or 16).
+         */
+        private String getOrCreateLabel(final String litDefinition, Align alignment) {
+            var alignDirective = alignment != Align.None
+                    ? "\n\t.align\t" + alignment.bytes
+                    : "";
+            var labelKey = alignDirective + litDefinition;
+            var label = literalsMap.get(labelKey);
             if (label == null) {
                 label = labelMgr.getNext();
-                literalsMap.put(litDefinition, label);
+                literalsMap.put(labelKey, label);
+
+                write(alignDirective);
                 write("\n", label, ":", litDefinition);
             }
             return label;

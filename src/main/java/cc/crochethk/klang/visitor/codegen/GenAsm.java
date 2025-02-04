@@ -24,6 +24,7 @@ import cc.crochethk.klang.visitor.Type;
 import cc.crochethk.klang.visitor.Type.Signature;
 import cc.crochethk.klang.visitor.codegen.asm.*;
 import cc.crochethk.klang.visitor.codegen.asm.DataSection.ReadOnlyData;
+import cc.crochethk.klang.visitor.codegen.asm.DataSection.ReadOnlyData.Align;
 import cc.crochethk.klang.visitor.codegen.asm.helpers.*;
 
 public class GenAsm extends CodeGenVisitor {
@@ -416,8 +417,13 @@ public class GenAsm extends CodeGenVisitor {
             }
 
             // Boolean
-            //case and -> error = true;//TODO
-            //case or -> error = true; //TODO
+            // - Type check is expected to ensure only bool operands are present
+            case and -> {
+                code.andq(src, dst);
+            }
+            case or -> {
+                code.orq(src, dst);
+            }
             default -> throw new UnsupportedOperationException("Operation '" + op
                     + "' not yet implemented for '" + operandType + ", " + operandType + "'");
         }
@@ -445,8 +451,39 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(UnaryOpExpr unaryOpExpr) {
-        // TODO Auto-generated method stub
-        return;
+        unaryOpExpr.operand.accept(this);
+        var op = unaryOpExpr.op;
+        var operandType = unaryOpExpr.operand.theType;
+        boolean error = false;
+        switch (op) {
+            // Arithmetic
+            case neg -> {
+                if (operandType == Type.LONG_T) {
+                    code.negq(rax);
+                } else if (operandType == Type.DOUBLE_T) {
+                    // Create 128-bit number with 64th bit set to 1
+                    var signBitMask = rodataSec.createLiteralData32(
+                            new int[] { 0, 0x8000_0000, 0, 0 }, Align._16);
+                    // Write "xorpd .LC{n}(%rip), xmm0"
+                    code.xorpd(new MemAddr(signBitMask, rip), xmm0);
+                } else {
+                    error = true;
+                }
+            }
+
+            // Boolean
+            // - Type check is expected to ensure only bool operands are present
+            case not -> {
+                code.xorq($(1), rax);
+            }
+            default -> throw new UnsupportedOperationException("Operation '" + op
+                    + "' not yet implemented for '" + operandType + "'");
+        }
+
+        if (error) {
+            throw new UnsupportedOperationException("Operation '" + op
+                    + "' not supported for '" + operandType + "'");
+        }
     }
 
     @Override
