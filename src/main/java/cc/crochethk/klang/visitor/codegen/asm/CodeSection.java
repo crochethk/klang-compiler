@@ -2,6 +2,7 @@ package cc.crochethk.klang.visitor.codegen.asm;
 
 import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Register;
+import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegister;
 
 /**
  * SectionBuilder representing the ".text" section of the assembly and providing
@@ -103,6 +104,14 @@ public class CodeSection extends SectionBuilder {
     /** Divide {@code dst} by {@code src} */
     public void divsd(OperandSpecifier src, OperandSpecifier dst) {
         writeInstruction("divsd", src, dst);
+    }
+
+    /**
+     * Bitwise logical XOR of packed double precision floating-point values:
+     * {@code dst = dst ^ src}
+     */
+    public void xorpd(OperandSpecifier src, XmmRegister dst) {
+        writeInstruction("xorpd", src, dst);
     }
 
     // -------------------------------------------------------------------------
