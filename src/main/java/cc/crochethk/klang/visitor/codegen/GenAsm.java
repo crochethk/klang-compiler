@@ -19,7 +19,9 @@ import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.visitor.BuiltinDefinitions;
 import cc.crochethk.klang.visitor.Type;
+import cc.crochethk.klang.visitor.Type.Signature;
 import cc.crochethk.klang.visitor.codegen.asm.*;
 import cc.crochethk.klang.visitor.codegen.asm.DataSection.ReadOnlyData;
 import cc.crochethk.klang.visitor.codegen.asm.helpers.*;
@@ -102,14 +104,7 @@ public class GenAsm extends CodeGenVisitor {
         var autoFunSign = findBuiltinFun(funCall.name, argTypes);
         if (autoFunSign.isPresent()) {
             var autoFun = autoFunSign.get();
-            // Generate builtinFuncall and execute?
-            var srcPos = funCall.srcPos;
-            var arg0 = new StringLit(srcPos, GenCBase.getTypeFormat(argTypes.get(0)));
-            arg0.theType = Type.STRING_T;
-            var args = Stream.concat(Stream.of(arg0), funCall.args.stream()).toList();
-            var builtinFunCall = new FunCall(srcPos, /*autoFun.name()*/"printf@PLT", args);
-            builtinFunCall.theType = autoFun.returnType();
-            builtinFunCall.accept(this);
+            callBuiltinFunction(funCall, autoFun);
             return;
         }
 
@@ -200,6 +195,33 @@ public class GenAsm extends CodeGenVisitor {
         // Release stack args if necessary
         if (stackArgsOffset > 0) {
             code.addq($(stackArgsOffset), rsp);
+        }
+    }
+
+    /**
+     * Given a {@code FunCall}, which was recognized to be a auto generated function,
+     * generates the appropriate builtin function call.
+     * 
+     * @param funCall The original {@code FunCall} recognized as builtin function.
+     * @param autoFun Signature of the found builtin function.
+     * 
+     * @see BuiltinDefinitions
+     */
+    private void callBuiltinFunction(FunCall funCall, Signature autoFun) {
+        switch (autoFun.name()) {
+            case NAME_FN_PRINT -> { /* print(...) */
+                var srcPos = funCall.srcPos;
+                var arg0 = new StringLit(srcPos, GenCBase.getTypeFormat(autoFun.params().get(0).type()));
+                arg0.theType = Type.STRING_T;
+                var args = Stream.concat(Stream.of(arg0), funCall.args.stream()).toList();
+                var builtinFunCall = new FunCall(srcPos, "printf@PLT", args);
+                builtinFunCall.theType = autoFun.returnType();
+                builtinFunCall.accept(this);
+            }
+            default -> {
+                throw new UnsupportedOperationException(
+                        "Builtin function '" + autoFun.name() + "' not implemented.");
+            }
         }
     }
 

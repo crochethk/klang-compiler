@@ -11,7 +11,7 @@ public class BuiltinDefinitions {
     // --------------------[ Static functions ]---------------------------------
 
     /** Print a string to stdout */
-    private static final String NAME_FN_PRINT = "print";
+    public static final String NAME_FN_PRINT = "print";
     public static final Signature FN_PRINT_STR = Signature.of(NAME_FN_PRINT, Type.VOID_T,
             new CheckedParam("val", Type.STRING_T));
     public static final Signature FN_PRINT_I64 = Signature.of(NAME_FN_PRINT, Type.VOID_T,
