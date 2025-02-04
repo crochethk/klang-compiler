@@ -413,7 +413,9 @@ public class GenAsm extends CodeGenVisitor {
             // Comparison
             case eq, neq, gt, gteq, lt, lteq -> {
 
-                if (operandType == Type.LONG_T || operandType == Type.BOOL_T) {
+                if (operandType == Type.LONG_T
+                        || operandType == Type.BOOL_T
+                        || operandType.isReference()) {
                     // Set conditional codes
                     code.cmpq(src, dst);
                     code.movq($(0), rax);
