@@ -517,9 +517,8 @@ public class GenAsm extends CodeGenVisitor {
 
             // Boolean
             // - Type check is expected to ensure only bool operands are present
-            case not -> {
-                code.xorq($(1), rax);
-            }
+            case not -> code.xorq($(1), rax);
+
             default -> throw new UnsupportedOperationException("Operation '" + op
                     + "' not yet implemented for '" + operandType + "'");
         }
@@ -532,8 +531,22 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
-        // TODO Auto-generated method stub
-        return;
+        var then = ternaryConditionalExpr.then;
+        var otherwise = ternaryConditionalExpr.otherwise;
+        var elseStartLabel = code.newLabel();
+        var elseEndLabel = code.newLabel();
+
+        ternaryConditionalExpr.condition.accept(this);
+        // set zero flag if condition was false
+        code.testq(rax, rax);
+        code.je(elseStartLabel);
+
+        then.accept(this);
+        code.jmp(elseEndLabel);
+
+        code.bindLabel(elseStartLabel);
+        otherwise.accept(this);
+        code.bindLabel(elseEndLabel);
     }
 
     @Override

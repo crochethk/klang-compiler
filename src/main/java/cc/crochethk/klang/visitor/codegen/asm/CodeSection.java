@@ -7,14 +7,29 @@ import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegister;
 
 /**
  * SectionBuilder representing the ".text" section of the assembly and providing
- * a convenient interface for generating instructions.
- * 
+ * a convenient interface for generating instructions, labels etc.
+ * <p>
  * Arguments for most instructions must implement the OperandSpecifier interface,
  * providing a valid Register, Immediate or Memoryaddress string.
+ * </p>
  */
 public class CodeSection extends SectionBuilder {
+    /** Generates local labels, e.g. for jump instructions. */
+    private final LocalLabelManager labelMgr;
+
     public CodeSection() {
         super(".text");
+        labelMgr = new LocalLabelManager(".L");
+    }
+
+    /** Returns a new unique label name. No code is written. */
+    public String newLabel() {
+        return labelMgr.getNext();
+    }
+
+    /** Bind the given label to reference the current code position. */
+    public void bindLabel(String label) {
+        write("\n", label, ":");
     }
 
     public void movq(OperandSpecifier src, OperandSpecifier dst) {
@@ -90,9 +105,14 @@ public class CodeSection extends SectionBuilder {
         writeInstruction("xorq", src, dst);
     }
 
-    /** Set condition codes (e.g. ZF for jmp) according to {@code src1 - src2} */
+    /** Set condition codes (e.g. ZF for je) according to {@code src1 - src2} */
     public void cmpq(OperandSpecifier src2, OperandSpecifier src1) {
         writeInstruction("cmpq", src2, src1);
+    }
+
+    /** Set condition codes (e.g. ZF for je) according to {@code src1 & src2} */
+    public void testq(OperandSpecifier src2, OperandSpecifier src1) {
+        writeInstruction("testq", src2, src1);
     }
 
     /**
@@ -107,6 +127,7 @@ public class CodeSection extends SectionBuilder {
         writeInstruction("jmp", label);
     }
 
+    /** Jump if {@code ZF} is set (equality/result was zero) */
     public void je(String label) {
         writeInstruction("je", label);
     }
