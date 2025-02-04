@@ -2,6 +2,7 @@ package cc.crochethk.klang.visitor.codegen.asm;
 
 import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Register;
+import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Register.ByteRegister;
 import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegister;
 
 /**
@@ -87,6 +88,68 @@ public class CodeSection extends SectionBuilder {
     /** Bitwise XOR similar to {@code dst = dst ^ src} */
     public void xorq(OperandSpecifier src, OperandSpecifier dst) {
         writeInstruction("xorq", src, dst);
+    }
+
+    /** Set condition codes (e.g. ZF for jmp) according to {@code src1 - src2} */
+    public void cmpq(OperandSpecifier src2, OperandSpecifier src1) {
+        writeInstruction("cmpq", src2, src1);
+    }
+
+    public void jmp(String label) {
+        writeInstruction("jmp", label);
+    }
+
+    public void je(String label) {
+        writeInstruction("je", label);
+    }
+
+    // --------------------[ conditional byte set instruction ]-----------------
+    /**
+     * Set 1 if CCs indicate 'equal'/'zero'.
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void sete(ByteRegister byteReg) {
+        writeInstruction("sete", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'notequal'/'nonzero'.
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setne(ByteRegister byteReg) {
+        writeInstruction("setne", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'greater' (signed).
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setg(ByteRegister byteReg) {
+        writeInstruction("setg", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'greater or equal' (signed).
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setge(ByteRegister byteReg) {
+        writeInstruction("setge", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'less' (signed).
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setl(ByteRegister byteReg) {
+        writeInstruction("setl", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'less or equal'.
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setle(ByteRegister byteReg) {
+        writeInstruction("setle", byteReg);
     }
 
     // --------------------[ XMM based instructions ]---------------------------

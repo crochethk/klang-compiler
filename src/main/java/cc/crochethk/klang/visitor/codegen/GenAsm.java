@@ -340,7 +340,8 @@ public class GenAsm extends CodeGenVisitor {
      *
      * @param src The source. It's the operation's RHS.
      * @param dst The destination. It's the operation's LHS.
-     * <p> For integer division and modulo, if {@code dst} is not {@code rax} it
+     * <p> For <b>integer comparison</b> {@code rax} will be mutated.</p>
+     * <p> For <b>integer division and modulo</b>, if {@code dst} is not {@code rax} it
      * is loaded there first, since the assembly instruction implicitly requires 
      * {@code rax} and {@code rdx} registers (computation and results). This
      * also implies that {@code src} must be neither {@code rax} nor {@code rdx}
@@ -407,11 +408,24 @@ public class GenAsm extends CodeGenVisitor {
             // Comparison
             case eq, neq, gt, gteq, lt, lteq -> {
                 if (operandType == Type.LONG_T) {
-                    // TODO
+                    // Set conditional codes
+                    code.cmpq(src, dst);
+                    // --- this assumes rax can be freely overwritten ---
+                    switch (op) {
+                        case eq -> code.sete(ByteRegister.al);
+                        case neq -> code.setne(ByteRegister.al);
+                        case gt -> code.setg(ByteRegister.al);
+                        case gteq -> code.setge(ByteRegister.al);
+                        case lt -> code.setl(ByteRegister.al);
+                        case lteq -> code.setle(ByteRegister.al);
+                        default -> error = true;
+                    }
+                    if (dst != rax) {
+                        code.movq(rax, dst);
+                    }
                 } else if (operandType == Type.DOUBLE_T) {
                     // TODO
                 } else {
-                    // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
                 }
             }
