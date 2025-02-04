@@ -2,6 +2,7 @@ package cc.crochethk.klang.visitor.codegen.asm;
 
 import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.MemAddr;
 import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Register;
+import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.Register.ByteRegister;
 import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegister;
 
 /**
@@ -89,6 +90,125 @@ public class CodeSection extends SectionBuilder {
         writeInstruction("xorq", src, dst);
     }
 
+    /** Set condition codes (e.g. ZF for jmp) according to {@code src1 - src2} */
+    public void cmpq(OperandSpecifier src2, OperandSpecifier src1) {
+        writeInstruction("cmpq", src2, src1);
+    }
+
+    /**
+     * Move {@code src} to {@code dst} if CCs indicate 'not equal'/'nonzero'.
+     * Operands must have the same bit width. 8-bit is not supported.
+     */
+    public void cmovne(Register src, Register dst) {
+        writeInstruction("cmovne", src, dst);
+    }
+
+    public void jmp(String label) {
+        writeInstruction("jmp", label);
+    }
+
+    public void je(String label) {
+        writeInstruction("je", label);
+    }
+
+    // --------------------[ conditional byte set instruction ]-----------------
+    /**
+     * Set 1 if CCs indicate 'equal'/'zero'.
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void sete(ByteRegister byteReg) {
+        writeInstruction("sete", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'notequal'/'nonzero'.
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setne(ByteRegister byteReg) {
+        writeInstruction("setne", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'greater' (signed).
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setg(ByteRegister byteReg) {
+        writeInstruction("setg", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'greater or equal' (signed).
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setge(ByteRegister byteReg) {
+        writeInstruction("setge", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'less' (signed).
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setl(ByteRegister byteReg) {
+        writeInstruction("setl", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'less or equal'.
+     * Use e.g. {@code cmpq} to set CCc accordingly beforhand.
+     */
+    public void setle(ByteRegister byteReg) {
+        writeInstruction("setle", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'above' (unsigned).
+     * Use e.g. {@code comisd} to set CCc accordingly beforhand.
+     */
+    public void seta(ByteRegister byteReg) {
+        writeInstruction("seta", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'above or equal' aka. 'not below' (unsigned).
+     * Use e.g. {@code comisd} to set CCc accordingly beforhand.
+     */
+    public void setnb(ByteRegister byteReg) {
+        writeInstruction("setnb", byteReg);
+
+    }
+
+    /**
+     * Set 1 if CCs indicate 'below' (unsigned).
+     * Use e.g. {@code comisd} to set CCc accordingly beforhand.
+     */
+    public void setb(ByteRegister byteReg) {
+        writeInstruction("setb", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'below or equal' (unsigned).
+     * Use e.g. {@code comisd} to set CCc accordingly beforhand.
+     */
+    public void setbe(ByteRegister byteReg) {
+        writeInstruction("setbe", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'parity'.
+     * Use e.g. {@code ucomisd} to set CCc accordingly beforhand.
+     */
+    public void setp(ByteRegister byteReg) {
+        writeInstruction("setp", byteReg);
+    }
+
+    /**
+     * Set 1 if CCs indicate 'not parity'.
+     * Use e.g. {@code ucomisd} to set CCc accordingly beforhand.
+     */
+    public void setnp(ByteRegister byteReg) {
+        writeInstruction("setnp", byteReg);
+    }
+
     // --------------------[ XMM based instructions ]---------------------------
     /**
      * Move scalar double-precision floating-point value from soruce to destination.
@@ -125,6 +245,22 @@ public class CodeSection extends SectionBuilder {
      */
     public void xorpd(OperandSpecifier src, XmmRegister dst) {
         writeInstruction("xorpd", src, dst);
+    }
+
+    /**
+     * Compares double precision floating-point value of {@code dst} with
+     * {@code src}, setting conditional codes accordingly.
+     */
+    public void comisd(OperandSpecifier src, XmmRegister dst) {
+        writeInstruction("comisd", src, dst);
+    }
+
+    /**
+     * Compares unordered the double precision floating-point value of 
+     * {@code dst} with {@code src}, setting conditional codes accordingly.
+     */
+    public void ucomisd(OperandSpecifier src, XmmRegister dst) {
+        writeInstruction("ucomisd", src, dst);
     }
 
     // -------------------------------------------------------------------------

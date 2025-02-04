@@ -308,11 +308,14 @@ public class GenAsm extends CodeGenVisitor {
 
         var lhsNotComplex = binOpExpr.lhs instanceof LiteralExpr || binOpExpr.lhs instanceof Var;
 
-        OperandSpecifier rhsResLoc = null;
-        OperandSpecifier dstOpSpec = null;
+        final OperandSpecifier rhsResLoc;
+        final OperandSpecifier dstOpSpec;
+
+        //type checker ensures operand types are equal or, in case of eq/neq, both reftypes
+        final var operandType = binOpExpr.lhs.theType;
 
         // Put rhs result on stack, if the register might be overwritten when evaluating lhs
-        if (binOpExpr.theType.isFloatType()) {
+        if (operandType.isFloatType()) {
             dstOpSpec = xmm0;
             rhsResLoc = lhsNotComplex ? xmm1 : stack.reserveSlot(binOpExpr.rhs.theType);
             code.movsd(dstOpSpec, rhsResLoc);
@@ -330,7 +333,7 @@ public class GenAsm extends CodeGenVisitor {
         // now operands in %rax (lhs), "rhsResLoc" (rhs)
         // or with floats:  %xmm0 (lhs), "rhsResLoc" (rhs)
 
-        genOpInstruction(code, binOpExpr.lhs.theType, binOpExpr.op, rhsResLoc, dstOpSpec);
+        genOpInstruction(code, operandType, binOpExpr.op, rhsResLoc, dstOpSpec);
     }
 
     /**
@@ -340,12 +343,15 @@ public class GenAsm extends CodeGenVisitor {
      *
      * @param src The source. It's the operation's RHS.
      * @param dst The destination. It's the operation's LHS.
-     * <p> For integer division and modulo, if {@code dst} is not {@code rax} it
+     * <p> For <b>comparison operators</b> {@code rax} will be mutated.</p>
+     * <p> For <b>integer division and modulo</b>, if {@code dst} is not {@code rax} it
      * is loaded there first, since the assembly instruction implicitly requires 
      * {@code rax} and {@code rdx} registers (computation and results). This
      * also implies that {@code src} must be neither {@code rax} nor {@code rdx}
      * in these cases.</p>
-     * <p>The result will be placed in the provided {@code dst} nevertheless.</p>
+     * <p>The result will be placed in the provided {@code dst} nevertheless,
+     * except for float comparison. In this case the result will be in {@code rax}.
+     * </p>
      * 
      * @apiNote Integer division and modulo operations always overwrite 
      * {@code rax} and {@code rdx}.
@@ -406,24 +412,62 @@ public class GenAsm extends CodeGenVisitor {
 
             // Comparison
             case eq, neq, gt, gteq, lt, lteq -> {
-                if (operandType == Type.LONG_T) {
-                    // TODO
+
+                if (operandType == Type.LONG_T
+                        || operandType == Type.BOOL_T
+                        || operandType.isReference()) {
+                    // Set conditional codes
+                    code.cmpq(src, dst);
+                    code.movq($(0), rax);
+                    // --- this assumes rax can be freely overwritten ---
+                    switch (op) {
+                        case eq -> code.sete(ByteRegister.al);
+                        case neq -> code.setne(ByteRegister.al);
+                        case gt -> code.setg(ByteRegister.al);
+                        case gteq -> code.setge(ByteRegister.al);
+                        case lt -> code.setl(ByteRegister.al);
+                        case lteq -> code.setle(ByteRegister.al);
+                        default -> error = true;
+                    }
+                    if (dst != rax) {
+                        code.movq(rax, dst);
+                    }
+
                 } else if (operandType == Type.DOUBLE_T) {
-                    // TODO
+                    code.movq($(0), rax); //clear rax
+                    // Set conditional codes
+                    if (op == BinaryOp.eq || op == BinaryOp.neq) {
+                        code.ucomisd(src, (XmmRegister) dst);
+                    } else {
+                        code.comisd(src, (XmmRegister) dst);
+                    }
+
+                    switch (op) {
+                        case eq -> {
+                            code.movq($(0), rdx);
+                            code.setnp(ByteRegister.al);
+                            code.cmovne(rdx, rax);
+                        }
+                        case neq -> {
+                            code.movq($(1), rdx);
+                            code.setp(ByteRegister.al);
+                            code.cmovne(rdx, rax);
+                        }
+                        case gt -> code.seta(ByteRegister.al);
+                        case gteq -> code.setnb(ByteRegister.al);
+                        case lt -> code.setb(ByteRegister.al);
+                        case lteq -> code.setbe(ByteRegister.al);
+                        default -> error = true;
+                    }
                 } else {
-                    // TODO implement case "operandType == Type.DOUBLE_T"
                     error = true;
                 }
             }
 
             // Boolean
             // - Type check is expected to ensure only bool operands are present
-            case and -> {
-                code.andq(src, dst);
-            }
-            case or -> {
-                code.orq(src, dst);
-            }
+            case and -> code.andq(src, dst);
+            case or -> code.orq(src, dst);
             default -> throw new UnsupportedOperationException("Operation '" + op
                     + "' not yet implemented for '" + operandType + ", " + operandType + "'");
         }

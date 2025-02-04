@@ -44,6 +44,15 @@ public interface OperandSpecifier {
         public String operandSpec() {
             return "%" + this;
         }
+
+        public enum ByteRegister implements OperandSpecifier {
+            al, cl, dl, bl, sil, dil, spl, bpl, r8b, r9b, r10b, r11b, r12b, r13b, r14b, r15b;
+
+            @Override
+            public String operandSpec() {
+                return "%" + this;
+            }
+        }
     }
 
     /**
