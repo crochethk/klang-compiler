@@ -25,7 +25,30 @@ fn _div4_1(a: f64, b:f64, c:f64, d:f64) -> f64 {
     return a / b / c / d;
 }
 
-fn ___main___() {
+//------------
+
+fn gt(a: f64, b: f64) -> bool {
+    return a > b;
+}
+fn gte(a: f64, b: f64) -> bool {
+    return a >= b;
+}
+fn lt(a: f64, b: f64) -> bool {
+    return a < b;
+}
+fn lte(a: f64, b: f64) -> bool {
+    return a <= b;
+}
+fn eq(a: f64, b: f64) -> bool {
+    return a == b;
+}
+fn ne(a: f64, b: f64) -> bool {
+    return a != b;
+}
+
+//-----------------
+
+fn OFF___main___() {
     print("Expect: 4.000000\n");
     print("Actual: "); print(_add2(1.0,3.0)); print("\n\n");
 
@@ -43,5 +66,42 @@ fn ___main___() {
 
     print("Expect: -0.208333\n");
     print("Actual: "); print(_div4_1(5.0,-4.0,3.0,2.0)); print("\n\n");
-}
 
+    //-------------
+
+    print("Expect: 1\n");
+    print("Actual: "); print(12.3==12.3); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(12.3==12.4); print("\n\n");
+
+    print("Expect: 1\n");
+    print("Actual: "); print(12.3!=12.4); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(12.3!=12.3); print("\n\n");
+
+    print("Expect: 1\n");
+    print("Actual: "); print(12.3<45.6); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(12.3<4.5); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(4.5<4.5); print("\n\n");
+
+    print("Expect: 1\n");
+    print("Actual: "); print(12.3>=4.5); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(12.3>=45.6); print("\n\n");
+    print("Expect: 1\n");
+    print("Actual: "); print(12.3>=12.3); print("\n\n");
+
+    print("Expect: 1\n");
+    print("Actual: "); print(45.6>12.3); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(12.3>45.6); print("\n\n");
+
+    print("Expect: 1\n");
+    print("Actual: "); print(12.3<=45.6); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(12.3<=4.5); print("\n\n");
+    print("Expect: 1\n");
+    print("Actual: "); print(12.3<=12.3); print("\n\n");
+}

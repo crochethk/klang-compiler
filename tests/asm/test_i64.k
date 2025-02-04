@@ -114,6 +114,28 @@ fn longModAndAdd_1(lhs:i64, rhs: i64) -> i64 {
 fn longModAndAdd_2(lhs:i64, rhs: i64) -> i64 {
     return 84+lhs%rhs;
 }
+
+//------------
+
+fn gt(a: i64, b: i64) -> bool {
+    return a > b;
+}
+fn gte(a: i64, b: i64) -> bool {
+    return a >= b;
+}
+fn lt(a: i64, b: i64) -> bool {
+    return a < b;
+}
+fn lte(a: i64, b: i64) -> bool {
+    return a <= b;
+}
+fn eq(a: i64, b: i64) -> bool {
+    return a == b;
+}
+fn ne(a: i64, b: i64) -> bool {
+    return a != b;
+}
+
 //-----------------
 
 fn OFF___main___() {
@@ -140,25 +162,42 @@ fn OFF___main___() {
 
     print("Expect: 8230\n");
     print("Actual: "); print(divChainWithFunCall_return_8230()); print("\n\n");
-}
 
-//-------------
+    //-------------
 
-/* Mod */
-fn longMod(lhs:i64, rhs: i64) -> i64 {
-    return lhs%rhs;
-}
+    print("Expect: 1\n");
+    print("Actual: "); print(123==123); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(123==124); print("\n\n");
 
-/* Mod, Add
-- should first calculate modulo, then add 84
-*/
-fn longModAndAdd_1(lhs:i64, rhs: i64) -> i64 {
-    return lhs%rhs+84;
-}
+    print("Expect: 1\n");
+    print("Actual: "); print(123!=124); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(123!=123); print("\n\n");
 
-/* Add, Mod
-- should first calculate modulo, then add 84
-*/
-fn longModAndAdd_2(lhs:i64, rhs: i64) -> i64 {
-    return 84+lhs%rhs;
+    print("Expect: 1\n");
+    print("Actual: "); print(123<456); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(123<45); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(45<45); print("\n\n");
+
+    print("Expect: 1\n");
+    print("Actual: "); print(123>=45); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(123>=456); print("\n\n");
+    print("Expect: 1\n");
+    print("Actual: "); print(123>=123); print("\n\n");
+
+    print("Expect: 1\n");
+    print("Actual: "); print(456>123); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(123>456); print("\n\n");
+
+    print("Expect: 1\n");
+    print("Actual: "); print(123<=456); print("\n\n");
+    print("Expect: 0\n");
+    print("Actual: "); print(123<=45); print("\n\n");
+    print("Expect: 1\n");
+    print("Actual: "); print(123<=123); print("\n\n");
 }
