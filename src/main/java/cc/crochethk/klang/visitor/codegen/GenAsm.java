@@ -452,14 +452,14 @@ public class GenAsm extends CodeGenVisitor {
     @Override
     public void visit(UnaryOpExpr unaryOpExpr) {
         unaryOpExpr.operand.accept(this);
-        boolean error = false;
         var op = unaryOpExpr.op;
         var operandType = unaryOpExpr.operand.theType;
+        boolean error = false;
         switch (op) {
             // Arithmetic
             case neg -> {
                 if (operandType == Type.LONG_T) {
-                    //TODO
+                    code.negq(rax);
                 } else if (operandType == Type.DOUBLE_T) {
                     // Create 128-bit number with 64th bit set to 1
                     var signBitMask = rodataSec.createLiteralData32(

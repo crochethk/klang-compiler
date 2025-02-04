@@ -66,6 +66,14 @@ public class CodeSection extends SectionBuilder {
         writeIndented("cqto");
     }
 
+    /**
+     * Two's complement negate {@code dst}. Equivalent to {@code dst = 0 - dst}
+     * @param dst A general-purpose register or a memory location.
+     */
+    public void negq(OperandSpecifier dst) {
+        writeInstruction("negq", dst);
+    }
+
     /** Bitwise AND similar to {@code dst = dst & src} */
     public void andq(OperandSpecifier src, OperandSpecifier dst) {
         writeInstruction("andq", src, dst);
