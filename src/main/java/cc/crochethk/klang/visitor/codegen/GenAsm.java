@@ -416,8 +416,13 @@ public class GenAsm extends CodeGenVisitor {
             }
 
             // Boolean
-            //case and -> error = true;//TODO
-            //case or -> error = true; //TODO
+            // - Type check is expected to ensure only bool operands are present
+            case and -> {
+                code.andq(src, dst);
+            }
+            case or -> {
+                code.orq(src, dst);
+            }
             default -> throw new UnsupportedOperationException("Operation '" + op
                     + "' not yet implemented for '" + operandType + ", " + operandType + "'");
         }

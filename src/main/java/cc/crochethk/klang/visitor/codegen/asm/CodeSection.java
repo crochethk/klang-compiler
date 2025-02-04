@@ -65,6 +65,17 @@ public class CodeSection extends SectionBuilder {
         writeIndented("cqto");
     }
 
+    /** Bitwise AND similar to {@code dst = dst & src} */
+    public void andq(OperandSpecifier src, OperandSpecifier dst) {
+        writeInstruction("andq", src, dst);
+    }
+
+    /** Bitwise OR similar to {@code dst = dst | src} */
+    public void orq(OperandSpecifier src, OperandSpecifier dst) {
+        writeInstruction("orq", src, dst);
+    }
+
+    // --------------------[ XMM based instructions ]---------------------------
     /**
      * Move scalar double-precision floating-point value from soruce to destination.
      * @param source
