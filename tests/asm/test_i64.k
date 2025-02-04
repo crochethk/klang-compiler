@@ -94,6 +94,27 @@ fn divChainWithFunCall_return_8230() -> i64 {
     return _div2(123456, 3)/5; //-> 115
 }
 
+//-------------
+
+/* Mod */
+fn longMod(lhs:i64, rhs: i64) -> i64 {
+    return lhs%rhs;
+}
+
+/* Mod, Add
+- should first calculate modulo, then add 84
+*/
+fn longModAndAdd_1(lhs:i64, rhs: i64) -> i64 {
+    return lhs%rhs+84;
+}
+
+/* Add, Mod
+- should first calculate modulo, then add 84
+*/
+fn longModAndAdd_2(lhs:i64, rhs: i64) -> i64 {
+    return 84+lhs%rhs;
+}
+//-----------------
 
 fn OFF___main___() {
 
@@ -141,5 +162,3 @@ fn longModAndAdd_1(lhs:i64, rhs: i64) -> i64 {
 fn longModAndAdd_2(lhs:i64, rhs: i64) -> i64 {
     return 84+lhs%rhs;
 }
-
-
