@@ -12,20 +12,23 @@ public class BuiltinDefinitions {
 
     /** Print a string to stdout */
     public static final String NAME_FN_PRINT = "print";
-    public static final Signature FN_PRINT_STR = Signature.of(NAME_FN_PRINT, Type.VOID_T,
-            new CheckedParam("val", Type.STRING_T));
-    public static final Signature FN_PRINT_I64 = Signature.of(NAME_FN_PRINT, Type.VOID_T,
-            new CheckedParam("val", Type.LONG_T));
-    public static final Signature FN_PRINT_F64 = Signature.of(NAME_FN_PRINT, Type.VOID_T,
-            new CheckedParam("val", Type.DOUBLE_T));
+    public static final Signature FN_PRINT_STR = createPrintSignature(Type.STRING_T);
+    public static final Signature FN_PRINT_I64 = createPrintSignature(Type.LONG_T);
+    public static final Signature FN_PRINT_F64 = createPrintSignature(Type.DOUBLE_T);
+    public static final Signature FN_PRINT_BOOL = createPrintSignature(Type.BOOL_T);
 
     /** Set of builtin auto-generated (static) functions (e.g. "print(myString)"). */
     private static final Map<String, Map<List<Type>, Signature>> autoFunctions = Map.of(
             NAME_FN_PRINT, Map.of(
                     toTypes(FN_PRINT_STR.params()), FN_PRINT_STR,
                     toTypes(FN_PRINT_I64.params()), FN_PRINT_I64,
-                    toTypes(FN_PRINT_F64.params()), FN_PRINT_F64//
+                    toTypes(FN_PRINT_F64.params()), FN_PRINT_F64,
+                    toTypes(FN_PRINT_BOOL.params()), FN_PRINT_BOOL//
             ));
+
+    private static Signature createPrintSignature(Type paramType) {
+        return Signature.of(NAME_FN_PRINT, Type.VOID_T, new CheckedParam("val", paramType));
+    }
 
     /**
      * If a builtin function identified by {@code name} and {@code args} exists,
