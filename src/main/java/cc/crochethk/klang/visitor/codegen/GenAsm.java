@@ -584,8 +584,26 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(IfElseStat ifElseStat) {
-        // TODO Auto-generated method stub
-        return;
+        var then = ifElseStat.then;
+        var otherwise = ifElseStat.otherwise;
+        var ifElseEndLabel = code.newLabel();
+
+        // Reuse end label if there's no else branch
+        var elseStartLabel = otherwise.isEmpty() ? ifElseEndLabel : code.newLabel();
+
+        // condition
+        // - set zero flag if condition was false
+        ifElseStat.condition.accept(this);
+        code.testq(rax, rax);
+        code.je(elseStartLabel);
+        // then
+        then.accept(this);
+        code.jmp(ifElseEndLabel);
+        // else
+        code.bindLabel(elseStartLabel);
+        otherwise.accept(this);
+
+        code.bindLabel(ifElseEndLabel);
     }
 
     @Override
