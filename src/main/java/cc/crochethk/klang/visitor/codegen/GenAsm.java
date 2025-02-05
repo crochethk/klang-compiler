@@ -606,10 +606,29 @@ public class GenAsm extends CodeGenVisitor {
         code.bindLabel(ifElseEndLabel);
     }
 
+    private String currentLoopStart = null;
+    private String currentLoopEnd = null; // go here on break
+
     @Override
     public void visit(LoopStat loopStat) {
-        // TODO Auto-generated method stub
-        return;
+        // Backup current loop context
+        var previousEnd = currentLoopEnd;
+        var previousStart = currentLoopStart;
+
+        currentLoopEnd = code.newLabel();
+        currentLoopStart = code.newLabel();
+        code.bindLabel(currentLoopStart);
+
+        loopStat.body.accept(this);
+
+        // Go to loop start
+        code.jmp(currentLoopStart);
+
+        code.bindLabel(currentLoopEnd);
+
+        // Restore previous loop context
+        currentLoopStart = previousStart;
+        currentLoopEnd = previousEnd;
     }
 
     @Override
@@ -630,8 +649,7 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(BreakStat breakStat) {
-        // TODO Auto-generated method stub
-        return;
+        code.jmp(currentLoopEnd);
     }
 
     @Override
