@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import cc.crochethk.klang.visitor.codegen.asm.OperandSpecifier.XmmRegister;
@@ -632,19 +633,31 @@ public class GenAsm extends CodeGenVisitor {
     }
 
     @Override
-    public void visit(StatementList statementList) {
-        statementList.statements.forEach(s -> s.accept(this));
+    public void visit(StatementList statList) {
+
+        // statementList.statements.forEach(s -> s.accept(this));
+        for (var statIter = statList.statements.iterator(); statIter.hasNext();) {
+            var stat = statIter.next();
+            if (functionExitLabel.isEmpty() && statIter.hasNext()
+                    && stat.returnsControlFlow()) {
+                functionExitLabel = Optional.of(code.newLabel());
+            }
+            stat.accept(this);
+        }
     }
 
     @Override
     public void visit(ReturnStat returnStat) {
         returnStat.expr.accept(this);
-        /* Epilogue */
-        // Restore caller's context:
-        // -> Copy %rbp to %rsp and then replace %rbp with the stored value
-        // -> Can be reduced to "popq" part in certain cases.
-        code.leave();
-        code.ret();
+
+        // Naive approach: always generate a 'jmp'
+        // TODO jump only if returnStat is not last statement of 
+
+        var label = functionExitLabel.isPresent()
+                ? functionExitLabel.get()
+                : code.newLabel();
+        functionExitLabel = Optional.of(label);
+        code.jmp(label);
     }
 
     @Override
@@ -671,12 +684,20 @@ public class GenAsm extends CodeGenVisitor {
     }
 
     /**
+     * Label marking the epilogue of the current function.
+     * Is set only if the function can terminate early.
+     */
+    private Optional<String> functionExitLabel;
+
+    /**
      * Generates the function defintion for the given {@code FunDef} using a
      * custom name instead of the one in {@code FunDef}.
      * @param newFunName Name to use instead of {@code funDef.name}
      * @param funDef
      */
     void genFunDefWithName(String newFunName, FunDef funDef) {
+        functionExitLabel = Optional.empty();
+
         var oldCtx = stack;
         stack = new StackManager(code);
 
@@ -743,31 +764,17 @@ public class GenAsm extends CodeGenVisitor {
             }
         }
 
-        // // // Store register args on stack
-        // // for (int i = 0; i < regArgsCount; i++) {
-        // //     var arg = funDef.params.get(i);
-        // //     // Convention: 8 byte per fun arg
-        // //     stack.store(arg.name(), Type.ANY_T, regs[i]);
-        // // }
-
-        // // // Get offsets for caller-saved args (when >6 params)
-        // // var baseOffset = 16; //skip rbp backup and return addr
-        // // for (int i = regArgsCount; i < funDef.params.size(); i++) {
-        // //     stack.associate(funDef.params.get(i).name(), baseOffset);
-        // //     baseOffset += 8;
-        // // }
-
         /* Actual work */
         // Generate body instructions
         funDef.body.accept(this);
 
-        // Append epilogue in case of implicit return
-        if (funDef.body.isEmpty()
-                || (!funDef.body.statements.getLast().returnsControlFlow()
-                        && funDef.returnType.theType.equals(Type.VOID_T))) {
-            code.leave();
-            code.ret();
-        }
+        functionExitLabel.ifPresent(label -> code.bindLabel(label));
+        /* Epilogue */
+        // Restore caller's context:
+        // -> Copy %rbp to %rsp and then replace %rbp with the stored value
+        // -> Can be reduced to "popq" part in certain cases.
+        code.leave();
+        code.ret();
 
         stack = oldCtx;
     }
