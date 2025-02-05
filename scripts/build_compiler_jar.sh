@@ -38,11 +38,7 @@ jar_runner="${BUILD_ARTIFACTS_BASE_DIR}/klangc.sh"
 
 cat > "${jar_runner}" <<- EOM
 #!/usr/bin/env bash
+# Use "--help" for usage info.
 jar_dir="\$( cd "\$( dirname "\${0}" )" && pwd )"
-# \$1      : Output directory
-# \$2...   : List of files to compile
-# Example : klangc.sh ./build/gen file1.k file2.k
-_outdir="\${1}"
-shift
-java --enable-preview -jar "\${jar_dir}/klangc.jar" --output "\${_outdir}" -- \${@}
+java --enable-preview -jar "\${jar_dir}/klangc.jar" \${@}
 EOM

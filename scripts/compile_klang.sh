@@ -51,7 +51,7 @@ compile_klang_files() {
     classpath="${RELEASE_WORK_DIR}/classes:${classpath}"
  
     java --enable-preview -cp "${classpath}" \
-        cc.crochethk.klang.KlangCompiler ${output_format_flags[@]} --output "${outdir}" -- $files
+        cc.crochethk.klang.KlangCompiler ${output_format_flags[@]} --out "${outdir}" -- $files
 }
 
 # Do not execute if the script is being sourced
