@@ -13,8 +13,7 @@ _compile_file_list() {
         return 1
     fi
 
-    # "-proc:full" -> required for lombok (since JDK >22)
-    cmd="javac --enable-preview -proc:full --source 23 --target 23 -cp \"${2}\" -d \"${3}\" @\"${1}\""
+    cmd="javac --enable-preview --source 23 --target 23 -cp \"${2}\" -d \"${3}\" @\"${1}\""
     echo "${cmd}"
     eval ${cmd}
 }

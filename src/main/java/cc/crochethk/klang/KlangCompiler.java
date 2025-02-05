@@ -26,7 +26,6 @@ import cc.crochethk.klang.visitor.PrettyPrinter;
 import cc.crochethk.klang.visitor.TypeChecker;
 import cc.crochethk.klang.visitor.codegen.GenAsm;
 import cc.crochethk.klang.visitor.codegen.GenJBC;
-import lombok.Builder;
 import utils.CommandLineParser;
 import utils.PathUtils;
 
@@ -35,18 +34,6 @@ public class KlangCompiler {
 
     public KlangCompiler(KlangCompilerConfig config) {
         this.cfg = config;
-    }
-
-    @Builder
-    static record KlangCompilerConfig(
-            String outputDir,
-            boolean showParseTree,
-            boolean noCompile,
-            boolean buildAst,
-            boolean prettyPrintAst,
-            boolean typeCheck,
-            boolean generateJbc,
-            boolean generateAsm) {
     }
 
     public Result compile(Reader inputCode, final String packageName, final String className)
@@ -63,7 +50,7 @@ public class KlangCompiler {
             System.out.println(pp.writer.toString());
         }
 
-        if (cfg.noCompile) {
+        if (cfg.noCompile()) {
             return compileResult;
         }
 

@@ -13,7 +13,6 @@ if [ -z "${CONFIG_SH_SOURCED}" ]; then
 
     DEPENDENCIES=(                       \
         'lib/antlr4-4.13.2-complete.jar' \
-        'lib/lombok/lombok-1.18.36.jar'  \
     )
 
     DEV_DEPENDENCIES=(          \
