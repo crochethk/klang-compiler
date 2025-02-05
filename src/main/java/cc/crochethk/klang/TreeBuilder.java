@@ -307,10 +307,16 @@ public class TreeBuilder extends KlangBaseListener {
     private boolean isFieldSetCtx = false;
 
     @Override
+    public void enterFieldSetExpr(KlangParser.FieldSetExprContext ctx) {
+        // before parsing the expression we must reset the context,
+        // such that memberaccessors in the expr are built correctly
+        isFieldSetCtx = false;
+    }
+
+    @Override
     public void exitStructFieldAssignStat(KlangParser.StructFieldAssignStatContext ctx) {
         var srcPos = getSourcePos(ctx);
-        ctx.result = new FieldAssignStat(srcPos, ctx.memberAccessor().result, ctx.expr().result);
-        isFieldSetCtx = false;
+        ctx.result = new FieldAssignStat(srcPos, ctx.memberAccessor().result, ctx.fieldSetExpr().expr().result);
     }
 
     @Override

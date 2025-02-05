@@ -85,7 +85,12 @@ varDeclarationOrAssignment
 ;
 
 structFieldAssignStat
-	returns[FieldAssignStat result]: memberAccessor EQ expr SEMI;
+	returns[FieldAssignStat result]:
+	memberAccessor EQ fieldSetExpr SEMI
+;
+
+// Wrapper required for treebuilder to built memberaccessors correctly
+fieldSetExpr: expr;
 
 expr
 	returns[Expr result]:

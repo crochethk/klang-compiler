@@ -55,7 +55,7 @@ public sealed abstract class MemberAccess extends Expr
 
         @Override
         public String toString() {
-            return super.toString() + "(" + super.toString() + ")";
+            return "(kind=getter, " + super.toString() + ")";
         }
     }
 
@@ -74,7 +74,7 @@ public sealed abstract class MemberAccess extends Expr
 
         @Override
         public String toString() {
-            return super.toString() + "(" + super.toString() + ")";
+            return "(kind=setter, " + super.toString() + ")";
         }
     }
 

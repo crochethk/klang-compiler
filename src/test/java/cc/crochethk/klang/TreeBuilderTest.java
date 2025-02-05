@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Nested;
 
 import cc.crochethk.klang.TreeBuilder.*;
 import cc.crochethk.klang.antlr.*;
+import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.literal.*;
 import cc.crochethk.klang.testhelpers.NodeMocker;
@@ -237,6 +238,18 @@ public class TreeBuilderTest extends NodeMocker {
             assertEquals(fieldAssignStat(
                     var("some"), List.of(fieldGet("field1"), fieldGet("field2"), fieldSet("field3")),
                     var("value")), ctx.result);
+            assertTrue(ctx.result.maChain.getLast() instanceof FieldSet);
+            assertFalse(ctx.result.maChain.getLast() instanceof FieldGet);
+        }
+
+        @Test
+        public void assignedExprHasFieldGetAndIsNotSetter() {
+            var ctx = parseAndWalk("some.field=some.field+1;", p -> p.structFieldAssignStat());
+            var lhs = memberAccessChain(var("some"), fieldGet("field"));
+            var rhs = i64Lit(1);
+            assertEquals(fieldAssignStat(var("some"), List.of(fieldSet("field")),
+                    binOpExpr(lhs, BinaryOp.add, rhs)),
+                    ctx.result);
             assertTrue(ctx.result.maChain.getLast() instanceof FieldSet);
             assertFalse(ctx.result.maChain.getLast() instanceof FieldGet);
         }
