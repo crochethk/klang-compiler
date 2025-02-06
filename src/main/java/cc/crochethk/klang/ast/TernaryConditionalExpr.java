@@ -17,6 +17,13 @@ public class TernaryConditionalExpr extends Expr {
     }
 
     @Override
+    public boolean isOrHasMemberAccessChain() {
+        return condition.isOrHasMemberAccessChain()
+                || then.isOrHasMemberAccessChain()
+                || otherwise.isOrHasMemberAccessChain();
+    }
+
+    @Override
     public boolean isOrHasFunCall() {
         return condition.isOrHasFunCall()
                 || then.isOrHasFunCall()

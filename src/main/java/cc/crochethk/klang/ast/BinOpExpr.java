@@ -11,6 +11,11 @@ public class BinOpExpr extends Expr {
     public Expr rhs;
 
     @Override
+    public boolean isOrHasMemberAccessChain() {
+        return lhs.isOrHasMemberAccessChain() || rhs.isOrHasMemberAccessChain();
+    }
+
+    @Override
     public boolean isOrHasFunCall() {
         return lhs.isOrHasFunCall() || rhs.isOrHasFunCall();
     }

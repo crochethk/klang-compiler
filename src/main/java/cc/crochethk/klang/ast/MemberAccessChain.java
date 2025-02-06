@@ -28,6 +28,11 @@ public class MemberAccessChain extends Expr {
     }
 
     @Override
+    public boolean isOrHasMemberAccessChain() {
+        return true;
+    }
+
+    @Override
     public boolean isOrHasFunCall() {
         // Condition: At least one of the chained accessors must return true for 'isOrHasFunCall()'
         var isOrHas = false;

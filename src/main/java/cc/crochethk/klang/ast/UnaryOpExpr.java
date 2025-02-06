@@ -51,6 +51,11 @@ public class UnaryOpExpr extends Expr {
     }
 
     @Override
+    public boolean isOrHasMemberAccessChain() {
+        return operand.isOrHasMemberAccessChain();
+    }
+
+    @Override
     public boolean isOrHasFunCall() {
         return operand.isOrHasFunCall();
     }

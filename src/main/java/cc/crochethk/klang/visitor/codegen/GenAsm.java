@@ -112,7 +112,7 @@ public class GenAsm extends CodeGenVisitor {
 
         // Memory locations of args that needed to be evaluated before prologue
         var preEvaluatedArgsIt = funCall.args.stream().map(arg -> {
-            if (arg.isOrHasFunCall()) {
+            if (arg.isOrHasFunCall() || arg.isOrHasMemberAccessChain()) {
                 arg.accept(this);
                 var resultAddr = stack.reserveSlot(arg.theType);
                 if (arg.theType.isFloatType())
@@ -568,16 +568,13 @@ public class GenAsm extends CodeGenVisitor {
 
     @Override
     public void visit(FieldAssignStat faStat) {
-        // traverse the member access chain --> at the end owner pointer is in rax
-        faStat.maChain.accept(this);
-
         var field = faStat.maChain.chain.getLast();
         var fieldOwnerType = field.owner != null
                 ? field.owner.theType
                 : faStat.maChain.owner.theType;
         var setterFunName = getSetterFullName(fieldOwnerType, field.targetName);
-        var thisArg = new EmptyExpr(faStat.srcPos);
-        thisArg.theType = fieldOwnerType;
+        // delagate "thisArg" fetching to the funcall
+        var thisArg = faStat.maChain;
         var funCall = new FunCall(faStat.srcPos, setterFunName, List.of(thisArg, faStat.expr));
         funCall.theType = faStat.theType;
         funCall.accept(this);
@@ -697,8 +694,6 @@ public class GenAsm extends CodeGenVisitor {
      */
     void genFunDefWithName(String newFunName, FunDef funDef) {
         functionExitLabel = Optional.empty();
-
-        var oldCtx = stack;
         stack = new StackManager(code);
 
         code.writeIndented(".globl\t", newFunName);
@@ -775,8 +770,6 @@ public class GenAsm extends CodeGenVisitor {
         // -> Can be reduced to "popq" part in certain cases.
         code.leave();
         code.ret();
-
-        stack = oldCtx;
     }
 
     @Override

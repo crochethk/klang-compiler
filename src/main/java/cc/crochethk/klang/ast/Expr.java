@@ -9,4 +9,8 @@ public abstract class Expr extends Node {
     }
 
     abstract public boolean isOrHasFunCall();
+
+    public boolean isOrHasMemberAccessChain() {
+        return false;
+    }
 }
