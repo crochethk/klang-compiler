@@ -4,7 +4,7 @@
 <h3 align="center">The Klang Compiler</h3>
 
   <p align="center">
-    A compiler for the Klang programming language.
+    A compiler for <a href="the-klang-language.md">the Klang programming language</a>.
   </p>
 </div>
 
@@ -14,6 +14,8 @@
   <ol>
     <li>
       <a href="#about-the-project">About The Project</a>
+    </li>
+    <li>
       <a href="#how-it-works">How it works</a>
     </li>
     <li>
@@ -21,9 +23,13 @@
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#quick-start">Quick Start</a></li>
-        <li><a href="#use-selfcontained-jar">Selfcontained JAR</a></li>
+        <li><a href="#building-and-using-selfcontained-jar">Building And Using Selfcontained Jar</a></li>
       </ul>
     </li>
+    <!-- <li><a href="#usage">Usage</a></li> -->
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#license">License</a></li>
+    <!-- <li><a href="#contact">Contact</a></li> -->
   </ol>
 </details>
 
@@ -33,20 +39,24 @@
 
 This project is a compiler for the "Klang" programming language, developed as 
 part of a Compiler Construction course.
-The compiler's main focus is to produce GNU Assembly Code from a given Klang 
-source code file. It also is capable of generating Java Byte Code (JBC) – though
-the supported language features are limited at the moment. 
+The compiler's main focus is to produce linux compatible GNU Assembly Code from 
+a given Klang source code file. It also is capable of generating Java Byte Code 
+(JBC) – though the supported language features are very limited at the moment. 
 
 The language's syntax is slightly inspired by [Rust](https://www.rust-lang.org) 
 and a program may look something like the following screenshot:
 
 ![Example Klang Program][product-screenshot]
 
+You can find out more about the structure and how to write a Klang program 
+[here](the-klang-language.md).
+
 ### How it works
 The language is defined using ANTLR 4 grammar which is then used to generate
 an according Lexer and Parser. The latter creates a Parse Tree which is
-then transformed into a Visitor Pattern based Abstract Syntax Tree (AST). It 
-is then traversed by several visitors, each performing its respective task(s).
+then transformed into an *Abstract Syntax Tree* (AST). The AST consists of Nodes
+implementing the *Visitor Pattern* which are traversed by several visitors, each
+performing the respective task on each Node of the tree.
 In summary there is a PrettyPrinter, a TypeChecker and several Code Generator
 visitors.
 
@@ -56,11 +66,14 @@ visitors.
 
 <!-- GETTING STARTED -->
 ## Getting Started
+The following steps will guide you through the process of compiling a Klang source
+code file.
 
 ### Prerequisites
 * [![Java][Java]][Java-url] ≥23
 * `gcc` to compile generated helpers and link with assembly code
-* (optional) WSL or linux if you want to use the provided bash scripts
+* WSL or Linux 
+    > Provided bash scripts and the generated assembly only support Linux
 
 ### Quick Start
 The easiest way to start compiling Klang files is to use the provided bash
@@ -91,7 +104,7 @@ To demonstrate this the following steps will show how to compile the file
     ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Use Selfcontained `JAR`
+### Building And Using Selfcontained `jar`
 You can also package the compiler into a selfcontained `jar` using a provided
 script.
 1. If not done yet, get a local copy of this repo
@@ -123,6 +136,26 @@ To print further usage info or inspect all available options run
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+
+<!-- ROADMAP -->
+## Roadmap
+
+- [ ] Full JBC support
+- [ ] Add array types
+- [ ] Extend string manipulation support
+    - [ ] Length
+    - [ ] Concatenation (`strA + strB`)
+    - [ ] Subtstring
+- [ ] VSCode Syntax Highlight Extension
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
 
 <!-- LICENSE -->
 ## License
