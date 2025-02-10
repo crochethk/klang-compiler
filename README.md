@@ -124,6 +124,27 @@ To print further usage info or inspect all available options run
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- LICENSE -->
+## License
+
+Except for the following third-party libraries, which are redistributed under 
+their respective licenses, all code in this repository is licensed under the
+[MIT License](LICENSE).
+
+The following libraries are included in this repository and are redistributed 
+under their respective open-source licenses:
+
+1. **ANTLR4 Runtime** and **ANTLR4 Complete** are licensed under the 
+[BSD License](https://opensource.org/licenses/BSD-3-Clause).
+    The full license text can be found in [`antlr4-LICENSE.txt`](lib/antlr4-LICENSE.txt).
+
+2. **JUnit Platform Console Standalone** is licensed under the 
+[Eclipse Public License 2.0](https://www.eclipse.org/legal/epl-2.0/).
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/crochethk/klang-compiler.svg?style=for-the-badge
