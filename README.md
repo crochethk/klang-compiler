@@ -77,7 +77,7 @@ code file.
 
 ### Quick Start
 The easiest way to start compiling Klang files is to use the provided bash
-script `scripts/compile_kang.sh`.
+script `scripts/compile_klang.sh`.
 To demonstrate this the following steps will show how to compile the file
 `examples/point.k`.
 
@@ -89,7 +89,7 @@ To demonstrate this the following steps will show how to compile the file
 
 2. Run the script
     ```sh
-    ./scripts/compile_kang.sh asm "./out" "examples/point.k"
+    ./scripts/compile_klang.sh asm "./out" "examples/point.k"
     ```
     This will create a subdirectory `./out` with 3 files:
     - `examples.point.s` - The main assembly code.
@@ -119,20 +119,20 @@ script.
     ```
     This will create a subdirectory `build` with two relevant files:
     - `klangc.jar` - The actual compiler exectuable.
-    - `klangc.sh` - The convenience script to run the `jar`.
+    - `klangc.sh` - A convenience script to run `jar`.
 
 3. Compile a Klang file
 
     To compile the example source code `examples/point.k` follow these steps:
     - Run
         ```sh
-        .build/klangc.sh examples/point.k
+        ./build/klangc.sh examples/point.k
         ```
 The output and the other steps are similar to [Quick Start](#quick-start).
 
 To print further usage info or inspect all available options run
 ```sh
-./build/klang.sh --help
+./build/klangc.sh --help
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
