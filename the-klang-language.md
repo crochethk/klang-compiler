@@ -61,8 +61,37 @@ fn {funName}( [{paramName}: {paramType}, ]* ) -> returnType {
 > Trailing comma in the parameter list is permitted. 
 
 ## Structured Data Definition
-...
-<!-- TODO TODO TODO -->
+```
+struct {structName} {
+    {fieldDefintions}?
+    ---
+    {methodDefinitions}?
+}
+```
+
+* `{fieldDefintions}?` - Optional comma separated list of field definitions.
+    > Trailing comma in the field list is permitted. 
+    - A field is defined as: `{fieldName}: {fieldType}`
+
+* `{methodDefinitions}?` - Optional list of method definitions.
+    - Definitions similar to [functions](#function-definition), except for __no__ `fn` keyword.
+    - All methods have an __implicit__ `self` parameter, providing access to the struct instance.
+
+> Definition-separator `---` must only be present if fields _and_ methods are defined. Otherwise it may be ommited.
+
+* Example
+    ```
+    struct MyStruct {
+        bar: i64
+        ---
+        foo(additional_bar: i64) -> void {
+            self.bar = self.bar + additional_bar;
+        }
+    }
+    ```
+
+See also [`field assignment`](#field-assignment), [`field getter`](#field-getter), [`method call`](#method-call).
+
 
 ## Statements
 In general, there are two statement kinds:
@@ -84,27 +113,33 @@ In summary there are these four patterns to declare and/or assign a variable:
 * `varName = {expr};`
 
 ### Return
-...
-<!-- TODO TODO TODO -->
+`return {expr};` - Return flow control to the caller, optionally returning a value.
 
 ### Break
-...
-<!-- TODO TODO TODO -->
+`break;` - Exit the _current_ `loop` context.
 
 ### Drop
 > If the compilation target is JBC/JVM this mechanic is optional (and basically
 > a 'nop') because of the managed nature of the JVM.
 
+`drop {expr};` - Release memory of a reference type instance given by `{expr}`.
+
 In general Klang is an unmanaged language, thus the programmer is responsible
 of freeing dynamically allocated memory. This is the case for all reference 
-type instances except string literals.
+type instances __except string literals__.
 
-...
-<!-- TODO TODO TODO -->
 
 ### Field assignment
-...
-<!-- TODO TODO TODO -->
+```
+{structInstanceExpr}.{fieldName} = {expr};
+```
+To set a field's value write a `.` after an expression evaluating to a struct instance
+followed by the field's name. Then assign a value.
+
+* Example
+    ```
+    myStruct.myField = 123;
+    ```
 
 
 ### If-Else
@@ -190,13 +225,28 @@ Function name followed by an argument expression list as required by the
 function's definition.
 
 ### Field Getter
-...
-<!-- TODO TODO TODO -->
+```
+{structInstanceExpr}.{fieldName}
+```
+To get a field's value write a `.` after an expression evaluating to a struct instance
+followed by the field's name.
+
+* Example
+    ```
+    StructWithStructField.myStructField.myField
+    ```
 
 ### Method Call
-...
-<!-- TODO TODO TODO -->
+```
+{structInstanceExpr}.{methodName}({args}?)
+```
+To call a method value write a `.` after an expression evaluating to a struct instance
+followed by the method's name and the list of the required arguments.
 
+* Example
+    ```
+    myStruct.foo(123, 456)
+    ```
 
 ## Builtin Functions
 * `print(value: {T}) -> void` - Print a value to stdout.
