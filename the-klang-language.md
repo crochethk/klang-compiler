@@ -4,20 +4,24 @@
 A Klang file consists of a list of **function** and **structured data type definitions**. The order in
 which definitions appear does not matter.
 
-The optional **entry point** is a function with the signature
+The optional program **entry point** is a function with the signature
 `___main___() -> void` and can be defined as follows:
 ```
 fn ___main___() {
     //...
 }
 ```
+If the generated code will be used in context of a C or Java program (i.e. as a 
+'library') the entry point should be left undefined, since it would collide with 
+those entry points.
+
 > More about defining regular functions can be found in the [function definition](#function-definition) section.
 
 Whitespace is ignored in general.
 
 ## Types
 
-### Primitves
+### Primitives
 * `i64` - 64-bit signed integer
     - Literal example: `123`
 
@@ -27,7 +31,7 @@ Whitespace is ignored in general.
 * `bool` - Boolean
     - Literals: `true`, `false`
 
-* `void` - Pseudotype representing the absence of a (return) value
+* `void` - Pseudo-type representing the absence of a (return) value
 
 ### Reference Types
 * `string` - String
@@ -37,9 +41,9 @@ Whitespace is ignored in general.
         * `\\"` - Single backslash (`\`)
         * `\n` - Newline character aka. line feed (`LF`)
         * `\t` - Tab character
-        * `\r` - Carriage return charachter (`CR`)
+        * `\r` - Carriage return character (`CR`)
 
-* Userdefined [structured data types](#structured-data-definition)
+* User defined [structured data types](#structured-data-definition)
 
 
 ## Function Definition
@@ -63,13 +67,13 @@ fn {funName}( [{paramName}: {paramType}, ]* ) -> returnType {
 ## Structured Data Definition
 ```
 struct {structName} {
-    {fieldDefintions}?
+    {fieldDefinitions}?
     ---
     {methodDefinitions}?
 }
 ```
 
-* `{fieldDefintions}?` - Optional comma separated list of field definitions.
+* `{fieldDefinitions}?` - Optional comma separated list of field definitions.
     > Trailing comma in the field list is permitted. 
     - A field is defined as: `{fieldName}: {fieldType}`
 
@@ -77,7 +81,7 @@ struct {structName} {
     - Definitions similar to [functions](#function-definition), except for __no__ `fn` keyword.
     - All methods have an __implicit__ `self` parameter, providing access to the struct instance.
 
-> Definition-separator `---` must only be present if fields _and_ methods are defined. Otherwise it may be ommited.
+> Definition-separator `---` must only be present if fields _and_ methods are defined. Otherwise it may be omitted.
 
 * Example
     ```
@@ -90,27 +94,35 @@ struct {structName} {
     }
     ```
 
-See also [`field assignment`](#field-assignment), [`field getter`](#field-getter), [`method call`](#method-call).
+See also the related
+* [`field assignment`](#field-assignment)
+* [`constructor`](#struct-constructor)
+* [`field getter`](#field-getter)
+* [`method call`](#method-call)
 
 
 ## Statements
 In general, there are two statement kinds:
 * 'simple': Each of these are followed by a semicolon `;`.
-* 'block-like': These contain a list of statments enclosed in curly braces `{...}`.
+* 'block-like': These contain a list of statements enclosed in curly braces `{...}`.
 
-### Defining Variables
+### Declaration & Assignment
 Variables are declared using the `let` keyword, followed by the variable name.
-If the declaration dose not include an initializing expression, the name must be
+If the declaration does not include an initializing expression, the name must be
 followed by a type. Otherwise the type can be omitted and will be inferred from
 the provided expression.
 
 In summary there are these four patterns to declare and/or assign a variable:
 * `let varName: varType;`
-* `let varName: varType = {expr};` 
+* `let varName: varType = {expr};`
     > Declared type and expression's type must be compatible.
-* `let varName = {expr};` 
+* `let varName = {expr};`
     > Type is inferred from `{expr}`
 * `varName = {expr};`
+
+Also note:
+* Reassignment is permitted as long as `{expr}` has a compatible type.
+* Redeclaration of an existing variable is not allowed and will be rejected.
 
 ### Return
 `return {expr};` - Return flow control to the caller, optionally returning a value.
@@ -127,6 +139,12 @@ In summary there are these four patterns to declare and/or assign a variable:
 In general Klang is an unmanaged language, thus the programmer is responsible
 of freeing dynamically allocated memory. This is the case for all reference 
 type instances __except string literals__.
+
+> The tool `valgrind` can help find memory leaks in context of the final binary
+> executable (e.g. `a.out`):
+>   ```sh
+>   valgrind --leak-check=yes ./a.out
+>   ```
 
 
 ### Field assignment
@@ -145,9 +163,9 @@ followed by the field's name. Then assign a value.
 ### If-Else
 ```
 if {condition} {
-    // then do smth.
+    // then do sth.
 } else {
-    // do smth. else
+    // do sth. else
 }
 ```
 - `{condition}` - Expression evaluating to a boolean value
@@ -211,24 +229,37 @@ loop {
 {condition} ? {thenExpr} : {elseExpr}
 ```
 - `{condition}` - Expression evaluating to a boolean value
-- `{thenExpr}` - Expression to evaluate to if `condition` was `true`
-- `{elseExpr}` - Expression to evaluate to if `condition` was `false`
+- `{thenExpr}` - Expression to evaluate to if `{condition}` was `true`
+- `{elseExpr}` - Expression to evaluate to if `{condition}` was `false`
 
 ### Variables
-Simply write the variable's or (in case of a function defintion) parameter's name.
+Simply write the variable's or (in case of a function definition) parameter's name.
 
 ### Function Call
 ```
-{funName}( [expr, ]* )
+{funName} ( [expr, ]* )
 ```
 Function name followed by an argument expression list as required by the
 function's definition.
+
+### Struct Constructor
+```
+{structName} { [expr, ]* }
+```
+Struct's name followed by a list of expressions inside curly braces (`{`, `}`).
+Each expression corresponds to a field of the struct as implicated by the
+definition order and values for all fields must be provided upon construction.
+
+* Example assuming a definition `struct MyStruct{ foo: i64, bar: f64 }`
+    ```
+    MyStruct{123, 4.56}
+    ```
 
 ### Field Getter
 ```
 {structInstanceExpr}.{fieldName}
 ```
-To get a field's value write a `.` after an expression evaluating to a struct instance
+To get a field's value use `.` after an expression evaluating to a struct instance
 followed by the field's name.
 
 * Example
@@ -240,7 +271,7 @@ followed by the field's name.
 ```
 {structInstanceExpr}.{methodName}({args}?)
 ```
-To call a method value write a `.` after an expression evaluating to a struct instance
+To call a method value use `.` after an expression evaluating to a struct instance
 followed by the method's name and the list of the required arguments.
 
 * Example
