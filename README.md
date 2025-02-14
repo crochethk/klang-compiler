@@ -23,7 +23,7 @@
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#quick-start">Quick Start</a></li>
-        <li><a href="#building-and-using-selfcontained-jar">Building And Using Selfcontained Jar</a></li>
+        <li><a href="#building-and-using-self-contained-jar">Building And Using Self Contained Jar</a></li>
       </ul>
     </li>
     <!-- <li><a href="#usage">Usage</a></li> -->
@@ -49,7 +49,8 @@ and a program may look something like the following screenshot:
 ![Example Klang Program][product-screenshot]
 
 You can find out more about the structure and how to write a Klang program 
-[here](the-klang-language.md).
+[here](the-klang-language.md). Also there is an [`examples`](examples/) folder
+with some basic programs.
 
 ### How it works
 The language is defined using ANTLR 4 grammar which is then used to generate
@@ -96,6 +97,11 @@ To demonstrate this the following steps will show how to compile the file
     - `examples.point.h` - Header with definitions for integration with C code.
     - `examples.point.c` - Helper C code required for some language features.
 
+    > The `examples` part in the file names is the package inferred by the
+        compiler based on the relative path of the provided Klang file.
+        Thus it's important to **first navigate to** your source code's **root** 
+        folder before compiling.
+
 3. Link and run the program
     ```
     cd out
@@ -104,8 +110,8 @@ To demonstrate this the following steps will show how to compile the file
     ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Building And Using Selfcontained `jar`
-You can also package the compiler into a selfcontained `jar` using a provided
+### Building And Using Self Contained `jar`
+You can also package the compiler into a self contained `jar` using a provided
 script.
 1. If not done yet, get a local copy of this repo
     ```sh
@@ -118,7 +124,7 @@ script.
     ./scripts/build_compiler_jar.sh
     ```
     This will create a subdirectory `build` with two relevant files:
-    - `klangc.jar` - The actual compiler exectuable.
+    - `klangc.jar` - The actual compiler executable.
     - `klangc.sh` - A convenience script to run `jar`.
 
 3. Compile a Klang file
@@ -143,12 +149,14 @@ To print further usage info or inspect all available options run
 <!-- ROADMAP -->
 ## Roadmap
 
+- [ ] Add support for casting of numerical types
 - [ ] Full JBC support
 - [ ] Add array types
 - [ ] Extend string manipulation support
     - [ ] Length
     - [ ] Concatenation (`strA + strB`)
-    - [ ] Subtstring
+    - [ ] Substring
+- [ ] Add support for builtin struct methods (e.g. `to_string()`)
 - [ ] VSCode Syntax Highlight Extension
 
 
