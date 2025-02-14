@@ -100,7 +100,8 @@ public class GenCImpls extends GenCBase {
                 tmpVarNames.add(tmpVarName);
 
                 // Declare a temp variable and assign the delegated "to_string" outcome
-                scb.writeIndented("char* ", tmpVarName, " = ",
+                scb.writeIndented("char* ", tmpVarName,
+                        " = this->", field.name(), " == NULL ? \"NULL\" : ",
                         GenAsm.getToStringFullName(fType), "(this->", field.name(), ");");
 
                 fmt.append(getTypeFormat(Type.STRING_T));

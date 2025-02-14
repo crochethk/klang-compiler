@@ -254,7 +254,6 @@ followed by the method's name and the list of the required arguments.
     - Example call `print(123);`
 
 ## Comments
-* `//` - Line comment
-* `/* ... */` - Block comment
-> The last line of a Klang file must not be a commented out.
+* `//` - Line comment. Discards any following character in the current line.
+* `/* ... */` - Block comment. Discards any character enclosed by `/*` and `*/`.
 
