@@ -252,8 +252,7 @@ fragment ID_START: [a-zA-Z_];
 fragment ID_CHAR: ID_START | [0-9];
 
 // Ignored tokens
-// line comments MUST end with a newline symbol
-LINE_COMMENT: '//' .*? '\r'? '\n' -> skip;
+LINE_COMMENT: '//' .*? ('\r'? '\n' | EOF) -> skip;
 BLOCK_COMMENT: '/*' .*? '*/' -> skip;
 WHITESPACE: [ \t\n\r]+ -> skip;
 ANY: .;
