@@ -34,6 +34,7 @@ parameter
 type
 	returns[TypeNode result]: builtinType | customType;
 builtinType: numericType | T_BOOL | T_VOID | T_STRING;
+numericType: T_I64 | T_F64;
 customType: IDENT;
 
 statementList
@@ -97,6 +98,8 @@ expr
 	negationOp=SUB expr // negation
 	| NOT expr
 	| lhs=expr POW rhs=expr
+	// Type cast
+	| expr KW_AS type
 	//
 	| lhs=expr (MULT | DIV | MOD) rhs=expr
 	| lhs=expr (ADD | SUB) rhs=expr
@@ -159,7 +162,6 @@ funCall
 /* Number literals */
 number
 	returns[Expr result]: num=(LIT_FLOAT | LIT_INTEGER);
-numericType: T_I64 | T_F64;
 
 bool
 	returns[Expr result]: TRUE | FALSE;
