@@ -94,16 +94,16 @@ fieldSetExpr: expr;
 
 expr
 	returns[Expr result]:
-	// arithmetic expr
 	negationOp=SUB expr // negation
+	| NOT expr
 	| lhs=expr POW rhs=expr
+	//
 	| lhs=expr (MULT | DIV | MOD) rhs=expr
 	| lhs=expr (ADD | SUB) rhs=expr
-	// comparison expr
+	//
 	| lhs=expr (LT | LTEQ | GT | GTEQ) rhs=expr
 	| lhs=expr (EQEQ | NEQ) rhs=expr
-	// boolean expr
-	| NOT expr
+	//
 	| lhs=expr AND rhs=expr
 	| lhs=expr OR rhs=expr
 	// ternary conditional

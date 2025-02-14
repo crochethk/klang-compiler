@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Nested;
 import cc.crochethk.klang.antlr.*;
 import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
+import cc.crochethk.klang.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.klang.ast.literal.*;
 import cc.crochethk.klang.testhelpers.NodeMocker;
 import utils.SourcePos;
@@ -128,6 +129,23 @@ public class TreeBuilderTest extends NodeMocker {
         public void buildF64Lit() {
             var ctx = parseAndWalk("1.23", p -> p.number());
             assertEquals(f64Lit(1.23d), ctx.result);
+        }
+    }
+
+    @Nested
+    class ExitExprTests {
+        @Test
+        void notOperatorHasHighPrecedence_1() {
+            var ctx = parseAndWalk("!a && b", p -> p.expr());
+            assertEquals(binOpExpr(unaryOpExpr(var("a"), UnaryOp.not),
+                    BinaryOp.and, var("b")), ctx.result);
+        }
+
+        @Test
+        void notOperatorHasHighPrecedence_2() {
+            var ctx = parseAndWalk("!a + b", p -> p.expr());
+            assertEquals(binOpExpr(unaryOpExpr(var("a"), UnaryOp.not),
+                    BinaryOp.add, var("b")), ctx.result);
         }
     }
 
