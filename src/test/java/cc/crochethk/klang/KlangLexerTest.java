@@ -29,7 +29,8 @@ public class KlangLexerTest {
 
         @Test
         public void testLIT_INTEGER_neg() {
-            assertEquals(List.of(KlangLexer.LIT_INTEGER, KlangLexer.EOF), getTokenTypesFromText("-123"));
+            assertEquals(List.of(KlangLexer.SUB, KlangLexer.LIT_INTEGER, KlangLexer.EOF),
+                    getTokenTypesFromText("-123"));
         }
 
         @Test
@@ -39,7 +40,8 @@ public class KlangLexerTest {
 
         @Test
         public void testLIT_FLOAT_neg() {
-            assertEquals(List.of(KlangLexer.LIT_FLOAT, KlangLexer.EOF), getTokenTypesFromText("-123.456"));
+            assertEquals(List.of(KlangLexer.SUB, KlangLexer.LIT_FLOAT, KlangLexer.EOF),
+                    getTokenTypesFromText("-123.456"));
         }
 
         @Test
@@ -294,6 +296,7 @@ public class KlangLexerTest {
         @Test
         public void testLINE_COMMENT() {
             assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("//this is not a type token: f64\n"));
+            assertEquals(ONLY_EOF_TOKEN, getTokenTypesFromText("// line comment in last file line"));
         }
 
         @Test
@@ -419,7 +422,7 @@ public class KlangLexerTest {
 
         @Test
         void testMinusNegativeInt() {
-            assertEquals(List.of(KlangLexer.SUB, KlangLexer.LIT_INTEGER, KlangLexer.EOF),
+            assertEquals(List.of(KlangLexer.SUB, KlangLexer.SUB, KlangLexer.LIT_INTEGER, KlangLexer.EOF),
                     getTokenTypesFromText("--42"));
 
         }
@@ -508,7 +511,7 @@ public class KlangLexerTest {
         List<Integer> expTokens = List.of(
                 KlangLexer.NOT, KlangLexer.LPAR, KlangLexer.IDENT, KlangLexer.SUB,
                 KlangLexer.LPAR, KlangLexer.IDENT, KlangLexer.DIV, KlangLexer.LIT_INTEGER,
-                KlangLexer.RPAR, KlangLexer.MULT, KlangLexer.LIT_INTEGER,
+                KlangLexer.RPAR, KlangLexer.MULT, KlangLexer.SUB, KlangLexer.LIT_INTEGER,
                 KlangLexer.EQEQ, KlangLexer.LIT_INTEGER, KlangLexer.RPAR,
                 KlangLexer.EOF);
         assertEquals(expTokens, tokens);

@@ -173,8 +173,8 @@ nullLit
 	returns[Expr result]: KW_NULL;
 
 // Lexer rules
-LIT_INTEGER: SUB? DIGIT+;
-LIT_FLOAT: SUB? DIGIT+ '.' DIGIT+;
+LIT_INTEGER: DIGIT+;
+LIT_FLOAT: DIGIT+ '.' DIGIT+;
 fragment DIGIT: [0-9];
 
 /**
