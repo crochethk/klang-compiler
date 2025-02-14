@@ -158,9 +158,7 @@ funCall
 
 /* Number literals */
 number
-	returns[Expr result]:
-	num=(LIT_FLOAT | LIT_INTEGER) (KW_AS typeAnnot=numericType)?
-;
+	returns[Expr result]: num=(LIT_FLOAT | LIT_INTEGER);
 numericType: T_I64 | T_F64;
 
 bool

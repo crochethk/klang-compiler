@@ -97,10 +97,10 @@ public class PrettyPrinterTest extends NodeMocker {
 
         @Test
         void withSingleArg_insideStatement() {
-            var constCall = constructorCall("OneField", List.of(i64Lit(123, true)));
+            var constCall = constructorCall("OneField", List.of(i64Lit(123)));
             var stat = varAssignStat("onefield", constCall);
             pp.visit(stat);
-            assertEquals("onefield = OneField{123 as i64};", pp.scb.toString());
+            assertEquals("onefield = OneField{123};", pp.scb.toString());
         }
     }
 

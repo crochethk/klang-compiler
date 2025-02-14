@@ -19,62 +19,16 @@ public class TreeBuilder extends KlangBaseListener {
 
     @Override
     public void exitNumber(KlangParser.NumberContext ctx) {
-        /**
-         * There are two kinds of literal number expressions:
-         * 1) bare ("123") and
-         * 2) annotated ("123 as i64" )
-         * 
-         * In the former case, the literal type is inferred to a default type 
-         * according to the number class (integer or floating point). Then parsing
-         * to the internal value representation is done accordingly with said 
-         * default type.
-         * 
-         * The latter case allows specifying the type along the literal. This
-         * allows to convey which concrete literal type is meant, which will be
-         * useful as soon as there is more than one bit-width and/or distinction
-         * between signed and unsigned types in a given number class.
-         * The type annotation is done by appending "as <targetType>" to the literal.
-         * This gives flexibility for later type extension that otherwise would
-         * lead to ambiguity (e.g. "i64" and "i32" would be indistinguishable
-         * in their common number space).
-         */
-        NumberLiteralType targetType = inferNumberType(ctx);
-        ctx.result = buildNumberLiteral(ctx, targetType);
-    }
-
-    private NumberLiteralType inferNumberType(KlangParser.NumberContext ctx) {
         var srcPos = getSourcePos(ctx);
-        var typeAnnot = ctx.typeAnnot;
-        if (typeAnnot != null) {
-            if (typeAnnot.T_F64() != null) {
-                // converts int literals also to float
-                return NumberLiteralType.f64;
-            } else if (typeAnnot.T_I64() != null && ctx.LIT_INTEGER() != null) {
-                return NumberLiteralType.i64;
-            } else {
-                throw new IllegalLiteralTypeAnnotException(
-                        srcPos, ctx.getText(), typeAnnot.getText());
-            }
-        } else if (ctx.LIT_INTEGER() != null) {
-            return NumberLiteralType.i64; // default int type
+        if (ctx.LIT_INTEGER() != null) {
+            // default int type
+            ctx.result = new I64Lit(srcPos, Long.parseLong(ctx.num.getText()));
         } else if (ctx.LIT_FLOAT() != null) {
-            return NumberLiteralType.f64; // default float type
+            // default float type
+            ctx.result = new F64Lit(srcPos, Double.parseDouble(ctx.num.getText()));
+        } else {
+            throw new UnhandledAlternativeException(srcPos, "number", ctx.getText());
         }
-        throw new UnhandledAlternativeException(srcPos, "number", ctx.getText());
-    }
-
-    private enum NumberLiteralType {
-        i64, f64
-    }
-
-    Expr buildNumberLiteral(KlangParser.NumberContext ctx, NumberLiteralType targetType) {
-        var srcPos = getSourcePos(ctx);
-        boolean hasTypeAnnot = ctx.typeAnnot != null;
-        Expr node = switch (targetType) {
-            case i64 -> new I64Lit(srcPos, Long.parseLong(ctx.num.getText()), hasTypeAnnot);
-            case f64 -> new F64Lit(srcPos, Double.parseDouble(ctx.num.getText()), hasTypeAnnot);
-        };
-        return node;
     }
 
     @Override
@@ -452,13 +406,6 @@ public class TreeBuilder extends KlangBaseListener {
     private class UnhandledAlternativeException extends UnsupportedOperationException {
         UnhandledAlternativeException(SourcePos srcPos, String alternativeName, String ctxText) {
             super("Unhandled `" + alternativeName + "` alternative '" + ctxText + "' at " + srcPos);
-        }
-    }
-
-    class IllegalLiteralTypeAnnotException extends UnsupportedOperationException {
-        IllegalLiteralTypeAnnotException(SourcePos srcPos, String literalText, String suffixText) {
-            super("Illegal type suffix '" + suffixText + "' in literal '"
-                    + literalText + "'" + "at " + srcPos);
         }
     }
 }
