@@ -70,7 +70,7 @@ public class TypeChecker implements Visitor {
 
         var funDef = funDefs.get(funCall.name);
         if (funDef == null) {
-            // no such userdefined function found
+            // no such user defined function found
             // -> check builtins
             var argTypes = funCall.args.stream().map(arg -> arg.theType).toList();
             var autoFunSign = findBuiltinFun(funCall.name, argTypes);
@@ -349,6 +349,20 @@ public class TypeChecker implements Visitor {
     }
 
     @Override
+    public void visit(TypeCast typeCast) {
+        typeCast.expr.accept(this);
+        typeCast.targetType.accept(this);
+        Type exprType = typeCast.expr.theType;
+        Type targetType = typeCast.targetType.theType;
+
+        if (!exprType.isNumeric() || !targetType.isNumeric()) {
+            reportError(typeCast, "Can't convert '" + exprType.prettyTypeName()
+                    + "' to '" + targetType.prettyTypeName() + "': incompatible types.");
+        }
+        typeCast.theType = targetType;
+    }
+
+    @Override
     public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
         ternaryConditionalExpr.condition.accept(this);
         ternaryConditionalExpr.then.accept(this);
@@ -621,7 +635,7 @@ public class TypeChecker implements Visitor {
             }
         });
 
-        // Before traversiing the tree, we need to make funDefs available for other "visit"s
+        // Before traversing the tree, we need to make funDefs available for other "visit"s
         prog.funDefs.forEach(funDef -> {
             var previous = funDefs.put(funDef.name, funDef);
             if (previous != null) {

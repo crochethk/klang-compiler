@@ -530,6 +530,25 @@ public class TypeCheckerTest extends NodeMocker {
     }
 
     @Nested
+    class TypeCastTests {
+        @Test
+        void castF64ToI64() {
+            var cast = typeCast(f64Lit(1.23), I64_TN);
+            tc.visit(cast);
+            assertReportedErrors(0);
+            assertEquals(Type.LONG_T, cast.theType);
+        }
+
+        @Test
+        void castI64ToF64() {
+            var cast = typeCast(i64Lit(123), F64_TN);
+            tc.visit(cast);
+            assertReportedErrors(0);
+            assertEquals(Type.DOUBLE_T, cast.theType);
+        }
+    }
+
+    @Nested
     class TernaryConditionalExprTests {
         @Test
         void nullConditionShouldReportErr() {
