@@ -179,6 +179,8 @@ public class TreeBuilder extends KlangBaseListener {
             ctx.result = ctx.constructorCall().result;
         } else if (ctx.memberAccessor() != null) {
             ctx.result = ctx.memberAccessor().result;
+        } else if (ctx.KW_AS() != null) {
+            ctx.result = new TypeCast(getSourcePos(ctx), ctx.expr(0).result, ctx.type().result);
         } else {
             throw new UnhandledAlternativeException(getSourcePos(ctx), "expr", ctx.getText());
         }
