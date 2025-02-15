@@ -42,6 +42,8 @@ public interface Visitor {
 
     void visit(UnaryOpExpr unaryOpExpr);
 
+    void visit(TypeCast typeCast);
+
     void visit(TernaryConditionalExpr ternaryConditionalExpr);
 
     void visit(VarDeclareStat varDeclareStat);
