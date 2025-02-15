@@ -65,28 +65,6 @@ public class TreeBuilderTest extends NodeMocker {
     @Nested
     class ExitStringTests {
         @Test
-        void testResolveEscapeSequences_basic() {
-            var tb = treeBuilder;
-            assertEquals("This is a \"quote\"", tb.resolveEscapeSequences("This is a \\\"quote\\\""));
-            assertEquals("\\path\\to\\file", tb.resolveEscapeSequences("\\\\path\\\\to\\\\file"));
-            assertEquals("UnsupportedEscape", tb.resolveEscapeSequences("Unsupported\\xEscape"));
-            assertEquals("escaped nl:\n, tab:\t, cr: \r",
-                    tb.resolveEscapeSequences("escaped nl:\\n, tab:\\t, cr: \\r"));
-        }
-
-        @Test
-        public void testResolveEscapeSequences_evilCombinations() {
-            var tb = treeBuilder;
-            assertEquals("2 backslashes: \\", tb.resolveEscapeSequences("2 backslashes: \\\\"));
-            assertEquals("literal backslash, then literal quote: \\\"", tb.resolveEscapeSequences(
-                    "literal backslash, then literal quote: \\\\\\\""));
-            assertEquals("UnsupportedEscape", tb.resolveEscapeSequences("Unsupported\\xEscape"));
-            assertEquals("escaped nl:\n, tab:\t, cr: \r",
-                    tb.resolveEscapeSequences("escaped nl:\\n, tab:\\t, cr: \\r"));
-            assertEquals("not a new line: \\n", tb.resolveEscapeSequences("not a new line: \\\\n"));
-        }
-
-        @Test
         public void buildWithMixedEscapeSequences() {
             var ctx = parseAndWalk("\"esc. \\\\\\quote \\\" inside\\n String\"", p -> p.string());
             assertEquals(stringLit("esc. \\uote \" inside\n String"), ctx.result);

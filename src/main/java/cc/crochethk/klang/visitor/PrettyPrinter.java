@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
 import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.StringEscapeUtils;
 import cc.crochethk.klang.ast.*;
 
 public class PrettyPrinter implements Visitor {
@@ -46,7 +47,8 @@ public class PrettyPrinter implements Visitor {
 
     @Override
     public void visit(StringLit stringLit) {
-        scb.write("\"", stringLit.value, "\"");
+        var escapedValue = StringEscapeUtils.unresolveEscapeSequences(stringLit.value);
+        scb.write("\"", escapedValue, "\"");
     }
 
     @Override

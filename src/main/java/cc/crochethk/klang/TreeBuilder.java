@@ -2,8 +2,6 @@ package cc.crochethk.klang;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -92,36 +90,8 @@ public class TreeBuilder extends KlangBaseListener {
         var ttext = ctx.LIT_STRING().getText();
         // remove enclosing '"'
         ttext = ttext.substring(1, ttext.length() - 1);
-        ttext = resolveEscapeSequences(ttext);
+        ttext = StringEscapeUtils.resolveEscapeSequences(ttext);
         ctx.result = new StringLit(getSourcePos(ctx), ttext);
-    }
-
-    final static Map<String, String> escapeSequencesMap = Map.of(
-            "\\\"", "\"",
-            "\\\\", "\\",
-            "\\n", "\n",
-            "\\t", "\t",
-            "\\r", "\r");
-
-    String resolveEscapeSequences(String s) {
-        var escapedSeqs = escapeSequencesMap.keySet();
-        // Regex matching the escaped special chars
-        var regexStr = String.join("|",
-                escapedSeqs.stream().map(escSeq -> Pattern.quote(escSeq)).toList());
-        var regex = Pattern.compile(regexStr);
-
-        var escChunks = regex.splitWithDelimiters(s, 0);
-        for (int i = 0; i < escChunks.length; i++) {
-            var resolvedSeq = escapeSequencesMap.get(escChunks[i]);
-            if (resolvedSeq != null) {
-                // replace escaped by actual char
-                escChunks[i] = resolvedSeq;
-            } else {
-                // remove all chars with '\' prefix
-                escChunks[i] = escChunks[i].replaceAll(Pattern.quote("\\") + ".", "");
-            }
-        }
-        return String.join("", escChunks);
     }
 
     @Override
