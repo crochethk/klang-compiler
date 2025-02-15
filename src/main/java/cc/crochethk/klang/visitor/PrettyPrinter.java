@@ -145,6 +145,13 @@ public class PrettyPrinter implements Visitor {
     }
 
     @Override
+    public void visit(TypeCast typeCast) {
+        typeCast.expr.accept(this);
+        scb.write(" as ");
+        typeCast.targetType.accept(this);
+    }
+
+    @Override
     public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
         ternaryConditionalExpr.condition.accept(this);
         scb.write(" ? ");

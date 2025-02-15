@@ -117,6 +117,10 @@ public class NodeMocker {
         return new UnaryOpExpr(srcPosMock, operand, op);
     }
 
+    public TypeCast typeCast(Expr expr, TypeNode targetType) {
+        return new TypeCast(srcPosMock, expr, targetType);
+    }
+
     public Var var(String name) {
         return new Var(srcPosMock, name);
     }
