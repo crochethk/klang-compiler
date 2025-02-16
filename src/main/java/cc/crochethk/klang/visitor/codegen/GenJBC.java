@@ -541,6 +541,12 @@ public class GenJBC extends CodeGenVisitor {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
+    @Override
+    public void visit(TypeCast typeCast) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visit'");
+    }
+
     // TODO actually use this
     @SuppressWarnings("unused")
     private void genPrintFunCall(Node expr) {

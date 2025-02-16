@@ -190,6 +190,10 @@ public abstract class GenCBase extends CodeGenVisitor {
     }
 
     @Override
+    public void visit(TypeCast typeCast) {
+    }
+
+    @Override
     public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
     }
 
