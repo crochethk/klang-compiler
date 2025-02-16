@@ -149,7 +149,7 @@ To print further usage info or inspect all available options run
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Add support for casting of numerical types
+- [x] Add support for casting of numerical types
 - [ ] Full JBC support
 - [ ] Add array types
 - [ ] Extend string manipulation support

@@ -224,6 +224,27 @@ loop {
 * `! {expr}` - logical `not`, supported for boolean `{expr}`
 
 
+### Type Casting
+```
+{expr} as {targetType}
+```
+* `{expr}` - The expression whose resulting type to cast.
+* `{targetType}` - The type to convert the expression into.
+* Example
+    ```
+    1.23 as i64
+    ```
+
+Some types can be casted into each other using the `as` keyword.
+Bare in mind that this conversion will silently truncate types as necessary. For
+example only the integral part will remain when `f64` is converted to `i64`.
+
+Currently **only numerical types** support casting.
+
+The type cast expression has a precedence higher than binary operator expressions
+and lower than unary operator expressions.
+
+
 ### Ternary Conditional Operator
 ```
 {condition} ? {thenExpr} : {elseExpr}
