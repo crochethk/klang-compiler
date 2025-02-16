@@ -261,7 +261,7 @@ public class CodeSection extends SectionBuilder {
     }
 
     /**
-     * Bitwise logical XOR of packed double precision floating-point values:
+     * Bitwise logical XOR of packed __double precision floating-point values__:
      * {@code dst = dst ^ src}
      */
     public void xorpd(OperandSpecifier src, XmmRegister dst) {
@@ -282,6 +282,32 @@ public class CodeSection extends SectionBuilder {
      */
     public void ucomisd(OperandSpecifier src, XmmRegister dst) {
         writeInstruction("ucomisd", src, dst);
+    }
+
+    /**
+     * Bitwise XOR of {@code src} (r_xmm/m128) and {@code dst} using the raw
+     * bits (as opposed to an abstraction alike IEEE754 floats).
+     */
+    public void pxor(OperandSpecifier src, XmmRegister dst) {
+        writeInstruction("pxor", src, dst);
+    }
+
+    // --------------------[ Type converion ]-----------------------------------
+
+    /**
+     * Convert one signed quadword integer from {@code src} (r/m64) to one 
+     * double precision floating-point value in {@code dst}.
+     */
+    public void cvtsi2sdq(OperandSpecifier src, XmmRegister dst) {
+        writeInstruction("cvtsi2sdq", src, dst);
+    }
+
+    /**
+     * Convert one double precision floating-point value from {@code src} 
+     * (r_xmm/m64) to one signed quadword integer in {@code dst} using truncation.
+     */
+    public void cvttsd2siq(OperandSpecifier src, Register dst) {
+        writeInstruction("cvttsd2siq", src, dst);
     }
 
     // -------------------------------------------------------------------------
