@@ -33,6 +33,7 @@
   </ol>
 </details>
 
+*There is also a [VSCode Syntax Highlighting Extension](https://github.com/crochethk/klang-syntax-highlighting) available.*
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -157,7 +158,7 @@ To print further usage info or inspect all available options run
     - [ ] Concatenation (`strA + strB`)
     - [ ] Substring
 - [ ] Add support for builtin struct methods (e.g. `to_string()`)
-- [ ] VSCode Syntax Highlight Extension
+- [x] VSCode Syntax Highlight Extension
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
