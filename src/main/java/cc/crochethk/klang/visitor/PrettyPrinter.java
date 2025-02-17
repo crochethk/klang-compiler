@@ -28,15 +28,11 @@ public class PrettyPrinter implements Visitor {
     @Override
     public void visit(I64Lit i64Lit) {
         scb.write(Long.toString(i64Lit.value));
-        if (i64Lit.hasTypeAnnotation)
-            scb.write(" as i64");
     }
 
     @Override
     public void visit(F64Lit f64Lit) {
         scb.write(Double.toString(f64Lit.value));
-        if (f64Lit.hasTypeAnnotation)
-            scb.write(" as f64");
     }
 
     @Override
@@ -146,6 +142,13 @@ public class PrettyPrinter implements Visitor {
             }
         }
         scb.write(")");
+    }
+
+    @Override
+    public void visit(TypeCast typeCast) {
+        typeCast.expr.accept(this);
+        scb.write(" as ");
+        typeCast.targetType.accept(this);
     }
 
     @Override

@@ -37,6 +37,24 @@ public class PrettyPrinterTest extends NodeMocker {
     }
 
     @Nested
+    class TypeCastTests {
+        @Test
+        void castIntegerLiteralToF64() {
+            var typeCastExpr = typeCast(i64Lit(123), F64_TN);
+            pp.visit(typeCastExpr);
+            assertEquals("123 as f64", pp.scb.toString());
+        }
+
+        @Test
+        void castFloatLiteralToI64InsideBinaryOpExpression() {
+            var typeCastExpr = typeCast(f64Lit(1.23), I64_TN);
+            var binExpr = binOpExpr(var("foo"), BinaryOp.add, typeCastExpr);
+            pp.visit(binExpr);
+            assertEquals("(foo + 1.23 as i64)", pp.scb.toString());
+        }
+    }
+
+    @Nested
     class MemberAccessChainTests {
         @Test
         void varThenSingleFieldChain() {
@@ -97,10 +115,10 @@ public class PrettyPrinterTest extends NodeMocker {
 
         @Test
         void withSingleArg_insideStatement() {
-            var constCall = constructorCall("OneField", List.of(i64Lit(123, true)));
+            var constCall = constructorCall("OneField", List.of(i64Lit(123)));
             var stat = varAssignStat("onefield", constCall);
             pp.visit(stat);
-            assertEquals("onefield = OneField{123 as i64};", pp.scb.toString());
+            assertEquals("onefield = OneField{123};", pp.scb.toString());
         }
     }
 

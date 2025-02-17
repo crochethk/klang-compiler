@@ -38,7 +38,7 @@ public class GenAsm extends CodeGenVisitor {
     ReadOnlyData rodataSec = new DataSection.ReadOnlyData();
     /** Mutable data section (".data") */
     DataSection dataSec = new DataSection.WritableData();
-    /** Programm code section (".text") */
+    /** Program code section (".text") */
     CodeSection code = new CodeSection();
 
     StackManager stack = null;
@@ -531,6 +531,28 @@ public class GenAsm extends CodeGenVisitor {
     }
 
     @Override
+    public void visit(TypeCast typeCast) {
+        typeCast.expr.accept(this); // -> %rax / %xmm0
+
+        var exprType = typeCast.expr.theType;
+        var targetType = typeCast.targetType.theType;
+
+        if (exprType == Type.LONG_T && targetType == Type.DOUBLE_T) {
+            // i64 -> f64
+            code.pxor(xmm0, xmm0); // clear xmm0
+            code.cvtsi2sdq(rax, xmm0);
+        } else if (exprType == Type.DOUBLE_T && targetType == Type.LONG_T) {
+            // f64 -> i64
+            code.cvttsd2siq(xmm0, rax);
+        } else if (exprType == targetType) {
+            //nop
+        } else {
+            throw new UnsupportedOperationException("Unsupported conversion: "
+                    + exprType.prettyTypeName() + " -> " + targetType.prettyTypeName());
+        }
+    }
+
+    @Override
     public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
         var then = ternaryConditionalExpr.then;
         var otherwise = ternaryConditionalExpr.otherwise;
@@ -573,7 +595,7 @@ public class GenAsm extends CodeGenVisitor {
                 ? field.owner.theType
                 : faStat.maChain.owner.theType;
         var setterFunName = getSetterFullName(fieldOwnerType, field.targetName);
-        // delagate "thisArg" fetching to the funcall
+        // delegate "thisArg" fetching to the funcall
         var thisArg = faStat.maChain;
         var funCall = new FunCall(faStat.srcPos, setterFunName, List.of(thisArg, faStat.expr));
         funCall.theType = faStat.theType;
@@ -687,7 +709,7 @@ public class GenAsm extends CodeGenVisitor {
     private Optional<String> functionExitLabel;
 
     /**
-     * Generates the function defintion for the given {@code FunDef} using a
+     * Generates the function definition for the given {@code FunDef} using a
      * custom name instead of the one in {@code FunDef}.
      * @param newFunName Name to use instead of {@code funDef.name}
      * @param funDef

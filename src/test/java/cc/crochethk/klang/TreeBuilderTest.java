@@ -13,10 +13,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 
-import cc.crochethk.klang.TreeBuilder.*;
 import cc.crochethk.klang.antlr.*;
 import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
+import cc.crochethk.klang.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.klang.ast.literal.*;
 import cc.crochethk.klang.testhelpers.NodeMocker;
 import utils.SourcePos;
@@ -122,39 +122,30 @@ public class TreeBuilderTest extends NodeMocker {
         @Test
         public void buildI64Lit() {
             var ctx = parseAndWalk("123", p -> p.number());
-            assertEquals(i64Lit(123, false), ctx.result);
-        }
-
-        @Test
-        public void buildI64LitWithTypeAnnot() {
-            var ctx = parseAndWalk("123 as i64", p -> p.number());
-            assertEquals(i64Lit(123, true), ctx.result);
+            assertEquals(i64Lit(123), ctx.result);
         }
 
         @Test
         public void buildF64Lit() {
             var ctx = parseAndWalk("1.23", p -> p.number());
-            assertEquals(f64Lit(1.23d, false), ctx.result);
+            assertEquals(f64Lit(1.23d), ctx.result);
+        }
+    }
+
+    @Nested
+    class ExitExprTests {
+        @Test
+        void notOperatorHasHighPrecedence_1() {
+            var ctx = parseAndWalk("!a && b", p -> p.expr());
+            assertEquals(binOpExpr(unaryOpExpr(var("a"), UnaryOp.not),
+                    BinaryOp.and, var("b")), ctx.result);
         }
 
         @Test
-        public void buildF64LitWithTypeAnnot() {
-            var ctx = parseAndWalk("1.23 as f64", p -> p.number());
-            assertEquals(f64Lit(1.23d, true), ctx.result);
-        }
-
-        @Test
-        public void buildF64LitWithTypeAnnotFromI64() {
-            var ctx = parseAndWalk("123 as f64", p -> p.number());
-            assertEquals(f64Lit(123.0d, true), ctx.result);
-        }
-
-        @Test
-        public void castFloatLiteralToInteger_throwsIllegalLiteralTypeAnnotException() {
-            Exception exception = assertThrows(IllegalLiteralTypeAnnotException.class, () -> {
-                parseAndWalk("123.456 as i64", p -> p.number());
-            });
-            assertTrue(exception.getMessage().contains("Illegal type suffix"));
+        void notOperatorHasHighPrecedence_2() {
+            var ctx = parseAndWalk("!a + b", p -> p.expr());
+            assertEquals(binOpExpr(unaryOpExpr(var("a"), UnaryOp.not),
+                    BinaryOp.add, var("b")), ctx.result);
         }
     }
 

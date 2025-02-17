@@ -74,20 +74,12 @@ public class NodeMocker {
         return new ReturnStat(srcPosMock, emptyNode());
     }
 
-    public I64Lit i64Lit(long value, boolean hasTypeAnnotation) {
-        return new I64Lit(srcPosMock, value, hasTypeAnnotation);
-    }
-
     public I64Lit i64Lit(long value) {
-        return i64Lit(value, false);
-    }
-
-    public F64Lit f64Lit(double value, boolean hasTypeAnnotation) {
-        return new F64Lit(srcPosMock, value, hasTypeAnnotation);
+        return new I64Lit(srcPosMock, value);
     }
 
     public F64Lit f64Lit(double value) {
-        return f64Lit(value, false);
+        return new F64Lit(srcPosMock, value);
     }
 
     public StringLit stringLit(String value) {
@@ -123,6 +115,10 @@ public class NodeMocker {
 
     public UnaryOpExpr unaryOpExpr(Expr operand, UnaryOp op) {
         return new UnaryOpExpr(srcPosMock, operand, op);
+    }
+
+    public TypeCast typeCast(Expr expr, TypeNode targetType) {
+        return new TypeCast(srcPosMock, expr, targetType);
     }
 
     public Var var(String name) {
