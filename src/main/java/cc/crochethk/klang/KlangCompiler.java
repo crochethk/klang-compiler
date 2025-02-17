@@ -174,7 +174,7 @@ public class KlangCompiler {
                     --help                      Print this usage information.
 
                 Note:
-                It is assumed that the invoker's workind directory is the source root folder,
+                It is assumed that the invoker's working directory is the source root folder,
                 since the package name is inferred from the file's relative path.
                 Therefore a file './tests/somePackage/source.k' will be considered in the package 'tests.somePackage'.
                 Also "../" is not allowed in the sourcefile path and might throw.""";
@@ -253,7 +253,7 @@ public class KlangCompiler {
                 }
                 System.out.println(">>> All tasks finished successfully.\n");
             } catch (Exception e) {
-                System.out.println(">>> Errors occured while processing compilation tasks.");
+                System.out.println(">>> Errors occurred while processing compilation tasks.");
                 System.err.println(e.getMessage());
                 System.exit(1);
             }
