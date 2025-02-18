@@ -2,16 +2,18 @@
 // Test field setter
 //
 
-fn modifyNestedField(obj: Nested, newVal: i64) {
-    obj.oneFielder.num = newVal;
-}
-
 fn modifySimpleField(obj: OneField, newVal: i64) { 
     obj.num = newVal;
 }
 
-fn modifyMultiPrimFields(obj: MultiPrimFields, aInt: i64) { 
-    obj.aInt = aInt;
+fn modifyNestedField(obj: Nested, newVal: i64) {
+    obj.oneFielder.num = newVal;
+}
+
+fn modifyMultiPrimFields(obj: MultiPrimFields, theInt: i64, theBool: bool, theFloat: f64) { 
+    obj.aInt = theInt;
+    obj.aFloat = theFloat;
+    obj.aBool = theBool;
 }
 
 struct OneField {

@@ -5,13 +5,24 @@
 fn buildTestStruct() -> Nested {
     return Nested { OneField{456} };
 }
+fn dropTestStruct(o: Nested) {
+    drop o.oneFielder;
+    drop o;
+}
 
 fn accessNestedField() -> i64 {
     let nested: Nested = buildTestStruct();
-    return nested.oneFielder.num;
+    let result = nested.oneFielder.num;
+    dropTestStruct(nested);
+    return result;
 }
 
-fn accessSimpleField() -> i64 { let oneFielder: OneField = OneField{123}; return oneFielder.num; }
+fn accessSimpleField() -> i64 { 
+    let oneFielder: OneField = OneField{123};
+    let result = oneFielder.num;
+    drop oneFielder;
+    return result;
+}
 
 struct OneField {
     num: i64,

@@ -24,7 +24,7 @@ static int test_runner(char* (*tests[])(void), int tests_count) {
         if (message) printf("failed: %s\n", message);
         else passed++;
     }
-    if (passed < tests_run) printf("%ld TEST(S) FAILED\n", tests_run - passed);
+    if (passed < tests_run) printf("%d TEST(S) FAILED\n", tests_run - passed);
     else printf("ALL TESTS PASSED\n");
     printf("Tests run: %d\n", tests_run);
     return passed;

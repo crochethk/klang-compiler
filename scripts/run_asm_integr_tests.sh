@@ -72,7 +72,7 @@ for test_file in ${file_list}; do
     # Compile the test, linking it with the assembly file using gcc
     echo "Compiling and linking '$test_file' and 'tests.asm.${test_file_name_no_ext}.s'"
 
-    gcc -I"${src_file_compile_dir}" -o "${c_bin_dir}/${test_file_name_no_ext}"   \
+    gcc -Wall -I"${src_file_compile_dir}" -o "${c_bin_dir}/${test_file_name_no_ext}"   \
         "${test_file}" "${src_file_compile_dir}/tests.asm.${test_file_name_no_ext}.s" \
         "${src_file_compile_dir}/tests.asm.${test_file_name_no_ext}.c"
     if [ $? -ne 0 ]; then

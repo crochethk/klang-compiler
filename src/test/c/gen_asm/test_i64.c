@@ -3,7 +3,7 @@
 #include "../minunit.h"
 #include "tests.asm.test_i64.h"
 
-char* test_f42() { mu_asserteq(42, f42()); return 0; }
+char* test_get_42() { mu_asserteq(42, get_42()); return 0; }
 char* test_soManyParams() { mu_asserteq(28, soManyParams(1,2,3,4,5,6,7)); return 0; }
 char* test_withFunCall() { mu_asserteq(69, withFunCall()); return 0; }
 char* test_soManyMixedParams() { mu_asserteq(28, soManyMixedParams(1,true,2,3,4,5,6,false,7)); return 0;}
@@ -29,7 +29,7 @@ int tests_run = 0;
 int main() {
     f1();
     char* (*tests[])() = {
-        test_f42,
+        test_get_42,
         test_soManyParams,
         test_withFunCall,
         test_soManyMixedParams,
