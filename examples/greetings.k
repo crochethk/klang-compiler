@@ -8,7 +8,7 @@
  *      Guten Tag Frau/Herr Dozent.
  *      Wie geht es Ihnen?
  */
-fn main() {
+fn ___main___() {
     let firstName = "Stefan";
     let lastName = "Student";
     printHeading(firstName, lastName);

@@ -19,7 +19,7 @@ fn print_point(p: Point) {
     print("x="); print(p.x); print(", y="); print(p.y);
 }
 
-fn main() {
+fn ___main___() {
     let p = Point{10, 20};
     p = p.move(5, -5);
     print_point(p); print("\n"); // Expected: 15, 15

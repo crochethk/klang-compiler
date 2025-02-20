@@ -56,7 +56,7 @@ fn sin_taylor(_x: f64) -> f64 {
     return symmetry_fac * approx;
 }
 
-fn main() {
+fn ___main___() {
     let x: f64;
 
     x = 1.0;
