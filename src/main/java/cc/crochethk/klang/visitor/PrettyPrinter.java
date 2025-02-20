@@ -37,7 +37,7 @@ public class PrettyPrinter implements Visitor {
 
     @Override
     public void visit(BoolLit boolLit) {
-        var lex = boolLit.value ? BoolLit.TRUE_LEX : BoolLit.FALSE_LEX;
+        var lex = boolLit.value ? "true" : "false";
         scb.write(lex);
     }
 
