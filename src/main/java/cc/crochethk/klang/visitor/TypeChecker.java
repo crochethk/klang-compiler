@@ -186,10 +186,6 @@ public class TypeChecker implements Visitor {
         var ownersMethods = methDefs.get(ownerExpr.theType);
 
         if (ownersMethods == null) {
-
-            //TODO check whether ownerExpr.theType has auto-builtin implementation
-            //TODO      matching methName and argstypes (use CheckArgsMatchDefParams)
-
             reportError(ownerExpr, String.format(
                     "Cannot call method '%s' on type '%s' which has no method definitions.",
                     methName, prettyTheTypeName(ownerExpr)));
@@ -486,7 +482,6 @@ public class TypeChecker implements Visitor {
 
         isLoopContext = true;
         loopStat.body.accept(this);
-        isLoopContext = false;
         loopStat.theType = Type.VOID_T;
 
         isLoopContext = prevState;
@@ -541,7 +536,6 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(TypeNode type) {
-        // TODO handle non-default packages
         var theType = Type.of(type.typeToken, "" /*default package */);
         type.theType = theType;
         if (!theType.isBuiltin() && !structDefs.containsKey(type.typeToken)) {
@@ -624,10 +618,6 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(Prog prog) {
-        // TODO
-        // TODO Check for collisions with builtin method names
-        // TODO
-
         prog.structDefs.forEach(def -> {
             var previous = structDefs.put(def.name, def);
             if (previous != null) {
@@ -656,7 +646,6 @@ public class TypeChecker implements Visitor {
          */
         // Type check struct method signatures collecting them in lookup table 
         prog.structDefs.forEach(stDef -> {
-            //TODO handle custom package
             stDef.theType = Type.of(stDef.name, "" /*default package */);
             var methMap = new HashMap<String, MethDef>();
             methDefs.put(stDef.theType, methMap);
