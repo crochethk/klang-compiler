@@ -31,6 +31,14 @@ public class BuiltinDefinitions {
     }
 
     /**
+     * Returns {@code true} if a builtin function of the given {@code name} exists.
+     * Otherwise returns {@code false}.
+     */
+    public static boolean isBuiltinFunName(String name) {
+        return autoFunctions.containsKey(name);
+    }
+
+    /**
      * If a builtin function identified by {@code name} and {@code args} exists,
      * returns its {@code Signature} wrapped in an {@code Optional}. Otherwise 
      * an empty {@code Optional} is returned.

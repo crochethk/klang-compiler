@@ -625,7 +625,7 @@ public class TypeChecker implements Visitor {
     @Override
     public void visit(Prog prog) {
         // TODO
-        // TODO Check for collisions with builtin function and method names!
+        // TODO Check for collisions with builtin method names
         // TODO
 
         prog.structDefs.forEach(def -> {
@@ -638,7 +638,7 @@ public class TypeChecker implements Visitor {
         // Before traversing the tree, we need to make funDefs available for other "visit"s
         prog.funDefs.forEach(funDef -> {
             var previous = funDefs.put(funDef.name, funDef);
-            if (previous != null) {
+            if (previous != null || BuiltinDefinitions.isBuiltinFunName(funDef.name)) {
                 reportError(funDef, "Function '" + funDef.name + "' defined multiple times");
             }
 
