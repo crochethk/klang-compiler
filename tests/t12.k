@@ -4,7 +4,7 @@
  *      - string type declaration
  */
 
-fn ___main___() -> string {
+fn ___main___() {
     let s: string = "hello world";
-    return s;
+    print(s); print("\n");
 }

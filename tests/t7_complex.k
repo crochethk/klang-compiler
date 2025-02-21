@@ -25,16 +25,20 @@ fn max3(a: i64, b: i64, c: i64) -> i64 {
     return c;
 }
 
-fn ___main___() -> i64 {
+fn ___main___() {
     let MIN: i64 = 60;
     let MID: i64;
     MID = 50;
+    
+    let max: i64;
     /*
-    return max3(MID, MIN, 71);
-    return max3(MID,72,MIN);
-    return max3(73,MID,MIN);
-    return max3(74,MIN,MID);
-    return max3(75,MIN,MID);
+    max = max3(MID, MIN, 71);
+    max = max3(MID,72,MIN);
+    max = max3(73,MID,MIN);
+    max = max3(74,MIN,MID);
+    max = max3(75,MIN,MID);
     */
-    return max3(MIN,76,MID);
+    max = max3(MIN,76,MID);
+    
+    print(max); print("\n");
 }

@@ -5,6 +5,6 @@ fn average(a: i64, b:i64, dummy_bool: bool /* this is only a dummy parameter to 
         a+b
     ) /2;
 }
-fn ___main___() -> i64 {
-    return average(14, 70, false); // -> 42
+fn ___main___() {
+    print(average(14, 70, false)); print("\n"); // -> 42
 }

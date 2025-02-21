@@ -4,7 +4,7 @@
  *      - break statement
  */
 
-fn ___main___() -> i64 {
+fn ___main___() {
     let sum: i64 = 0;
     let counter: i64 = 0;
     loop {
@@ -23,5 +23,5 @@ fn ___main___() -> i64 {
             break;
         }
     }
-    return sum; // -> 42
+    print(sum); print("\n"); // -> 42
 }

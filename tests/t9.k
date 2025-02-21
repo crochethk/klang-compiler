@@ -11,14 +11,12 @@ fn fib(n: i64) -> i64 {
     // }
 }
 
-fn ___main___() -> i64 {
-    return fib(7); // -> 13
+fn ___main___() {
+    print(fib(7)); print("\n"); // -> 13
+    print(floatingFib(7.0)); print("\n"); // -> 13.0
 }
 
-// // fn floatingFib(n: f64) -> f64 {
-// //     return n<=1.0 ? n : fib(n-1.0)+fib(n-2.0);
-// // }
+fn floatingFib(n: f64) -> f64 {
+    return n<=1.0 ? n : floatingFib(n-1.0)+floatingFib(n-2.0);
+}
 
-// // fn ___main___() -> f64 {
-// //     return fib(7.0); // -> 13
-// // }
