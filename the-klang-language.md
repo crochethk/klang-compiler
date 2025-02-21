@@ -131,8 +131,6 @@ Also note:
 `break;` - Exit the _current_ `loop` context.
 
 ### Drop
-> If the compilation target is JBC/JVM this mechanic is optional (and basically
-> a 'nop') because of the managed nature of the JVM.
 
 `drop {expr};` - Release memory of a reference type instance given by `{expr}`.
 
@@ -140,12 +138,15 @@ In general Klang is an unmanaged language, thus the programmer is responsible
 of freeing dynamically allocated memory. This is the case for all reference 
 type instances __except string literals__.
 
-> The tool `valgrind` can help find memory leaks in context of the final binary
+> The tool `valgrind` can help finding memory leaks in context of the final binary
 > executable (e.g. `a.out`):
 >   ```sh
 >   valgrind --leak-check=yes ./a.out
 >   ```
 
+> Because of the managed nature of the JVM, this mechanic is optional if the
+> compilation target is JBC/JVM. When provided a variable name it will be
+> equivalent to `varName = null;`, otherwise it will produce a 'nop'.
 
 ### Field assignment
 ```

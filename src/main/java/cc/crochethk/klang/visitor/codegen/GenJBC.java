@@ -374,8 +374,12 @@ public class GenJBC extends CodeGenVisitor {
         // However to "simulate" dropping we simply overwrite the referencing
         // variable with null.
         var varSlot = varsManager.getSlot(dropStat.refTypeVar.name);
-        codeBuilder.aconst_null();
-        codeBuilder.astore(varSlot);
+        if (varSlot != null) {
+            codeBuilder.aconst_null();
+            codeBuilder.astore(varSlot);
+        } else {
+            codeBuilder.nop();
+        }
     }
 
     @Override
