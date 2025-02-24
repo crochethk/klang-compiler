@@ -169,7 +169,16 @@ if {condition} {
     // do sth. else
 }
 ```
-- `{condition}` - Expression evaluating to a boolean value
+
+* `{condition}` - Expression evaluating to a boolean value
+* Example
+    ```
+    if foo > bar {
+        // ...
+    } else {
+        // ...
+    }
+    ```
 
 ### Loop
 Simple loop, repeating indefinitely if not explicitly stopped.
