@@ -6,7 +6,8 @@ fn buildTestStruct() -> Nested {
     return Nested { OneField{456} };
 }
 fn dropTestStruct(o: Nested) {
-    drop o.oneFielder;
+    let field = o.oneFielder;
+    drop field;
     drop o;
 }
 
