@@ -10,11 +10,15 @@ import cc.crochethk.klang.visitor.SourceCodeBuilder;
  * The current result can be retrieved using "toString()".
  */
 public abstract class SectionBuilder extends SourceCodeBuilder {
+    public final String initialState;
+
     /**
      * @param entryDirective For example {@code .data} or {@code .text}
      */
     public SectionBuilder(String entryDirective) {
-        super("\t");
+        super("\t", 1);
+        writeIndented(entryDirective);
+        initialState = this.toString();
     }
 
     /** Represents the ".bss" section */

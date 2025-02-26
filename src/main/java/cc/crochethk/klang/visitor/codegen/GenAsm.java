@@ -821,7 +821,8 @@ public class GenAsm extends CodeGenVisitor {
 
             SectionBuilder[] sections = { rodataSec, dataSec, code };
             for (var s : sections) {
-                if (!s.isEmpty()) {
+                var sStr = s.toString();
+                if (!s.initialState.equals(sStr)) {
                     w.write(s.toString());
                     w.write("\n");
                 }

@@ -12,7 +12,6 @@ public class SourceCodeBuilder {
     private StringBuilder buffer;
     private String indentSequence;
     protected int indentLvl;
-    private boolean isEmpty;
 
     public void increaseIndent() {
         indentLvl++;
@@ -25,15 +24,10 @@ public class SourceCodeBuilder {
     /**
      * @param indentSequence The string to use for indentations
      */
-    public SourceCodeBuilder(String indentSequence) {
-        this(indentSequence, 1);
-    }
-
     public SourceCodeBuilder(String indentSequence, int initialIndentLevel) {
         this.buffer = new StringBuilder();
         this.indentSequence = indentSequence;
         this.indentLvl = initialIndentLevel;
-        this.isEmpty = true;
     }
 
     private String indent() {
@@ -65,11 +59,6 @@ public class SourceCodeBuilder {
 
     public void write(String s) {
         buffer.append(s);
-        isEmpty = false;
-    }
-
-    public boolean isEmpty() {
-        return isEmpty;
     }
 
     @Override
