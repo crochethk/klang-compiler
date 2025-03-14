@@ -1,5 +1,7 @@
 package cc.crochethk.klang.visitor.codegen;
 
+import static cc.crochethk.klang.visitor.BuiltinDefinitions.*;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.classfile.AccessFlags;
@@ -22,7 +24,9 @@ import java.util.Map;
 import cc.crochethk.klang.ast.*;
 import cc.crochethk.klang.ast.UnaryOpExpr.UnaryOp;
 import cc.crochethk.klang.ast.literal.*;
+import cc.crochethk.klang.visitor.BuiltinDefinitions;
 import cc.crochethk.klang.visitor.Type;
+import cc.crochethk.klang.visitor.Type.Signature;
 import utils.PathUtils;
 import cc.crochethk.klang.ast.BinOpExpr.BinaryOp;
 import cc.crochethk.klang.ast.MemberAccess.*;
@@ -105,6 +109,15 @@ public class GenJBC extends CodeGenVisitor {
 
     @Override
     public void visit(FunCall funCall) {
+        // Generate call to builtin function (if funCall is builtin)
+        var argTypes = funCall.args.stream().map(arg -> arg.theType).toList();
+        var autoFunSign = findBuiltinFun(funCall.name, argTypes);
+        if (autoFunSign.isPresent()) {
+            var autoFun = autoFunSign.get();
+            callBuiltinFunction(funCall, autoFun);
+            return;
+        }
+
         // load arguments before calling function
         funCall.args.forEach(arg -> arg.accept(this));
 
@@ -112,6 +125,27 @@ public class GenJBC extends CodeGenVisitor {
         var methDescriptor = MethodTypeDesc.of(funCall.theType.classDesc(), argsClassDescs);
 
         codeBuilder.invokestatic(ClassDesc.of(packageName, className), funCall.name, methDescriptor);
+    }
+
+    /**
+     * Given a {@code FunCall}, which was recognized to be a auto generated function,
+     * generates the appropriate builtin function logic/call.
+     * 
+     * @param funCall The original {@code FunCall} recognized as builtin function.
+     * @param autoFun Signature of the found builtin function.
+     * 
+     * @see BuiltinDefinitions
+     */
+    private void callBuiltinFunction(FunCall funCall, Signature autoFun) {
+        switch (autoFun.name()) {
+            case NAME_FN_PRINT -> { /* print(T) */
+                genPrintFunCall(funCall.args.getFirst());
+            }
+            default -> {
+                throw new UnsupportedOperationException(
+                        "Builtin function '" + autoFun.name() + "' not implemented.");
+            }
+        }
     }
 
     @Override
@@ -566,8 +600,6 @@ public class GenJBC extends CodeGenVisitor {
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
 
-    // TODO actually use this
-    @SuppressWarnings("unused")
     private void genPrintFunCall(Node expr) {
         var CD_PrintStream = ClassDesc.of(java.io.PrintStream.class.getName());
         // Push "System.out" reference onto operand stack
