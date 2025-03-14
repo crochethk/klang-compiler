@@ -290,6 +290,27 @@ public class GenJBC extends CodeGenVisitor {
     }
 
     @Override
+    public void visit(TypeCast typeCast) {
+        typeCast.expr.accept(this);
+
+        var exprType = typeCast.expr.theType;
+        var targetType = typeCast.targetType.theType;
+
+        if (exprType == Type.LONG_T && targetType == Type.DOUBLE_T) {
+            // i64 -> f64
+            codeBuilder.l2d();
+        } else if (exprType == Type.DOUBLE_T && targetType == Type.LONG_T) {
+            // f64 -> i64
+            codeBuilder.d2l();
+        } else if (exprType == targetType) {
+            //nop
+        } else {
+            throw new UnsupportedOperationException("Unsupported conversion: "
+                    + exprType.prettyTypeName() + " -> " + targetType.prettyTypeName());
+        }
+    }
+
+    @Override
     public void visit(TernaryConditionalExpr ternaryConditionalExpr) {
         ternaryConditionalExpr.condition.accept(this);
         var falseBranch = codeBuilder.newLabel();
@@ -541,12 +562,6 @@ public class GenJBC extends CodeGenVisitor {
 
     @Override
     public void visit(FieldAssignStat fieldAssignStat) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visit'");
-    }
-
-    @Override
-    public void visit(TypeCast typeCast) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visit'");
     }
